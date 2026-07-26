@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Articles — The Finvocates</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap nav-row">
+    <a href="index.html" class="logo">
+      <span class="the">The</span>
+      <span class="finvocates">Finvocates</span>
+    </a>
+    <nav class="main-nav">
+      <div class="nav-item">
+        <a href="consultations.html" class="nav-trigger">Consultations</a>
+        <div class="mega">
+          <a class="mega-item" href="consultations.html#sc-2026">
+            <span class="mi-title">Supreme Court — AI in Courts Regulation, 2026</span>
+            <span class="mi-meta">40 clause-specific comments</span>
+          </a>
+          <a class="mega-item" href="consultations.html#rbi-governance">
+            <span class="mi-title">RBI — Governance (Second Amendment) Directions</span>
+            <span class="mi-meta">Commercial Banks &amp; SFBs</span>
+          </a>
+          <a class="mega-item" href="consultations.html#fsb-ai">
+            <span class="mi-title">FSB — Responsible Adoption of AI</span>
+            <span class="mi-meta">All 7 questions answered</span>
+          </a>
+          <a class="mega-all" href="consultations.html">
+            <span>View all consultations</span>
+            <span class="arrow">→</span>
+          </a>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a href="articles.html" class="nav-trigger">Articles</a>
+        <div class="mega" id="articles-mega">
+          <div class="mega-item"><span class="mi-title">Loading…</span></div>
+        </div>
+      </div>
+      <div class="nav-item about-item">
+        <a href="about.html" class="nav-trigger">About</a>
+        <div class="mega">
+          <p class="about-blurb">Chakradhar Kale runs The Finvocates independently while training as a Compliance Officer at Unity Small Finance Bank and studying law at GLC Mumbai.</p>
+          <a class="mega-all" href="about.html">
+            <span>Read the full story</span>
+            <span class="arrow">→</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<section class="page-head">
+  <div class="wrap">
+    <p class="eyebrow reveal in">Writing &amp; filings</p>
+    <h1 class="reveal in">Articles</h1>
+    <p class="lede reveal in">Notes, explainers and source PDFs on regulatory developments. This feed updates automatically whenever a new file is pushed to the repository.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="card-grid" id="articles-grid">
+      <div class="empty-state">Loading latest posts…</div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap foot-row">
+    <span class="fine">© 2026 The Finvocates. Independently run by Chakradhar Kale.</span>
+    <a class="mail" href="mailto:chakradhar@thefinvocates.com">chakradhar@thefinvocates.com</a>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+<script>
+  renderFolderFeed({
+    folder: ARTICLES_FOLDER,
+    gridSelector: "#articles-grid",
+    megaSelector: "#articles-mega",
+    limit: 3,
+    emptyLabel: "articles"
+  });
+</script>
+</body>
+</html>
