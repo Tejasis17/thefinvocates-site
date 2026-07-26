@@ -51,19 +51,26 @@ async function fetchFolderContents(folder) {
 function cardHTML(item) {
   const title = humanizeFilename(item.name);
   const kind = kindFromFilename(item.name);
+  const isPdf = kind === "PDF";
+  const href = isPdf ? item.download_url : item.html_url;
+  const dl = isPdf ? `download="${item.name}"` : `target="_blank" rel="noopener"`;
+  const label = isPdf ? "Download PDF ↓" : "Read on GitHub →";
   return `
-    <a class="card reveal" href="${item.html_url}" target="_blank" rel="noopener">
+    <a class="card reveal" href="${href}" ${dl}>
       <span class="kind">${kind}</span>
       <span class="title">${title}</span>
-      <span class="meta">Open on GitHub →</span>
+      <span class="meta">${label}</span>
     </a>`;
 }
 
 function miniItemHTML(item) {
   const title = humanizeFilename(item.name);
   const kind = kindFromFilename(item.name);
+  const isPdf = kind === "PDF";
+  const href = isPdf ? item.download_url : item.html_url;
+  const dl = isPdf ? `download="${item.name}"` : `target="_blank" rel="noopener"`;
   return `
-    <a class="mega-item" href="${item.html_url}" target="_blank" rel="noopener">
+    <a class="mega-item" href="${href}" ${dl}>
       <span class="mi-title">${title}</span>
       <span class="mi-meta">${kind}</span>
     </a>`;
