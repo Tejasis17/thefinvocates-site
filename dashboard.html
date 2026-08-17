@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Articles — The Finvocates</title>
+<title>Dashboard — The Finvocates</title>
+<meta name="description" content="Live regulatory updates aggregated from 20+ central banks, standard-setters, and market regulators worldwide.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -18,15 +19,15 @@
       <div class="nav-item">
         <a href="consultations.html" class="nav-trigger">Consultations</a>
         <div class="mega">
-          <a class="mega-item" href="consultations.html#sc-2026">
+          <a class="mega-item" href="consultations.html">
             <span class="mi-title">Supreme Court — AI in Courts Regulation, 2026</span>
             <span class="mi-meta">40 clause-specific comments</span>
           </a>
-          <a class="mega-item" href="consultations.html#rbi-governance">
+          <a class="mega-item" href="consultations.html">
             <span class="mi-title">RBI — Governance (Second Amendment) Directions</span>
             <span class="mi-meta">Commercial Banks &amp; SFBs</span>
           </a>
-          <a class="mega-item" href="consultations.html#fsb-ai">
+          <a class="mega-item" href="consultations.html">
             <span class="mi-title">FSB — Responsible Adoption of AI</span>
             <span class="mi-meta">All 7 questions answered</span>
           </a>
@@ -45,7 +46,6 @@
       <div class="nav-item">
         <a href="dashboard.html" class="nav-trigger">Dashboard</a>
       </div>
-
       <div class="nav-item about-item">
         <a href="about.html" class="nav-trigger">About</a>
         <div class="mega">
@@ -60,19 +60,32 @@
   </div>
 </header>
 
-<section class="page-head">
+<section class="dash-head">
   <div class="wrap">
-    <p class="eyebrow reveal in">Writing &amp; filings</p>
-    <h1 class="reveal in">Articles</h1>
-    <p class="lede reveal in">Notes, explainers and source PDFs on regulatory developments. This feed updates automatically whenever a new file is pushed to the repository.</p>
+    <p class="eyebrow reveal in">Live</p>
+    <h1 class="reveal in">Regulatory Dashboard</h1>
+    <p class="lede reveal in">Headline, source, and timestamp — aggregated from 20 central banks, standard-setters, and market regulators. No summarizing, no editorializing. Click through to read the original.</p>
+    <div class="dash-status reveal in">
+      <span class="dash-dot" id="dash-dot"></span>
+      <span id="dash-status-text">Connecting…</span>
+    </div>
+    <div class="dash-filters" id="dash-filters"></div>
   </div>
 </section>
 
-<section class="section">
+<section class="dash-feed">
   <div class="wrap">
-    <div class="card-grid" id="articles-grid">
-      <div class="empty-state">Loading latest posts…</div>
+    <div id="dash-feed-list">
+      <div class="dash-loading">Loading live updates…</div>
     </div>
+    <div class="dash-error-note" id="dash-error-note" style="display:none;"></div>
+  </div>
+</section>
+
+<section class="dash-disclaimer">
+  <div class="wrap">
+    <p class="eyebrow reveal" style="margin-bottom:10px;">Disclaimer</p>
+    <p class="reveal">This dashboard aggregates publicly available headlines directly from each regulator's own RSS feed and links back to the original source — no content is reproduced or summarized here. Update frequency depends on each regulator's own publishing schedule and feed availability, and a source may be briefly unavailable without affecting the rest of the dashboard. This tool has no association with, and is not endorsed by, any regulator or standard-setting body listed here. It is an independent, personal project for research and informational purposes only, and is not a substitute for checking each authority's official website.</p>
   </div>
 </section>
 
@@ -87,14 +100,9 @@
 </footer>
 
 <script src="script.js"></script>
+<script src="dashboard.js"></script>
 <script>
-  renderFolderFeed({
-    folder: ARTICLES_FOLDER,
-    gridSelector: "#articles-grid",
-    megaSelector: "#articles-mega",
-    limit: 3,
-    emptyLabel: "articles"
-  });
+  renderFolderFeed({ folder: ARTICLES_FOLDER, megaSelector: "#articles-mega", limit: 3, emptyLabel: "articles" });
 </script>
 </body>
 </html>
