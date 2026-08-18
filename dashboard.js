@@ -17,20 +17,20 @@ const SOURCES = [
   { name: "FCA",    jurisdiction: "UK",            category: "conduct-markets", feed: "https://www.fca.org.uk/news/rss.xml" },
   { name: "BoE",    jurisdiction: "UK",            category: "central-banks", feed: "https://www.bankofengland.co.uk/rss/news" },
   { name: "PRA",    jurisdiction: "UK",            category: "central-banks", feed: "https://www.bankofengland.co.uk/rss/prudential-regulation" },
-  { name: "BIS/BCBS", jurisdiction: "Global",       category: "standard-setters", feed: "https://www.bis.org/doclist/all_rss.xml" },
+  { name: "BIS/BCBS", jurisdiction: "Global",       category: "standard-setters", feed: "https://www.bis.org/doclist/all_pressrels.rss" },
   { name: "FSB",    jurisdiction: "Global",        category: "standard-setters", feed: "https://www.fsb.org/feed/" },
   { name: "ECB",    jurisdiction: "Eurozone",      category: "central-banks", feed: "https://www.ecb.europa.eu/rss/press.xml" },
   { name: "EBA",    jurisdiction: "EU",            category: "conduct-markets", feed: "https://www.eba.europa.eu/news-press/news/rss.xml" },
   { name: "Federal Reserve", jurisdiction: "US",   category: "central-banks", feed: "https://www.federalreserve.gov/feeds/press_all.xml" },
   { name: "CFPB",   jurisdiction: "US",            category: "us-agencies", feed: "https://www.consumerfinance.gov/about-us/newsroom/feed/" },
   { name: "FINRA",  jurisdiction: "US",            category: "us-agencies", feed: "https://feeds.finra.org/news-and-events/feed" },
-  { name: "OCC",    jurisdiction: "US",            category: "us-agencies", feed: "https://www.occ.gov/rss/index-rss.html" },
+  { name: "OCC",    jurisdiction: "US",            category: "us-agencies", feed: "https://www.occ.gov/rss/news-releases.xml" },
   { name: "HKMA",   jurisdiction: "Hong Kong",     category: "central-banks", feed: "https://www.hkma.gov.hk/eng/rss/press-releases.xml" },
   { name: "BOJ",    jurisdiction: "Japan",         category: "central-banks", feed: "https://www.boj.or.jp/en/rss/whatsnew.xml" },
   { name: "FINMA",  jurisdiction: "Switzerland",   category: "conduct-markets", feed: "https://www.finma.ch/en/news/rss/" },
-  { name: "SNB",    jurisdiction: "Switzerland",   category: "central-banks", feed: "https://www.snb.ch/en/services-events/digital-services/rss-calendar-feeds" },
+  { name: "SNB",    jurisdiction: "Switzerland",   category: "central-banks", feed: "https://www.snb.ch/dir/rss/en/press_releases.xml" },
   { name: "BaFin",  jurisdiction: "Germany",       category: "conduct-markets", feed: "https://www.bafin.de/SiteGlobals/Functions/RSSFeed/EN/RSSGenerator_news_en.xml" },
-  { name: "Bank of Canada", jurisdiction: "Canada", category: "central-banks", feed: "https://www.bankofcanada.ca/valet/fixed_income_yield_curves/feed" },
+  { name: "Bank of Canada", jurisdiction: "Canada", category: "central-banks", feed: "https://www.bankofcanada.ca/feed/" },
   { name: "RBA",    jurisdiction: "Australia",     category: "central-banks", feed: "https://www.rba.gov.au/rss/rss-cb-media-releases.xml" },
   { name: "Central Bank of Ireland", jurisdiction: "Ireland", category: "central-banks", feed: "https://www.centralbank.ie/rss-feed" },
   { name: "RBNZ",   jurisdiction: "New Zealand",   category: "central-banks", feed: "https://www.rbnz.govt.nz/-/media/rss/news" },
@@ -48,8 +48,7 @@ let allItems = [];
 let activeFilter = "all";
 
 function proxyUrl(feedUrl) {
-  const cacheBuster = feedUrl.includes('?') ? `&_cb=${Date.now()}` : `?_cb=${Date.now()}`;
-  return `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl + cacheBuster)}`;
+  return `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`;
 }
 
 function timeAgo(dateStr) {
@@ -101,7 +100,7 @@ function renderFeed() {
     .map(
       (item) => `
     <div class="dash-row">
-      <a class="dash-title" href="${item.link}" target="_blank" rel="noopener">"${item.title}"</a>
+      <a class="dash-title" href="${item.link}" target="_blank" rel="noopener">${item.title}</a>
       <div class="dash-meta">
         <span class="dash-source">${item.source} · ${item.jurisdiction}</span>
         <span class="dash-time">${timeAgo(item.date)}</span>
@@ -123,7 +122,7 @@ function renderHomePreview(limit = 5) {
     .map(
       (item) => `
     <div class="dash-row">
-      <a class="dash-title" href="${item.link}" target="_blank" rel="noopener">"${item.title}"</a>
+      <a class="dash-title" href="${item.link}" target="_blank" rel="noopener">${item.title}</a>
       <div class="dash-meta">
         <span class="dash-source">${item.source} · ${item.jurisdiction}</span>
         <span class="dash-time">${timeAgo(item.date)}</span>
