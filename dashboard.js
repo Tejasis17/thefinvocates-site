@@ -3,11 +3,10 @@
 //
 // Static-site constraint: GitHub Pages has no backend, and most
 // regulator RSS feeds don't allow direct browser fetches (CORS).
-// This routes each feed through rss2json.com, a free public proxy
-// that fetches server-side and returns JSON with CORS headers.
-// No API key needed for this volume of use. If a feed is ever
-// rate-limited or down, it's skipped silently — one slow source
-// never blocks the rest of the dashboard.
+// This routes each feed through allorigins.win, a free public proxy
+// that fetches server-side and returns raw XML with CORS headers.
+// The XML is then parsed natively in the browser to ensure feeds
+// bypass restrictive proxy blocks and caching rules.
 // ============================================================
 
 const REFRESH_MINUTES = 15;
@@ -47,15 +46,34 @@ const FILTERS = [
 let allItems = [];
 let activeFilter = "all";
 
-function proxyUrl(feedUrl) {
-  return `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`;
-}
-
 function timeAgo(dateStr) {
   if (!dateStr || dateStr.startsWith("1970")) return "Date unavailable";
-  const safeDateStr = dateStr.replace(" ", "T") + "Z";
-  const then = new Date(safeDateStr);
-  if (isNaN(then)) return "";
+  
+  dateStr = dateStr.replace(/[\n\r\t]/g, " ").trim();
+  let then = new Date(dateStr);
+  
+  if (isNaN(then.getTime())) {
+    let fixed = dateStr.replace(" ", "T");
+    if (!fixed.endsWith("Z") && !fixed.includes("+")) fixed += "Z";
+    then = new Date(fixed);
+  }
+
+  if (isNaN(then.getTime())) {
+    const match = dateStr.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    if (match) {
+      then = new Date(match[3], match[2] - 1, match[1]);
+    }
+  }
+
+  if (isNaN(then.getTime())) {
+    const match = dateStr.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+    if (match) {
+      then = new Date(match[1], match[2] - 1, match[3]);
+    }
+  }
+
+  if (isNaN(then.getTime())) return "Date unavailable";
+
   const mins = Math.round((Date.now() - then.getTime()) / 60000);
   if (mins < 1) return "just now";
   if (mins < 60) return `${mins}m ago`;
@@ -68,18 +86,67 @@ function timeAgo(dateStr) {
 
 async function fetchSource(source) {
   try {
-    const res = await fetch(proxyUrl(source.feed), { cache: "no-store" });
+    const cbUrl = source.feed + (source.feed.includes('?') ? '&' : '?') + '_cb=' + Date.now();
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(cbUrl)}`;
+    const res = await fetch(proxyUrl, { cache: "no-store" });
     if (!res.ok) throw new Error(`${source.name}: HTTP ${res.status}`);
+    
     const data = await res.json();
-    if (!data.items) return [];
-    return data.items.slice(0, 8).map((item) => ({
-      title: item.title,
-      link: item.link,
-      date: item.pubDate,
-      source: source.name,
-      jurisdiction: source.jurisdiction,
-      category: source.category,
-    }));
+    if (!data.contents) return [];
+
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+
+    const items = Array.from(xmlDoc.querySelectorAll("item, entry")).slice(0, 8);
+    
+    return items.map((item) => {
+      const titleNode = item.querySelector("title");
+      let title = titleNode ? titleNode.textContent : "No title";
+      title = title.replace(/^<!\[CDATA\[(.*)\]\]>$/, "$1").trim();
+
+      let link = "";
+      const linkNode = item.querySelector("link");
+      if (linkNode) {
+        link = linkNode.textContent.trim();
+        if (!link) link = linkNode.getAttribute("href") || "";
+      }
+
+      let date = "";
+      const dateTags = ["pubDate", "pubdate", "published", "updated", "dc:date", "date", "prism:publicationDate"];
+      
+      for (const tag of dateTags) {
+        const nodes = item.getElementsByTagName(tag);
+        if (nodes.length > 0) {
+          date = nodes[0].textContent.trim();
+          break;
+        }
+        const nsNodes = item.getElementsByTagNameNS("*", tag.replace(/.*:/, ""));
+        if (nsNodes.length > 0) {
+          date = nsNodes[0].textContent.trim();
+          break;
+        }
+      }
+      
+      if (!date) {
+        const children = item.children;
+        for (let i = 0; i < children.length; i++) {
+          const tag = children[i].tagName.toLowerCase();
+          if (tag.includes("date") || tag === "published" || tag === "updated") {
+            date = children[i].textContent.trim();
+            break;
+          }
+        }
+      }
+
+      return {
+        title,
+        link,
+        date,
+        source: source.name,
+        jurisdiction: source.jurisdiction,
+        category: source.category,
+      };
+    });
   } catch (err) {
     console.warn(`Skipped ${source.name}:`, err.message);
     return [];
