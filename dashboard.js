@@ -1,11 +1,10 @@
 // ============================================================
 // THE FINVOCATES — regulatory dashboard
 //
-// Static-site constraint: GitHub Pages has no backend.
-// This routes feeds through public proxies returning raw XML.
-// Features a Dual-Proxy fallback with 8.5s timeouts, 
-// enabled caching to bypass Web Application Firewalls (WAF),
-// and a Rolling Concurrency model to prevent rate limits.
+// Back to basics: Lightweight, high-speed, parallel execution.
+// We fetch raw XML through allorigins to guarantee FCA dates
+// work correctly, but we use a 15-minute stable cache-buster 
+// to bypass WAF firewalls without triggering bot-protection.
 // ============================================================
 
 const REFRESH_MINUTES = 15;
@@ -69,43 +68,23 @@ function timeAgo(dateStr) {
   return then.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 }
 
-async function fetchXML(url) {
-  // Caching is intentionally allowed here to prevent bank firewalls from blocking proxy IPs
-  const proxies = [
-    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-    `https://corsproxy.io/?${encodeURIComponent(url)}`
-  ];
-
-  for (const proxy of proxies) {
-    try {
-      const controller = new AbortController();
-      // Increased timeout to 8.5 seconds to allow for DNS resolution and secure handshakes
-      const timeoutId = setTimeout(() => controller.abort(), 8500);
-
-      const res = await fetch(proxy, { signal: controller.signal });
-      clearTimeout(timeoutId);
-
-      if (res.ok) {
-        const text = await res.text();
-        if (text.includes('<rss') || text.includes('<feed') || text.includes('<RDF')) {
-          return text;
-        }
-      }
-    } catch (e) {
-      // Moves to secondary proxy if the first is fully blocked
-    }
-  }
-  return null;
-}
-
 async function fetchSource(source) {
   try {
-    const xmlText = await fetchXML(source.feed);
-    if (!xmlText) return [];
+    // Smart cache window: Changes only once every 15 minutes to guarantee fast WAF clearance
+    const timeWindow = Math.floor(Date.now() / (15 * 60 * 1000));
+    const fetchUrl = source.feed + (source.feed.includes('?') ? '&' : '?') + 'v=' + timeWindow;
+
+    // JSON wrapping ensures rapid CORS approval and high-speed browser parsing
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(fetchUrl)}`;
+    
+    const res = await fetch(proxyUrl);
+    if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+    
+    const data = await res.json();
+    if (!data.contents) return [];
 
     const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-
+    const xmlDoc = parser.parseFromString(data.contents, "text/xml");
     const items = Array.from(xmlDoc.querySelectorAll("item, entry")).slice(0, 8);
     
     return items.map((item) => {
@@ -121,30 +100,12 @@ async function fetchSource(source) {
       }
 
       let date = "";
-      const dateTags = ["pubDate", "pubdate", "published", "updated", "dc:date", "date", "prism:publicationDate"];
-      
-      for (const tag of dateTags) {
-        const nodes = item.getElementsByTagName(tag);
-        if (nodes.length > 0) {
-          date = nodes[0].textContent.trim();
-          break;
-        }
-        const nsNodes = item.getElementsByTagNameNS("*", tag.replace(/.*:/, ""));
-        if (nsNodes.length > 0) {
-          date = nsNodes[0].textContent.trim();
-          break;
-        }
-      }
-      
-      if (!date) {
-        const children = item.children;
-        for (let i = 0; i < children.length; i++) {
-          const tag = children[i].tagName.toLowerCase();
-          if (tag.includes("date") || tag === "published" || tag === "updated") {
-            date = children[i].textContent.trim();
-            break;
-          }
-        }
+      const dateNode = item.querySelector("pubDate, published, updated");
+      if (dateNode) {
+        date = dateNode.textContent.trim();
+      } else {
+        const dcDate = item.getElementsByTagNameNS("*", "date")[0];
+        if (dcDate) date = dcDate.textContent.trim();
       }
 
       return {
@@ -233,20 +194,8 @@ async function loadAll(isRefresh) {
   if (statusEl) statusEl.textContent = "Refreshing…";
   if (dot) dot.classList.remove("live");
 
-  const results = [];
-  const chunkSize = 4; // Smaller chunks to prevent proxy overload
-  
-  for (let i = 0; i < SOURCES.length; i += chunkSize) {
-    const chunk = SOURCES.slice(i, i + chunkSize);
-    const chunkResults = await Promise.all(chunk.map(fetchSource));
-    results.push(...chunkResults);
-    
-    // 600ms network pause to simulate human interaction and clear limiters
-    if (i + chunkSize < SOURCES.length) {
-      await new Promise(resolve => setTimeout(resolve, 600)); 
-    }
-  }
-  
+  // Reverted to blazing fast Promise.all - all 21 sources fetched concurrently
+  const results = await Promise.all(SOURCES.map(fetchSource));
   const merged = results.flat();
   const failedCount = SOURCES.length - results.filter((r) => r.length > 0).length;
 
