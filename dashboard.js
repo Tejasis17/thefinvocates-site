@@ -48,11 +48,14 @@ let allItems = [];
 let activeFilter = "all";
 
 function proxyUrl(feedUrl) {
-  return `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`;
+  const cacheBuster = feedUrl.includes('?') ? `&_cb=${Date.now()}` : `?_cb=${Date.now()}`;
+  return `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl + cacheBuster)}`;
 }
 
 function timeAgo(dateStr) {
-  const then = new Date(dateStr);
+  if (!dateStr || dateStr.startsWith("1970")) return "Date unavailable";
+  const safeDateStr = dateStr.replace(" ", "T") + "Z";
+  const then = new Date(safeDateStr);
   if (isNaN(then)) return "";
   const mins = Math.round((Date.now() - then.getTime()) / 60000);
   if (mins < 1) return "just now";
@@ -66,7 +69,7 @@ function timeAgo(dateStr) {
 
 async function fetchSource(source) {
   try {
-    const res = await fetch(proxyUrl(source.feed));
+    const res = await fetch(proxyUrl(source.feed), { cache: "no-store" });
     if (!res.ok) throw new Error(`${source.name}: HTTP ${res.status}`);
     const data = await res.json();
     if (!data.items) return [];
@@ -98,7 +101,7 @@ function renderFeed() {
     .map(
       (item) => `
     <div class="dash-row">
-      <a class="dash-title" href="${item.link}" target="_blank" rel="noopener">${item.title}</a>
+      <a class="dash-title" href="${item.link}" target="_blank" rel="noopener">"${item.title}"</a>
       <div class="dash-meta">
         <span class="dash-source">${item.source} · ${item.jurisdiction}</span>
         <span class="dash-time">${timeAgo(item.date)}</span>
@@ -108,7 +111,6 @@ function renderFeed() {
     .join("");
 }
 
-/** Small top-N preview for the homepage — same row styling, no filters. */
 function renderHomePreview(limit = 5) {
   const el = document.getElementById("home-dashboard-preview");
   if (!el) return;
@@ -121,7 +123,7 @@ function renderHomePreview(limit = 5) {
     .map(
       (item) => `
     <div class="dash-row">
-      <a class="dash-title" href="${item.link}" target="_blank" rel="noopener">${item.title}</a>
+      <a class="dash-title" href="${item.link}" target="_blank" rel="noopener">"${item.title}"</a>
       <div class="dash-meta">
         <span class="dash-source">${item.source} · ${item.jurisdiction}</span>
         <span class="dash-time">${timeAgo(item.date)}</span>
