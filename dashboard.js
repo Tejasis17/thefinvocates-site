@@ -7,8 +7,8 @@
 // raw XML, completely bypassing JSON conversion to preserve 
 // native date formats (like the FCA feed).
 //
-// Features a Dual-Proxy fallback and Batched Requests to 
-// prevent rate-limiting and ensure maximum uptime.
+// Features a Dual-Proxy fallback with strict timeouts and 
+// Batched Requests to balance high speed with maximum uptime.
 // ============================================================
 
 const REFRESH_MINUTES = 15;
@@ -73,27 +73,30 @@ function timeAgo(dateStr) {
 }
 
 async function fetchXML(url) {
-  // Dual-Proxy System: Tries high-speed proxy first, falls back to secondary if blocked.
   const proxies = [
-    `https://corsproxy.io/?${encodeURIComponent(url)}`,
-    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    `https://corsproxy.io/?${encodeURIComponent(url)}`
   ];
 
   for (const proxy of proxies) {
     try {
-      const res = await fetch(proxy, { cache: "no-store" });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+      const res = await fetch(proxy, { cache: "no-store", signal: controller.signal });
+      clearTimeout(timeoutId);
+
       if (res.ok) {
         const text = await res.text();
-        // Ensure the response is actual XML and not a proxy error HTML page
         if (text.includes('<rss') || text.includes('<feed') || text.includes('<RDF')) {
           return text;
         }
       }
     } catch (e) {
-      // Silently catch and try the next proxy
+      // Instantly moves to the next proxy if it times out or blocks
     }
   }
-  throw new Error("All proxies failed or returned invalid XML");
+  throw new Error("All proxies failed or timed out");
 }
 
 async function fetchSource(source) {
@@ -229,9 +232,8 @@ async function loadAll(isRefresh) {
   if (statusEl) statusEl.textContent = "Refreshing…";
   if (dot) dot.classList.remove("live");
 
-  // Fetch in batches of 5 to prevent proxy rate-limiting (tanking to 0/21)
   const results = [];
-  const chunkSize = 5;
+  const chunkSize = 11;
   for (let i = 0; i < SOURCES.length; i += chunkSize) {
     const chunk = SOURCES.slice(i, i + chunkSize);
     const chunkResults = await Promise.all(chunk.map(fetchSource));
