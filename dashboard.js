@@ -1,6 +1,6 @@
 // ============================================================
-// THE FINVOCATES — regulatory dashboard
-// Lightweight progressive RSS dashboard
+// THE FINVOCATES — Regulatory Intelligence Dashboard
+// Lightweight • Progressive • Colour Coded • Per-source Retry
 // ============================================================
 
 const REFRESH_MINUTES = 15;
@@ -11,146 +11,158 @@ const REFRESH_MINUTES = 15;
 // ============================================================
 
 const SOURCES = [
-  { name: "RBI", jurisdiction: "India", category: "central-banks", feed: "https://www.rbi.org.in/pressreleases_rss.xml" },
-  { name: "FCA", jurisdiction: "UK", category: "conduct-markets", feed: "https://www.fca.org.uk/news/rss.xml" },
-  { name: "BoE", jurisdiction: "UK", category: "central-banks", feed: "https://www.bankofengland.co.uk/rss/news" },
-  { name: "PRA", jurisdiction: "UK", category: "central-banks", feed: "https://www.bankofengland.co.uk/rss/prudential-regulation" },
-  { name: "BIS/BCBS", jurisdiction: "Global", category: "standard-setters", feed: "https://www.bis.org/doclist/all_rss.xml" },
-  { name: "FSB", jurisdiction: "Global", category: "standard-setters", feed: "https://www.fsb.org/feed/" },
-  { name: "ECB", jurisdiction: "Eurozone", category: "central-banks", feed: "https://www.ecb.europa.eu/rss/press.xml" },
-  { name: "EBA", jurisdiction: "EU", category: "conduct-markets", feed: "https://www.eba.europa.eu/news-press/news/rss.xml" },
-  { name: "Federal Reserve", jurisdiction: "US", category: "central-banks", feed: "https://www.federalreserve.gov/feeds/press_all.xml" },
-  { name: "CFPB", jurisdiction: "US", category: "us-agencies", feed: "https://www.consumerfinance.gov/about-us/newsroom/feed/" },
-  { name: "FINRA", jurisdiction: "US", category: "us-agencies", feed: "https://feeds.finra.org/news-and-events/feed" },
-  { name: "OCC", jurisdiction: "US", category: "us-agencies", feed: "https://www.occ.gov/rss/index-rss.html" },
-  { name: "HKMA", jurisdiction: "Hong Kong", category: "central-banks", feed: "https://www.hkma.gov.hk/eng/rss/press-releases.xml" },
-  { name: "BOJ", jurisdiction: "Japan", category: "central-banks", feed: "https://www.boj.or.jp/en/rss/whatsnew.xml" },
-  { name: "FINMA", jurisdiction: "Switzerland", category: "conduct-markets", feed: "https://www.finma.ch/en/news/rss/" },
-  { name: "SNB", jurisdiction: "Switzerland", category: "central-banks", feed: "https://www.snb.ch/en/services-events/digital-services/rss-calendar-feeds" },
-  { name: "BaFin", jurisdiction: "Germany", category: "conduct-markets", feed: "https://www.bafin.de/SiteGlobals/Functions/RSSFeed/EN/RSSGenerator_news_en.xml" },
-  { name: "Bank of Canada", jurisdiction: "Canada", category: "central-banks", feed: "https://www.bankofcanada.ca/valet/fixed_income_yield_curves/feed" },
-  { name: "RBA", jurisdiction: "Australia", category: "central-banks", feed: "https://www.rba.gov.au/rss/rss-cb-media-releases.xml" },
-  { name: "Central Bank of Ireland", jurisdiction: "Ireland", category: "central-banks", feed: "https://www.centralbank.ie/rss-feed" },
-  { name: "RBNZ", jurisdiction: "New Zealand", category: "central-banks", feed: "https://www.rbnz.govt.nz/-/media/rss/news" }
+  { name:"RBI", jurisdiction:"India", category:"central-banks", feed:"https://www.rbi.org.in/pressreleases_rss.xml" },
+  { name:"FCA", jurisdiction:"UK", category:"conduct-markets", feed:"https://www.fca.org.uk/news/rss.xml" },
+  { name:"BoE", jurisdiction:"UK", category:"central-banks", feed:"https://www.bankofengland.co.uk/rss/news" },
+  { name:"PRA", jurisdiction:"UK", category:"central-banks", feed:"https://www.bankofengland.co.uk/rss/prudential-regulation" },
+  { name:"BIS/BCBS", jurisdiction:"Global", category:"standard-setters", feed:"https://www.bis.org/doclist/all_rss.xml" },
+  { name:"FSB", jurisdiction:"Global", category:"standard-setters", feed:"https://www.fsb.org/feed/" },
+  { name:"ECB", jurisdiction:"Eurozone", category:"central-banks", feed:"https://www.ecb.europa.eu/rss/press.xml" },
+  { name:"EBA", jurisdiction:"EU", category:"conduct-markets", feed:"https://www.eba.europa.eu/news-press/news/rss.xml" },
+  { name:"Federal Reserve", jurisdiction:"US", category:"central-banks", feed:"https://www.federalreserve.gov/feeds/press_all.xml" },
+  { name:"CFPB", jurisdiction:"US", category:"us-agencies", feed:"https://www.consumerfinance.gov/about-us/newsroom/feed/" },
+  { name:"FINRA", jurisdiction:"US", category:"us-agencies", feed:"https://feeds.finra.org/news-and-events/feed" },
+  { name:"OCC", jurisdiction:"US", category:"us-agencies", feed:"https://www.occ.gov/rss/index-rss.html" },
+  { name:"HKMA", jurisdiction:"Hong Kong", category:"central-banks", feed:"https://www.hkma.gov.hk/eng/rss/press-releases.xml" },
+  { name:"BOJ", jurisdiction:"Japan", category:"central-banks", feed:"https://www.boj.or.jp/en/rss/whatsnew.xml" },
+  { name:"FINMA", jurisdiction:"Switzerland", category:"conduct-markets", feed:"https://www.finma.ch/en/news/rss/" },
+  { name:"SNB", jurisdiction:"Switzerland", category:"central-banks", feed:"https://www.snb.ch/en/services-events/digital-services/rss-calendar-feeds" },
+  { name:"BaFin", jurisdiction:"Germany", category:"conduct-markets", feed:"https://www.bafin.de/SiteGlobals/Functions/RSSFeed/EN/RSSGenerator_news_en.xml" },
+  { name:"Bank of Canada", jurisdiction:"Canada", category:"central-banks", feed:"https://www.bankofcanada.ca/valet/fixed_income_yield_curves/feed" },
+  { name:"RBA", jurisdiction:"Australia", category:"central-banks", feed:"https://www.rba.gov.au/rss/rss-cb-media-releases.xml" },
+  { name:"Central Bank of Ireland", jurisdiction:"Ireland", category:"central-banks", feed:"https://www.centralbank.ie/rss-feed" },
+  { name:"RBNZ", jurisdiction:"New Zealand", category:"central-banks", feed:"https://www.rbnz.govt.nz/-/media/rss/news" }
 ];
 
 
 // ============================================================
-// CATEGORY FILTERS
-// ============================================================
-
-const FILTERS = [
-  { key: "all", label: "All" },
-  { key: "central-banks", label: "Central Banks" },
-  { key: "standard-setters", label: "Global Standard-Setters" },
-  { key: "conduct-markets", label: "Conduct & Markets" },
-  { key: "us-agencies", label: "US Agencies" }
-];
-
-
-// ============================================================
-// REGULATOR COLOURS
+// COLOURS
 // ============================================================
 
 const REGULATOR_COLORS = {
-  "RBI": "#8b5cf6",
-  "FCA": "#2563eb",
-  "BoE": "#1d4ed8",
-  "PRA": "#4338ca",
-  "BIS/BCBS": "#475569",
-  "FSB": "#64748b",
-  "ECB": "#0891b2",
-  "EBA": "#0e7490",
-  "Federal Reserve": "#dc2626",
-  "CFPB": "#b91c1c",
-  "FINRA": "#be123c",
-  "OCC": "#9f1239",
-  "HKMA": "#0f766e",
-  "BOJ": "#db2777",
-  "FINMA": "#15803d",
-  "SNB": "#166534",
-  "BaFin": "#ca8a04",
-  "Bank of Canada": "#c2410c",
-  "RBA": "#ea580c",
-  "Central Bank of Ireland": "#059669",
-  "RBNZ": "#0284c7"
+  "RBI":"#8b5cf6",
+  "FCA":"#2563eb",
+  "BoE":"#1d4ed8",
+  "PRA":"#4338ca",
+  "BIS/BCBS":"#475569",
+  "FSB":"#64748b",
+  "ECB":"#0891b2",
+  "EBA":"#0e7490",
+  "Federal Reserve":"#dc2626",
+  "CFPB":"#b91c1c",
+  "FINRA":"#be123c",
+  "OCC":"#9f1239",
+  "HKMA":"#0f766e",
+  "BOJ":"#db2777",
+  "FINMA":"#15803d",
+  "SNB":"#166534",
+  "BaFin":"#ca8a04",
+  "Bank of Canada":"#c2410c",
+  "RBA":"#ea580c",
+  "Central Bank of Ireland":"#059669",
+  "RBNZ":"#0284c7"
 };
+
+
+// ============================================================
+// CATEGORIES
+// ============================================================
+
+const CATEGORIES = [
+  { key:"all", label:"All" },
+  { key:"central-banks", label:"Central Banks" },
+  { key:"standard-setters", label:"Global Standard-Setters" },
+  { key:"conduct-markets", label:"Conduct & Markets" },
+  { key:"us-agencies", label:"US Agencies" }
+];
 
 
 // ============================================================
 // STATE
 // ============================================================
 
-let allItems = [];
-
-let activeCategory =
-  "all";
-
-let activeJurisdiction =
-  "all";
-
+let activeCategory = "all";
+let activeJurisdiction = "all";
 let loading = false;
 
-
-// Last successful results survive failed refreshes.
 const lastSuccessfulItems = {};
 
 
 // ============================================================
-// PROXY
+// HELPERS
 // ============================================================
 
-function proxyUrl(feedUrl) {
+function escapeHtml(value) {
+
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+
+function sourceColor(name) {
+
+  return REGULATOR_COLORS[name] || "#64748b";
+}
+
+
+function proxyRss2Json(url) {
 
   return (
     "https://api.rss2json.com/v1/api.json?rss_url=" +
-    encodeURIComponent(feedUrl)
+    encodeURIComponent(url)
+  );
+}
+
+
+function proxyAllOrigins(url) {
+
+  return (
+    "https://api.allorigins.win/raw?url=" +
+    encodeURIComponent(url)
   );
 }
 
 
 // ============================================================
-// DATE PARSER
+// DATE
 // ============================================================
 
 function parseDate(value) {
 
   if (!value) return null;
 
-  const direct =
-    new Date(value);
+  const d = new Date(value);
 
   if (
-    !isNaN(direct.getTime()) &&
-    direct.getFullYear() > 1971
+    !isNaN(d.getTime()) &&
+    d.getFullYear() > 1971
   ) {
-    return direct;
+    return d;
   }
 
+  if (typeof value === "string") {
 
-  if (
-    typeof value === "string"
-  ) {
+    const m = value.match(
+      /(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/
+    );
 
-    const match =
-      value.match(
-        /(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/
+    if (m) {
+
+      const x = new Date(
+        Number(m[3]),
+        Number(m[2]) - 1,
+        Number(m[1])
       );
 
-    if (match) {
-
-      const d =
-        new Date(
-          Number(match[3]),
-          Number(match[2]) - 1,
-          Number(match[1])
-        );
-
       if (
-        !isNaN(d.getTime()) &&
-        d.getFullYear() > 1971
+        !isNaN(x.getTime()) &&
+        x.getFullYear() > 1971
       ) {
-        return d;
+        return x;
       }
     }
   }
@@ -159,15 +171,9 @@ function parseDate(value) {
 }
 
 
-// ============================================================
-// EXACT DATE DISPLAY
-// ============================================================
-
 function formatDate(date) {
 
-  if (!date) {
-    return "Date unavailable";
-  }
+  if (!date) return "Date unavailable";
 
   const d =
     date instanceof Date
@@ -185,16 +191,16 @@ function formatDate(date) {
   return d.toLocaleDateString(
     "en-IN",
     {
-      day: "numeric",
-      month: "short",
-      year: "numeric"
+      day:"numeric",
+      month:"short",
+      year:"numeric"
     }
   );
 }
 
 
 // ============================================================
-// FCA DATE EXTRACTION
+// FCA DATE
 // ============================================================
 
 function extractFCADate(item) {
@@ -205,64 +211,45 @@ function extractFCADate(item) {
     item.isoDate,
     item.updated,
     item.date,
-    item.pubdate,
     item["dc:date"],
     item.description,
     item.content,
     item.contentSnippet
   ];
 
-
-  for (
-    const field of fields
-  ) {
+  for (const field of fields) {
 
     if (!field) continue;
 
-    const text =
-      String(field)
-        .replace(
-          /<[^>]*>/g,
-          " "
-        )
-        .replace(
-          /\s+/g,
-          " "
-        )
-        .trim();
+    const text = String(field)
+      .replace(/<[^>]*>/g," ")
+      .replace(/\s+/g," ")
+      .trim();
 
+    const first = text.match(
+      /First\s+published\s*:?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i
+    );
 
-    const firstPublished =
-      text.match(
-        /First\s+published\s*:?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i
-      );
-
-
-    if (firstPublished) {
+    if (first) {
 
       return new Date(
-        Number(firstPublished[3]),
-        Number(firstPublished[2]) - 1,
-        Number(firstPublished[1])
+        Number(first[3]),
+        Number(first[2]) - 1,
+        Number(first[1])
       );
     }
 
-
-    const generic =
-      text.match(
-        /\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/
-      );
-
+    const generic = text.match(
+      /\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/
+    );
 
     if (generic) {
 
-      const d =
-        new Date(
-          Number(generic[3]),
-          Number(generic[2]) - 1,
-          Number(generic[1])
-        );
-
+      const d = new Date(
+        Number(generic[3]),
+        Number(generic[2]) - 1,
+        Number(generic[1])
+      );
 
       if (
         !isNaN(d.getTime()) &&
@@ -273,75 +260,213 @@ function extractFCADate(item) {
     }
   }
 
-
   return null;
 }
 
 
 // ============================================================
-// FCA PAGE DATE FALLBACK
+// NORMALISE RSS ITEM
 // ============================================================
 
-async function fetchFCAPageDate(
-  item
-) {
+function normaliseItem(item, source) {
 
-  if (!item.link) {
-    return null;
+  let date =
+    parseDate(
+      item.pubDate ||
+      item.published ||
+      item.isoDate ||
+      item.updated ||
+      item.date ||
+      item["dc:date"]
+    );
+
+  if (source.name === "FCA") {
+
+    const fcaDate =
+      extractFCADate(item);
+
+    if (fcaDate) {
+      date = fcaDate;
+    }
   }
 
+  return {
+    title:
+      item.title ||
+      item.name ||
+      "Untitled update",
 
-  try {
+    link:
+      item.link ||
+      item.url ||
+      item.guid ||
+      "#",
 
-    const url =
-      "https://api.allorigins.win/raw?url=" +
-      encodeURIComponent(item.link);
+    date,
+
+    source:source.name,
+
+    jurisdiction:
+      source.jurisdiction,
+
+    category:
+      source.category
+  };
+}
 
 
-    const response =
-      await fetch(
-        url,
+// ============================================================
+// PARSE RAW XML FALLBACK
+// ============================================================
+
+function parseXmlFeed(xml, source) {
+
+  const parser =
+    new DOMParser();
+
+  const doc =
+    parser.parseFromString(
+      xml,
+      "text/xml"
+    );
+
+  const nodes = [
+    ...doc.querySelectorAll("item"),
+    ...doc.querySelectorAll("entry")
+  ];
+
+  if (!nodes.length) {
+    return [];
+  }
+
+  return nodes
+    .slice(0,8)
+    .map(node => {
+
+      const title =
+        node.querySelector("title")
+          ?.textContent
+          ?.trim();
+
+      const linkNode =
+        node.querySelector("link");
+
+      let link =
+        linkNode?.getAttribute("href") ||
+        linkNode?.textContent?.trim() ||
+        "#";
+
+      const date =
+        node.querySelector("pubDate")?.textContent ||
+        node.querySelector("published")?.textContent ||
+        node.querySelector("updated")?.textContent ||
+        node.querySelector("date")?.textContent ||
+        node.querySelector("dc\\:date")?.textContent ||
+        "";
+
+      const description =
+        node.querySelector("description")?.textContent ||
+        node.querySelector("summary")?.textContent ||
+        "";
+
+      return normaliseItem(
         {
-          cache: "no-store"
-        }
+          title,
+          link,
+          pubDate:date,
+          description
+        },
+        source
       );
+    });
+}
 
 
-    if (!response.ok) {
-      return null;
-    }
+// ============================================================
+// FETCH RSS2JSON
+// ============================================================
 
+async function tryRss2Json(source) {
 
-    const html =
-      await response.text();
-
-
-    const match =
-      html.match(
-        /First\s+published\s*:?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i
-      );
-
-
-    if (!match) {
-      return null;
-    }
-
-
-    return new Date(
-      Number(match[3]),
-      Number(match[2]) - 1,
-      Number(match[1])
+  const response =
+    await fetch(
+      proxyRss2Json(source.feed) +
+      "&t=" +
+      Date.now(),
+      {
+        cache:"no-store"
+      }
     );
 
-  } catch (err) {
-
-    console.warn(
-      "FCA page date fallback failed:",
-      err.message
+  if (!response.ok) {
+    throw new Error(
+      `rss2json HTTP ${response.status}`
     );
-
-    return null;
   }
+
+  const data =
+    await response.json();
+
+  if (
+    !data ||
+    !Array.isArray(data.items) ||
+    !data.items.length
+  ) {
+    throw new Error(
+      "rss2json returned no items"
+    );
+  }
+
+  return data.items
+    .slice(0,8)
+    .map(
+      item =>
+        normaliseItem(
+          item,
+          source
+        )
+    );
+}
+
+
+// ============================================================
+// FETCH RAW XML
+// ============================================================
+
+async function tryRawXml(source) {
+
+  const response =
+    await fetch(
+      proxyAllOrigins(source.feed) +
+      "&t=" +
+      Date.now(),
+      {
+        cache:"no-store"
+      }
+    );
+
+  if (!response.ok) {
+    throw new Error(
+      `raw proxy HTTP ${response.status}`
+    );
+  }
+
+  const xml =
+    await response.text();
+
+  const items =
+    parseXmlFeed(
+      xml,
+      source
+    );
+
+  if (!items.length) {
+    throw new Error(
+      "raw XML contained no items"
+    );
+  }
+
+  return items;
 }
 
 
@@ -349,287 +474,102 @@ async function fetchFCAPageDate(
 // FETCH ONE SOURCE
 // ============================================================
 
-async function fetchSource(
-  source,
-  attempt = 1
-) {
+async function fetchSource(source) {
 
+  // First path: RSS2JSON
   try {
 
-    const res =
-      await fetch(
-        proxyUrl(source.feed) +
-        "&t=" +
-        Date.now(),
-        {
-          cache: "no-store"
-        }
-      );
+    return await tryRss2Json(
+      source
+    );
 
-
-    if (!res.ok) {
-
-      throw new Error(
-        `${source.name}: HTTP ${res.status}`
-      );
-    }
-
-
-    const data =
-      await res.json();
-
-
-    if (
-      !data ||
-      !Array.isArray(data.items) ||
-      data.items.length === 0
-    ) {
-
-      throw new Error(
-        `${source.name}: empty feed`
-      );
-    }
-
-
-    const items =
-      data.items
-        .slice(0, 8)
-        .map(
-          item => {
-
-            let date =
-              parseDate(
-                item.pubDate ||
-                item.published ||
-                item.isoDate ||
-                item.updated ||
-                item.date ||
-                item.pubdate ||
-                item["dc:date"]
-              );
-
-
-            if (
-              source.name === "FCA"
-            ) {
-
-              const fcaDate =
-                extractFCADate(item);
-
-
-              if (fcaDate) {
-                date = fcaDate;
-              }
-            }
-
-
-            return {
-
-              title:
-                item.title ||
-                "Untitled update",
-
-              link:
-                item.link ||
-                item.guid ||
-                "#",
-
-              date,
-
-              source:
-                source.name,
-
-              jurisdiction:
-                source.jurisdiction,
-
-              category:
-                source.category
-            };
-          }
-        );
-
-
-    // FCA fallback.
-    if (
-      source.name === "FCA"
-    ) {
-
-      for (
-        const item of items
-      ) {
-
-        if (
-          !item.date ||
-          item.date.getFullYear() <= 1971
-        ) {
-
-          const pageDate =
-            await fetchFCAPageDate(
-              item
-            );
-
-
-          if (pageDate) {
-            item.date = pageDate;
-          }
-        }
-      }
-    }
-
-
-    return items;
-
-  } catch (err) {
+  } catch (firstError) {
 
     console.warn(
-      `Attempt ${attempt} failed for ${source.name}:`,
-      err.message
+      `${source.name}: RSS2JSON failed`,
+      firstError.message
     );
-
-
-    if (
-      attempt < 3
-    ) {
-
-      await new Promise(
-        resolve =>
-          setTimeout(
-            resolve,
-            1000 * attempt
-          )
-      );
-
-
-      return fetchSource(
-        source,
-        attempt + 1
-      );
-    }
-
-
-    return [];
   }
+
+
+  // Second path: raw XML through AllOrigins
+  try {
+
+    return await tryRawXml(
+      source
+    );
+
+  } catch (secondError) {
+
+    console.warn(
+      `${source.name}: raw XML failed`,
+      secondError.message
+    );
+  }
+
+
+  // Third attempt: RSS2JSON once more.
+  // Useful for intermittent proxy failures.
+  try {
+
+    await new Promise(
+      resolve =>
+        setTimeout(
+          resolve,
+          700
+        )
+    );
+
+    return await tryRss2Json(
+      source
+    );
+
+  } catch (thirdError) {
+
+    console.warn(
+      `${source.name}: final attempt failed`,
+      thirdError.message
+    );
+  }
+
+
+  return [];
 }
 
 
 // ============================================================
-// SOURCE LABEL
+// SOURCE BLOCK
 // ============================================================
 
-function sourceLabel(
+function createSourceBlock(
   source
 ) {
 
-  const color =
-    REGULATOR_COLORS[
-      source.name
-    ] || "#64748b";
-
-
-  return `
-    <span
-      style="
-        color:${color};
-        font-weight:700;
-      "
-    >${source.name}</span>
-
-    <span
-      style="opacity:.5;"
-    >
-      · ${source.jurisdiction}
-    </span>
-  `;
-}
-
-
-// ============================================================
-// CREATE ITEM ROW
-// ============================================================
-
-function createRow(
-  item
-) {
-
-  const row =
+  const block =
     document.createElement(
       "div"
     );
 
-
-  row.className =
-    "dash-row";
-
-
-  row.innerHTML = `
-
-    <a
-      class="dash-title"
-      href="${item.link}"
-      target="_blank"
-      rel="noopener"
-    >
-      ${item.title}
-    </a>
-
-    <div class="dash-meta">
-
-      <span class="dash-source">
-        ${sourceLabel({
-          name: item.source,
-          jurisdiction: item.jurisdiction
-        })}
-      </span>
-
-      <span class="dash-time">
-        ${formatDate(item.date)}
-      </span>
-
-    </div>
-  `;
-
-
-  return row;
-}
-
-
-// ============================================================
-// SOURCE CONTAINER
-// ============================================================
-
-function createSourceContainer(
-  source
-) {
-
-  const wrapper =
-    document.createElement(
-      "div"
-    );
-
-
-  wrapper.className =
+  block.className =
     "dash-source-block";
 
-
-  wrapper.dataset.source =
+  block.dataset.source =
     source.name;
 
-
-  wrapper.dataset.category =
+  block.dataset.category =
     source.category;
 
-
-  wrapper.dataset.jurisdiction =
+  block.dataset.jurisdiction =
     source.jurisdiction;
 
 
   const color =
-    REGULATOR_COLORS[
+    sourceColor(
       source.name
-    ] || "#64748b";
+    );
 
 
-  wrapper.innerHTML = `
+  block.innerHTML = `
 
     <div
       class="dash-source-heading"
@@ -650,29 +590,27 @@ function createSourceContainer(
           font-weight:700;
         "
       >
-        ${source.name}
+        ${escapeHtml(source.name)}
       </span>
 
-      <span
-        style="opacity:.5;"
-      >
-        ${source.jurisdiction}
+      <span style="opacity:.5;">
+        ${escapeHtml(source.jurisdiction)}
       </span>
 
       <span
         class="dash-source-status"
         style="
           opacity:.5;
-          font-size:.85em;
+          font-size:.82em;
         "
       >
         Loading…
       </span>
 
       <button
-        class="dash-source-retry"
         type="button"
-        data-source="${source.name}"
+        class="dash-source-retry"
+        data-source="${escapeHtml(source.name)}"
         style="
           margin-left:auto;
           border:1px solid ${color};
@@ -689,32 +627,25 @@ function createSourceContainer(
 
     </div>
 
-    <div
-      class="dash-source-items"
-    ></div>
+    <div class="dash-source-items"></div>
   `;
 
-
-  return wrapper;
+  return block;
 }
 
 
 // ============================================================
-// BUILD 21 PERMANENT SOURCE CONTAINERS
+// BUILD DASHBOARD
 // ============================================================
 
-function buildSourceContainers() {
+function buildDashboard() {
 
   const list =
     document.getElementById(
       "dash-feed-list"
     );
 
-
-  if (!list) {
-    return;
-  }
-
+  if (!list) return;
 
   list.innerHTML = "";
 
@@ -727,7 +658,7 @@ function buildSourceContainers() {
     source => {
 
       fragment.appendChild(
-        createSourceContainer(
+        createSourceBlock(
           source
         )
       );
@@ -742,74 +673,54 @@ function buildSourceContainers() {
 
 
 // ============================================================
-// RENDER ONE SOURCE
+// RENDER SOURCE
 // ============================================================
 
-function renderSourceResult(
+function renderSource(
   source,
   items,
-  statusText
+  status
 ) {
 
-  const blocks =
-    document.querySelectorAll(
+  const block =
+    [...document.querySelectorAll(
       ".dash-source-block"
-    );
+    )]
+      .find(
+        x =>
+          x.dataset.source ===
+          source.name
+      );
+
+  if (!block) return;
 
 
-  let block = null;
-
-
-  blocks.forEach(
-    candidate => {
-
-      if (
-        candidate.dataset.source ===
-        source.name
-      ) {
-        block = candidate;
-      }
-    }
-  );
-
-
-  if (!block) {
-    return;
-  }
-
-
-  const itemContainer =
+  const container =
     block.querySelector(
       ".dash-source-items"
     );
 
-
-  const status =
+  const statusEl =
     block.querySelector(
       ".dash-source-status"
     );
 
 
-  if (!itemContainer) {
-    return;
-  }
+  if (!container) return;
 
 
-  // Only replace the contents of THIS regulator.
-  itemContainer.innerHTML = "";
+  // IMPORTANT:
+  // We only clear this regulator's own items.
+  container.innerHTML = "";
 
 
-  if (
-    items.length === 0
-  ) {
+  if (!items.length) {
 
-    if (status) {
-
-      status.textContent =
-        statusText ||
+    if (statusEl) {
+      statusEl.textContent =
+        status ||
         "Temporarily unavailable";
     }
-
 
     return;
   }
@@ -822,287 +733,545 @@ function renderSourceResult(
   items.forEach(
     item => {
 
+      const row =
+        document.createElement(
+          "div"
+        );
+
+      row.className =
+        "dash-row";
+
+
+      row.innerHTML = `
+
+        <a
+          class="dash-title"
+          href="${escapeHtml(item.link)}"
+          target="_blank"
+          rel="noopener"
+        >
+          ${escapeHtml(item.title)}
+        </a>
+
+        <div class="dash-meta">
+
+          <span class="dash-source">
+            <span
+              style="
+                color:${sourceColor(item.source)};
+                font-weight:700;
+              "
+            >
+              ${escapeHtml(item.source)}
+            </span>
+
+            <span style="opacity:.5;">
+              · ${escapeHtml(item.jurisdiction)}
+            </span>
+          </span>
+
+          <span class="dash-time">
+            ${formatDate(item.date)}
+          </span>
+
+        </div>
+      `;
+
+
       fragment.appendChild(
-        createRow(item)
+        row
       );
     }
   );
 
 
-  itemContainer.appendChild(
+  container.appendChild(
     fragment
   );
 
 
-  if (status) {
+  if (statusEl) {
 
-    status.textContent =
+    statusEl.textContent =
+      status ||
       `${items.length} updates`;
   }
 }
 
 
 // ============================================================
-// JURISDICTIONS
+// REBUILD MASTER ITEM LIST
 // ============================================================
 
-function getJurisdictions() {
+function rebuildItems() {
 
-  return [
-    ...new Set(
-      SOURCES.map(
-        source =>
-          source.jurisdiction
-      )
-    )
-  ];
-}
+  allItems = [];
 
 
-// ============================================================
-// JURISDICTION COLOUR
-//
-// For jurisdictions with multiple regulators, use the first
-// regulator's established colour. No new colour scheme is
-// introduced.
-// ============================================================
+  SOURCES.forEach(
+    source => {
 
-function jurisdictionColor(
-  jurisdiction
-) {
-
-  const source =
-    SOURCES.find(
-      s =>
-        s.jurisdiction ===
-        jurisdiction
-    );
-
-
-  return source
-    ? (
-        REGULATOR_COLORS[
+      const items =
+        lastSuccessfulItems[
           source.name
-        ] || "#64748b"
-      )
-    : "#64748b";
+        ];
+
+
+      if (
+        Array.isArray(items) &&
+        items.length
+      ) {
+
+        allItems.push(
+          ...items
+        );
+      }
+    }
+  );
+
+
+  allItems.sort(
+    (a,b) => {
+
+      const at =
+        a.date instanceof Date
+          ? a.date.getTime()
+          : 0;
+
+      const bt =
+        b.date instanceof Date
+          ? b.date.getTime()
+          : 0;
+
+      return bt - at;
+    }
+  );
 }
 
 
 // ============================================================
-// JURISDICTION FILTER BAR
+// FILTER UI
+//
+// CREATED ENTIRELY BY JS.
+// No special HTML container required.
 // ============================================================
 
-function setupJurisdictionFilters() {
+function createFilterUI() {
 
-  const bar =
+  const feedList =
     document.getElementById(
-      "dash-jurisdictions"
+      "dash-feed-list"
     );
 
+  if (!feedList) return;
 
-  if (!bar) {
-    return;
+
+  // Remove previously created filter area.
+  const old =
+    document.getElementById(
+      "dash-live-filters"
+    );
+
+  if (old) {
+    old.remove();
   }
 
 
-  const jurisdictions =
-    getJurisdictions();
+  const wrapper =
+    document.createElement(
+      "div"
+    );
 
+  wrapper.id =
+    "dash-live-filters";
 
-  bar.innerHTML = `
-
-    <button
-      class="dash-filter dash-jurisdiction-filter active"
-      data-jurisdiction="all"
-    >
-      All Jurisdictions
-    </button>
-
-    ${
-      jurisdictions
-        .map(
-          jurisdiction => {
-
-            const color =
-              jurisdictionColor(
-                jurisdiction
-              );
-
-
-            return `
-              <button
-                class="dash-filter dash-jurisdiction-filter"
-                data-jurisdiction="${jurisdiction}"
-                style="
-                  border-color:${color};
-                  color:${color};
-                "
-              >
-                ${jurisdiction}
-              </button>
-            `;
-          }
-        )
-        .join("")
-    }
+  wrapper.style.cssText = `
+    margin:0 0 18px 0;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
   `;
 
 
-  bar.addEventListener(
-    "click",
-    event => {
+  // ----------------------------------------------------------
+  // JURISDICTIONS
+  // ----------------------------------------------------------
 
-      const btn =
-        event.target.closest(
-          ".dash-jurisdiction-filter"
-        );
-
-
-      if (!btn) {
-        return;
-      }
-
-
-      activeJurisdiction =
-        btn.dataset.jurisdiction;
-
-
-      bar
-        .querySelectorAll(
-          ".dash-jurisdiction-filter"
-        )
-        .forEach(
-          b =>
-            b.classList.toggle(
-              "active",
-              b === btn
-            )
-        );
-
-
-      renderFilters();
-    }
-  );
-}
-
-
-// ============================================================
-// CATEGORY FILTERS
-// ============================================================
-
-function setupCategoryFilters() {
-
-  const bar =
-    document.getElementById(
-      "dash-filters"
-    );
-
-
-  if (!bar) {
-    return;
-  }
-
-
-  bar.innerHTML =
-    FILTERS
-      .map(
-        f =>
-          `
-          <button
-            class="dash-filter${
-              f.key === "all"
-                ? " active"
-                : ""
-            }"
-            data-key="${f.key}"
-          >
-            ${f.label}
-          </button>
-          `
+  const jurisdictions = [
+    ...new Set(
+      SOURCES.map(
+        s => s.jurisdiction
       )
-      .join("");
+    )
+  ];
 
 
-  bar.addEventListener(
-    "click",
-    event => {
+  const jurisdictionRow =
+    document.createElement(
+      "div"
+    );
 
-      const btn =
-        event.target.closest(
-          ".dash-filter"
+  jurisdictionRow.style.cssText = `
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    align-items:center;
+  `;
+
+
+  const jurisdictionLabel =
+    document.createElement(
+      "span"
+    );
+
+  jurisdictionLabel.textContent =
+    "Jurisdiction";
+
+  jurisdictionLabel.style.cssText = `
+    font-size:.78em;
+    opacity:.5;
+    margin-right:3px;
+  `;
+
+
+  jurisdictionRow.appendChild(
+    jurisdictionLabel
+  );
+
+
+  const allJurisdiction =
+    makeFilterButton(
+      "All",
+      "#64748b",
+      activeJurisdiction === "all"
+    );
+
+
+  allJurisdiction.dataset.jurisdiction =
+    "all";
+
+
+  jurisdictionRow.appendChild(
+    allJurisdiction
+  );
+
+
+  jurisdictions.forEach(
+    jurisdiction => {
+
+      const source =
+        SOURCES.find(
+          s =>
+            s.jurisdiction ===
+            jurisdiction
         );
 
 
-      if (!btn) {
+      const color =
+        sourceColor(
+          source?.name
+        );
+
+
+      const button =
+        makeFilterButton(
+          jurisdiction,
+          color,
+          activeJurisdiction ===
+            jurisdiction
+        );
+
+
+      button.dataset.jurisdiction =
+        jurisdiction;
+
+
+      jurisdictionRow.appendChild(
+        button
+      );
+    }
+  );
+
+
+  // ----------------------------------------------------------
+  // CATEGORY
+  // ----------------------------------------------------------
+
+  const categoryRow =
+    document.createElement(
+      "div"
+    );
+
+  categoryRow.style.cssText = `
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    align-items:center;
+  `;
+
+
+  const categoryLabel =
+    document.createElement(
+      "span"
+    );
+
+  categoryLabel.textContent =
+    "Category";
+
+  categoryLabel.style.cssText = `
+    font-size:.78em;
+    opacity:.5;
+    margin-right:3px;
+  `;
+
+
+  categoryRow.appendChild(
+    categoryLabel
+  );
+
+
+  CATEGORIES.forEach(
+    category => {
+
+      const button =
+        makeFilterButton(
+          category.label,
+          "#64748b",
+          activeCategory ===
+            category.key
+        );
+
+
+      button.dataset.category =
+        category.key;
+
+
+      categoryRow.appendChild(
+        button
+      );
+    }
+  );
+
+
+  wrapper.appendChild(
+    jurisdictionRow
+  );
+
+  wrapper.appendChild(
+    categoryRow
+  );
+
+
+  feedList.parentNode.insertBefore(
+    wrapper,
+    feedList
+  );
+
+
+  // ----------------------------------------------------------
+  // EVENTS
+  // ----------------------------------------------------------
+
+  wrapper.addEventListener(
+    "click",
+    event => {
+
+      const jurisdictionButton =
+        event.target.closest(
+          "[data-jurisdiction]"
+        );
+
+
+      if (jurisdictionButton) {
+
+        activeJurisdiction =
+          jurisdictionButton
+            .dataset
+            .jurisdiction;
+
+
+        refreshFilterButtons();
+
+        applyFilters();
+
         return;
       }
 
 
-      activeCategory =
-        btn.dataset.key;
-
-
-      bar
-        .querySelectorAll(
-          ".dash-filter"
-        )
-        .forEach(
-          b =>
-            b.classList.toggle(
-              "active",
-              b === btn
-            )
+      const categoryButton =
+        event.target.closest(
+          "[data-category]"
         );
 
 
-      renderFilters();
+      if (categoryButton) {
+
+        activeCategory =
+          categoryButton
+            .dataset
+            .category;
+
+
+        refreshFilterButtons();
+
+        applyFilters();
+      }
     }
   );
 }
 
 
 // ============================================================
-// APPLY BOTH FILTERS
+// FILTER BUTTON
 // ============================================================
 
-function renderFilters() {
+function makeFilterButton(
+  label,
+  color,
+  active
+) {
 
-  const blocks =
-    document.querySelectorAll(
-      ".dash-source-block"
+  const button =
+    document.createElement(
+      "button"
     );
 
+  button.type =
+    "button";
 
-  blocks.forEach(
-    block => {
-
-      const category =
-        block.dataset.category;
-
-
-      const jurisdiction =
-        block.dataset.jurisdiction;
+  button.textContent =
+    label;
 
 
-      const categoryMatch =
-        activeCategory === "all" ||
-        category === activeCategory;
+  button.className =
+    "dash-live-filter";
 
 
-      const jurisdictionMatch =
-        activeJurisdiction === "all" ||
-        jurisdiction ===
-          activeJurisdiction;
-
-
-      block.style.display =
-        categoryMatch &&
-        jurisdictionMatch
-          ? ""
-          : "none";
+  button.style.cssText = `
+    border:1px solid ${color};
+    color:${color};
+    background:${
+      active
+        ? color
+        : "transparent"
+    };
+    ${
+      active
+        ? "color:#fff;"
+        : ""
     }
-  );
+    border-radius:999px;
+    padding:5px 11px;
+    cursor:pointer;
+    font-size:.78em;
+    transition:all .15s ease;
+  `;
+
+
+  return button;
+}
+
+
+// ============================================================
+// REFRESH FILTER BUTTON VISUALS
+// ============================================================
+
+function refreshFilterButtons() {
+
+  document
+    .querySelectorAll(
+      ".dash-live-filter"
+    )
+    .forEach(
+      button => {
+
+        const jurisdiction =
+          button.dataset
+            .jurisdiction;
+
+        const category =
+          button.dataset
+            .category;
+
+
+        let active = false;
+
+
+        if (
+          jurisdiction !== undefined
+        ) {
+
+          active =
+            jurisdiction ===
+            activeJurisdiction;
+
+        } else if (
+          category !== undefined
+        ) {
+
+          active =
+            category ===
+            activeCategory;
+        }
+
+
+        const color =
+          button.style.borderColor;
+
+
+        button.style.background =
+          active
+            ? color
+            : "transparent";
+
+
+        button.style.color =
+          active
+            ? "#fff"
+            : color;
+      }
+    );
+}
+
+
+// ============================================================
+// APPLY FILTERS
+// ============================================================
+
+function applyFilters() {
+
+  document
+    .querySelectorAll(
+      ".dash-source-block"
+    )
+    .forEach(
+      block => {
+
+        const category =
+          block.dataset.category;
+
+        const jurisdiction =
+          block.dataset.jurisdiction;
+
+
+        const categoryOK =
+          activeCategory === "all" ||
+          activeCategory === category;
+
+
+        const jurisdictionOK =
+          activeJurisdiction === "all" ||
+          activeJurisdiction ===
+            jurisdiction;
+
+
+        block.style.display =
+          categoryOK &&
+          jurisdictionOK
+            ? ""
+            : "none";
+      }
+    );
 }
 
 
@@ -1110,61 +1279,30 @@ function renderFilters() {
 // HOMEPAGE PREVIEW
 // ============================================================
 
-function renderHomePreview(
-  limit = 5
-) {
+function renderHomePreview() {
 
   const el =
     document.getElementById(
       "home-dashboard-preview"
     );
 
-
-  if (!el) {
-    return;
-  }
+  if (!el) return;
 
 
-  if (
-    allItems.length === 0
-  ) {
+  if (!allItems.length) {
 
     el.innerHTML =
-      `
-      <div class="dash-empty">
+      `<div class="dash-empty">
         Loading live updates…
-      </div>
-      `;
+      </div>`;
 
     return;
   }
-
-
-  const sorted =
-    [...allItems]
-      .sort(
-        (a, b) => {
-
-          const at =
-            a.date instanceof Date
-              ? a.date.getTime()
-              : 0;
-
-
-          const bt =
-            b.date instanceof Date
-              ? b.date.getTime()
-              : 0;
-
-
-          return bt - at;
-        }
-      );
 
 
   el.innerHTML =
-    sorted
-      .slice(0, limit)
+    allItems
+      .slice(0,5)
       .map(
         item =>
           `
@@ -1172,21 +1310,30 @@ function renderHomePreview(
 
             <a
               class="dash-title"
-              href="${item.link}"
+              href="${escapeHtml(item.link)}"
               target="_blank"
               rel="noopener"
             >
-              ${item.title}
+              ${escapeHtml(item.title)}
             </a>
 
             <div class="dash-meta">
 
               <span class="dash-source">
-                ${sourceLabel({
-                  name: item.source,
-                  jurisdiction:
-                    item.jurisdiction
-                })}
+
+                <span
+                  style="
+                    color:${sourceColor(item.source)};
+                    font-weight:700;
+                  "
+                >
+                  ${escapeHtml(item.source)}
+                </span>
+
+                <span style="opacity:.5;">
+                  · ${escapeHtml(item.jurisdiction)}
+                </span>
+
               </span>
 
               <span class="dash-time">
@@ -1203,57 +1350,6 @@ function renderHomePreview(
 
 
 // ============================================================
-// REBUILD ALL ITEMS FROM SUCCESSFUL SOURCE SNAPSHOTS
-// ============================================================
-
-function rebuildAllItems() {
-
-  allItems = [];
-
-
-  SOURCES.forEach(
-    source => {
-
-      const items =
-        lastSuccessfulItems[
-          source.name
-        ];
-
-
-      if (
-        Array.isArray(items)
-      ) {
-
-        allItems.push(
-          ...items
-        );
-      }
-    }
-  );
-
-
-  allItems.sort(
-    (a, b) => {
-
-      const at =
-        a.date instanceof Date
-          ? a.date.getTime()
-          : 0;
-
-
-      const bt =
-        b.date instanceof Date
-          ? b.date.getTime()
-          : 0;
-
-
-      return bt - at;
-    }
-  );
-}
-
-
-// ============================================================
 // RETRY ONE REGULATOR
 // ============================================================
 
@@ -1266,22 +1362,19 @@ async function retrySource(
       ".dash-source-block"
     )]
       .find(
-        el =>
-          el.dataset.source ===
+        b =>
+          b.dataset.source ===
           source.name
       );
 
 
-  if (!block) {
-    return;
-  }
+  if (!block) return;
 
 
-  const retryButton =
+  const button =
     block.querySelector(
       ".dash-source-retry"
     );
-
 
   const status =
     block.querySelector(
@@ -1289,15 +1382,15 @@ async function retrySource(
     );
 
 
-  if (retryButton) {
+  if (button) {
 
-    retryButton.disabled =
+    button.disabled =
       true;
 
-    retryButton.textContent =
+    button.textContent =
       "↻ Retrying…";
 
-    retryButton.style.opacity =
+    button.style.opacity =
       ".55";
   }
 
@@ -1305,7 +1398,7 @@ async function retrySource(
   if (status) {
 
     status.textContent =
-      "Retrying…";
+      "Trying feed…";
   }
 
 
@@ -1315,16 +1408,14 @@ async function retrySource(
     );
 
 
-  if (
-    items.length > 0
-  ) {
+  if (items.length) {
 
     lastSuccessfulItems[
       source.name
     ] = items;
 
 
-    renderSourceResult(
+    renderSource(
       source,
       items,
       `${items.length} updates`
@@ -1332,7 +1423,6 @@ async function retrySource(
 
   } else {
 
-    // DO NOT delete old results.
     const old =
       lastSuccessfulItems[
         source.name
@@ -1341,18 +1431,18 @@ async function retrySource(
 
     if (
       old &&
-      old.length > 0
+      old.length
     ) {
 
-      renderSourceResult(
+      renderSource(
         source,
         old,
-        "Retry failed · showing last results"
+        "Retry failed · showing previous results"
       );
 
     } else {
 
-      renderSourceResult(
+      renderSource(
         source,
         [],
         "Temporarily unavailable"
@@ -1361,42 +1451,39 @@ async function retrySource(
   }
 
 
-  rebuildAllItems();
+  rebuildItems();
 
   renderHomePreview();
 
-  renderFilters();
+  applyFilters();
 
 
-  if (retryButton) {
+  if (button) {
 
-    retryButton.disabled =
+    button.disabled =
       false;
 
-    retryButton.textContent =
+    button.textContent =
       "↻ Retry";
 
-    retryButton.style.opacity =
+    button.style.opacity =
       "1";
   }
 }
 
 
 // ============================================================
-// RETRY BUTTON LISTENER
+// RETRY EVENT
 // ============================================================
 
-function setupRetryButtons() {
+function setupRetry() {
 
   const list =
     document.getElementById(
       "dash-feed-list"
     );
 
-
-  if (!list) {
-    return;
-  }
+  if (!list) return;
 
 
   list.addEventListener(
@@ -1409,9 +1496,7 @@ function setupRetryButtons() {
         );
 
 
-      if (!button) {
-        return;
-      }
+      if (!button) return;
 
 
       const source =
@@ -1422,35 +1507,24 @@ function setupRetryButtons() {
         );
 
 
-      if (!source) {
-        return;
+      if (source) {
+
+        retrySource(
+          source
+        );
       }
-
-
-      retrySource(
-        source
-      );
     }
   );
 }
 
 
 // ============================================================
-// GLOBAL REFRESH
-//
-// Existing successful data stays visible.
-// Each source independently replaces ONLY its own data if
-// the new fetch succeeds.
+// PROGRESSIVE LOAD
 // ============================================================
 
-async function loadAll(
-  isRefresh
-) {
+async function loadAll() {
 
-  if (loading) {
-    return;
-  }
-
+  if (loading) return;
 
   loading = true;
 
@@ -1460,7 +1534,6 @@ async function loadAll(
       "dash-status-text"
     );
 
-
   const dot =
     document.getElementById(
       "dash-dot"
@@ -1468,18 +1541,11 @@ async function loadAll(
 
 
   if (dot) {
-
-    dot.classList.remove(
-      "live"
-    );
+    dot.classList.remove("live");
   }
 
 
-  // On first load create the 21 slots.
-  if (!isRefresh) {
-
-    buildSourceContainers();
-  }
+  let completed = 0;
 
 
   if (statusEl) {
@@ -1488,17 +1554,6 @@ async function loadAll(
       `Loading · 0/${SOURCES.length} regulators`;
   }
 
-
-  let completed =
-    0;
-
-  let failed =
-    0;
-
-
-  // ----------------------------------------------------------
-  // Each feed is independent.
-  // ----------------------------------------------------------
 
   SOURCES.forEach(
     async source => {
@@ -1509,18 +1564,15 @@ async function loadAll(
         );
 
 
-      if (
-        items.length > 0
-      ) {
+      if (items.length) {
 
-        // Save last known good result.
         lastSuccessfulItems[
           source.name
         ] = items;
 
 
-        // Immediately update THIS regulator.
-        renderSourceResult(
+        // IMMEDIATE DISPLAY
+        renderSource(
           source,
           items,
           `${items.length} updates`
@@ -1528,10 +1580,6 @@ async function loadAll(
 
       } else {
 
-        failed++;
-
-
-        // Keep previous successful result.
         const old =
           lastSuccessfulItems[
             source.name
@@ -1540,18 +1588,18 @@ async function loadAll(
 
         if (
           old &&
-          old.length > 0
+          old.length
         ) {
 
-          renderSourceResult(
+          renderSource(
             source,
             old,
-            "Refresh unavailable · showing last results"
+            "Refresh unavailable · showing previous results"
           );
 
         } else {
 
-          renderSourceResult(
+          renderSource(
             source,
             [],
             "Temporarily unavailable"
@@ -1560,8 +1608,8 @@ async function loadAll(
       }
 
 
-      // Rebuild master state from last known good results.
-      rebuildAllItems();
+      // Update global state without touching source DOM.
+      rebuildItems();
 
       renderHomePreview();
 
@@ -1576,17 +1624,12 @@ async function loadAll(
       }
 
 
-      // ------------------------------------------------------
-      // When every request has finished.
-      // ------------------------------------------------------
-
       if (
         completed ===
         SOURCES.length
       ) {
 
-        finishRefresh(
-          failed,
+        finishLoad(
           statusEl,
           dot
         );
@@ -1597,44 +1640,37 @@ async function loadAll(
 
 
 // ============================================================
-// FINISH GLOBAL REFRESH
+// FINISH
 // ============================================================
 
-function finishRefresh(
-  failed,
+function finishLoad(
   statusEl,
   dot
 ) {
 
-  rebuildAllItems();
+  rebuildItems();
 
   renderHomePreview();
 
-  renderFilters();
+  applyFilters();
 
 
   const now =
     new Date().toLocaleTimeString(
       "en-IN",
       {
-        hour: "2-digit",
-        minute: "2-digit"
+        hour:"2-digit",
+        minute:"2-digit"
       }
     );
 
 
-  // Number of regulators with a current/last-known-good result.
-  const successfulSources =
+  const working =
     SOURCES.filter(
       source =>
-        Array.isArray(
-          lastSuccessfulItems[
-            source.name
-          ]
-        ) &&
         lastSuccessfulItems[
           source.name
-        ].length > 0
+        ]?.length
     ).length;
 
 
@@ -1643,48 +1679,45 @@ function finishRefresh(
     statusEl.textContent =
       `Last updated ${now} · ` +
       `${allItems.length} updates from ` +
-      `${successfulSources}/${SOURCES.length} sources`;
+      `${working}/${SOURCES.length} sources`;
   }
 
 
   if (dot) {
-
-    dot.classList.add(
-      "live"
-    );
+    dot.classList.add("live");
   }
 
 
-  const errNote =
+  const note =
     document.getElementById(
       "dash-error-note"
     );
 
 
-  if (
-    failed > 0 &&
-    errNote
-  ) {
+  if (note) {
 
-    errNote.style.display =
-      "block";
+    const failed =
+      SOURCES.length -
+      working;
 
 
-    errNote.textContent =
-      `${failed} source${
-        failed > 1
-          ? "s"
-          : ""
-      } unavailable this refresh — ` +
-      `existing results have been retained. ` +
-      `Use that regulator's ↻ Retry button if needed.`;
+    if (failed > 0) {
 
-  } else if (
-    errNote
-  ) {
+      note.style.display =
+        "block";
 
-    errNote.style.display =
-      "none";
+      note.textContent =
+        `${failed} source${
+          failed === 1 ? "" : "s"
+        } unavailable — ` +
+        `existing results retained. ` +
+        `Use its ↻ Retry button if needed.`;
+
+    } else {
+
+      note.style.display =
+        "none";
+    }
   }
 
 
@@ -1700,21 +1733,17 @@ document.addEventListener(
   "DOMContentLoaded",
   () => {
 
-    setupCategoryFilters();
+    buildDashboard();
 
-    setupJurisdictionFilters();
+    createFilterUI();
 
-    setupRetryButtons();
+    setupRetry();
 
-    buildSourceContainers();
-
-    loadAll(false);
+    loadAll();
 
 
     setInterval(
-      () =>
-        loadAll(true),
-
+      loadAll,
       REFRESH_MINUTES *
       60 *
       1000
