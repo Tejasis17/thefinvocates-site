@@ -6,9 +6,9 @@
 // This routes each feed through rss2json.com, a free public proxy
 // that fetches server-side and returns JSON with CORS headers.
 //
-// Every source starts independently and renders progressively.
-// Retries are per-source, so one failed regulator never blocks
-// the rest of the dashboard.
+// Every source starts independently.
+// Each source renders immediately when it returns.
+// One slow source never blocks the rest.
 // ============================================================
 
 const REFRESH_MINUTES = 15;
@@ -81,26 +81,47 @@ const FILTERS = [
 // ============================================================
 
 const REGULATOR_COLORS = {
+
   "RBI": "#8b5cf6",
+
   "FCA": "#2563eb",
+
   "BoE": "#1d4ed8",
+
   "PRA": "#4338ca",
+
   "BIS/BCBS": "#475569",
+
   "FSB": "#64748b",
+
   "ECB": "#0891b2",
+
   "EBA": "#0e7490",
+
   "Federal Reserve": "#dc2626",
+
   "CFPB": "#b91c1c",
+
   "FINRA": "#be123c",
+
   "OCC": "#9f1239",
+
   "HKMA": "#0f766e",
+
   "BOJ": "#db2777",
+
   "FINMA": "#15803d",
+
   "SNB": "#166534",
+
   "BaFin": "#ca8a04",
+
   "Bank of Canada": "#c2410c",
+
   "RBA": "#ea580c",
+
   "Central Bank of Ireland": "#059669",
+
   "RBNZ": "#0284c7"
 };
 
@@ -110,17 +131,18 @@ const REGULATOR_COLORS = {
 // ============================================================
 
 let allItems = [];
+
 let activeFilter = "all";
 
-// Prevent overlapping refreshes.
 let loading = false;
 
 
 // ============================================================
-// RSS2JSON PROXY
+// PROXY
 // ============================================================
 
 function proxyUrl(feedUrl) {
+
   return (
     "https://api.rss2json.com/v1/api.json?rss_url=" +
     encodeURIComponent(feedUrl)
@@ -138,41 +160,60 @@ function parseDate(value) {
     return null;
   }
 
-  const direct = new Date(value);
+
+  const direct =
+    new Date(value);
+
 
   if (
     !isNaN(direct.getTime()) &&
     direct.getFullYear() > 1971
   ) {
+
     return direct;
   }
 
-  if (typeof value === "string") {
 
-    const match = value.match(
-      /(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/
-    );
+  if (
+    typeof value === "string"
+  ) {
+
+    const match =
+      value.match(
+        /(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/
+      );
+
 
     if (match) {
 
-      const day = Number(match[1]);
-      const month = Number(match[2]) - 1;
-      const year = Number(match[3]);
+      const day =
+        Number(match[1]);
 
-      const d = new Date(
-        year,
-        month,
-        day
-      );
+      const month =
+        Number(match[2]) - 1;
+
+      const year =
+        Number(match[3]);
+
+
+      const d =
+        new Date(
+          year,
+          month,
+          day
+        );
+
 
       if (
         !isNaN(d.getTime()) &&
         d.getFullYear() > 1971
       ) {
+
         return d;
       }
     }
   }
+
 
   return null;
 }
@@ -188,18 +229,22 @@ function formatDate(date) {
     return "Date unavailable";
   }
 
+
   const d =
     date instanceof Date
       ? date
       : parseDate(date);
+
 
   if (
     !d ||
     isNaN(d.getTime()) ||
     d.getFullYear() <= 1971
   ) {
+
     return "Date unavailable";
   }
+
 
   return d.toLocaleDateString(
     "en-IN",
@@ -219,36 +264,56 @@ function formatDate(date) {
 function extractFCADate(item) {
 
   const fields = [
+
     item.pubDate,
+
     item.published,
+
     item.isoDate,
+
     item.updated,
+
     item.date,
+
     item.pubdate,
+
     item["dc:date"],
+
     item.description,
+
     item.content,
+
     item.contentSnippet
   ];
 
-  for (const field of fields) {
+
+  for (
+    const field of fields
+  ) {
 
     if (!field) {
       continue;
     }
 
+
     const text =
       String(field)
-        .replace(/<[^>]*>/g, " ")
-        .replace(/\s+/g, " ")
+        .replace(
+          /<[^>]*>/g,
+          " "
+        )
+        .replace(
+          /\s+/g,
+          " "
+        )
         .trim();
 
 
-    // FCA page/feed wording.
     const firstPublished =
       text.match(
         /First\s+published\s*:?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i
       );
+
 
     if (firstPublished) {
 
@@ -260,11 +325,11 @@ function extractFCADate(item) {
     }
 
 
-    // Generic DD/MM/YYYY.
     const generic =
       text.match(
         /\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/
       );
+
 
     if (generic) {
 
@@ -275,14 +340,17 @@ function extractFCADate(item) {
           Number(generic[1])
         );
 
+
       if (
         !isNaN(d.getTime()) &&
         d.getFullYear() > 1971
       ) {
+
         return d;
       }
     }
   }
+
 
   return null;
 }
@@ -298,11 +366,13 @@ async function fetchFCAPageDate(item) {
     return null;
   }
 
+
   try {
 
     const url =
       "https://api.allorigins.win/raw?url=" +
       encodeURIComponent(item.link);
+
 
     const response =
       await fetch(
@@ -312,21 +382,26 @@ async function fetchFCAPageDate(item) {
         }
       );
 
+
     if (!response.ok) {
       return null;
     }
 
+
     const html =
       await response.text();
+
 
     const match =
       html.match(
         /First\s+published\s*:?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i
       );
 
+
     if (!match) {
       return null;
     }
+
 
     return new Date(
       Number(match[3]),
@@ -341,6 +416,7 @@ async function fetchFCAPageDate(item) {
       err.message
     );
 
+
     return null;
   }
 }
@@ -349,7 +425,7 @@ async function fetchFCAPageDate(item) {
 // ============================================================
 // FETCH ONE SOURCE
 //
-// Each source has its own retry cycle.
+// Each regulator gets its own retry cycle.
 // ============================================================
 
 async function fetchSource(
@@ -369,6 +445,7 @@ async function fetchSource(
         }
       );
 
+
     if (!res.ok) {
 
       throw new Error(
@@ -376,8 +453,10 @@ async function fetchSource(
       );
     }
 
+
     const data =
       await res.json();
+
 
     if (
       !data ||
@@ -410,13 +489,13 @@ async function fetchSource(
               );
 
 
-            // FCA gets special handling.
             if (
               source.name === "FCA"
             ) {
 
               const fcaDate =
                 extractFCADate(item);
+
 
               if (fcaDate) {
                 date = fcaDate;
@@ -453,10 +532,7 @@ async function fetchSource(
         );
 
 
-    // ----------------------------------------------------------
-    // FCA page fallback for items still lacking a date.
-    // ----------------------------------------------------------
-
+    // FCA page fallback.
     if (
       source.name === "FCA"
     ) {
@@ -475,17 +551,10 @@ async function fetchSource(
               item
             );
 
+
           if (pageDate) {
             item.date = pageDate;
           }
-
-          await new Promise(
-            resolve =>
-              setTimeout(
-                resolve,
-                100
-              )
-          );
         }
       }
     }
@@ -501,8 +570,9 @@ async function fetchSource(
     );
 
 
-    // Retry twice after the initial attempt.
-    if (attempt < 3) {
+    if (
+      attempt < 3
+    ) {
 
       await new Promise(
         resolve =>
@@ -511,6 +581,7 @@ async function fetchSource(
             1200 * attempt
           )
       );
+
 
       return fetchSource(
         source,
@@ -523,13 +594,14 @@ async function fetchSource(
       `Giving up on ${source.name} this refresh.`
     );
 
+
     return [];
   }
 }
 
 
 // ============================================================
-// COLOURED SOURCE LABEL
+// SOURCE LABEL
 // ============================================================
 
 function sourceLabel(item) {
@@ -556,7 +628,58 @@ function sourceLabel(item) {
 
 
 // ============================================================
+// CREATE ONE ROW
+//
+// This is the important change.
+//
+// We create a DOM node for each item instead of rebuilding the
+// entire dashboard with innerHTML every time a regulator returns.
+// ============================================================
+
+function createFeedRow(item) {
+
+  const wrapper =
+    document.createElement(
+      "div"
+    );
+
+
+  wrapper.className =
+    "dash-row";
+
+
+  wrapper.innerHTML = `
+
+    <a
+      class="dash-title"
+      href="${item.link}"
+      target="_blank"
+      rel="noopener"
+    >${item.title}</a>
+
+    <div class="dash-meta">
+
+      <span class="dash-source">
+        ${sourceLabel(item)}
+      </span>
+
+      <span class="dash-time">
+        ${formatDate(item.date)}
+      </span>
+
+    </div>
+  `;
+
+
+  return wrapper;
+}
+
+
+// ============================================================
 // RENDER FEED
+//
+// Used for filters and final sorting.
+// During loading, individual rows are appended directly.
 // ============================================================
 
 function renderFeed() {
@@ -565,6 +688,7 @@ function renderFeed() {
     document.getElementById(
       "dash-feed-list"
     );
+
 
   if (!list) {
     return;
@@ -594,35 +718,80 @@ function renderFeed() {
   }
 
 
-  list.innerHTML =
-    filtered
-      .map(
-        item => `
-    <div class="dash-row">
+  list.innerHTML = "";
 
-      <a
-        class="dash-title"
-        href="${item.link}"
-        target="_blank"
-        rel="noopener"
-      >${item.title}</a>
 
-      <div class="dash-meta">
+  filtered.forEach(
+    item => {
 
-        <span class="dash-source">
-          ${sourceLabel(item)}
-        </span>
+      list.appendChild(
+        createFeedRow(
+          item
+        )
+      );
 
-        <span class="dash-time">
-          ${formatDate(item.date)}
-        </span>
+    }
+  );
+}
 
-      </div>
 
-    </div>
-    `
-      )
-      .join("");
+// ============================================================
+// APPEND SOURCE RESULTS IMMEDIATELY
+//
+// This does NOT rebuild the entire feed.
+// ============================================================
+
+function appendItemsToFeed(
+  items
+) {
+
+  const list =
+    document.getElementById(
+      "dash-feed-list"
+    );
+
+
+  if (
+    !list ||
+    activeFilter !== "all"
+  ) {
+
+    return;
+  }
+
+
+  // Remove loading/empty placeholder.
+  const placeholder =
+    list.querySelector(
+      ".dash-loading, .dash-empty"
+    );
+
+
+  if (placeholder) {
+    placeholder.remove();
+  }
+
+
+  const fragment =
+    document.createDocumentFragment();
+
+
+  items.forEach(
+    item => {
+
+      fragment.appendChild(
+        createFeedRow(
+          item
+        )
+      );
+
+    }
+  );
+
+
+  list.appendChild(
+    fragment
+  );
 }
 
 
@@ -638,6 +807,7 @@ function renderHomePreview(
     document.getElementById(
       "home-dashboard-preview"
     );
+
 
   if (!el) {
     return;
@@ -665,6 +835,7 @@ function renderHomePreview(
       )
       .map(
         item => `
+
     <div class="dash-row">
 
       <a
@@ -687,6 +858,7 @@ function renderHomePreview(
       </div>
 
     </div>
+
     `
       )
       .join("");
@@ -703,6 +875,7 @@ function setupFilters() {
     document.getElementById(
       "dash-filters"
     );
+
 
   if (!bar) {
     return;
@@ -734,6 +907,7 @@ function setupFilters() {
           ".dash-filter"
         );
 
+
       if (!btn) {
         return;
       }
@@ -756,6 +930,8 @@ function setupFilters() {
         );
 
 
+      // Once a filter is selected, rebuild from
+      // all currently available items.
       renderFeed();
     }
   );
@@ -763,33 +939,27 @@ function setupFilters() {
 
 
 // ============================================================
-// LOAD ALL — PROGRESSIVE
+// LOAD ALL — TRUE PROGRESSIVE LOADING
 //
-// ALL 21 requests start immediately.
+// Network:
 //
-// The important part is the render queue:
+//     21 requests start simultaneously.
 //
-// A source can resolve at any time, but its visible update is
-// painted before the next completed source is rendered.
+// UI:
 //
-// This prevents:
+//     source returns
+//          ↓
+//     its items immediately enter the DOM
+//          ↓
+//     counter advances
 //
-//     8/21 → 20/21
-//
-// from appearing as one visual jump.
-//
-// Instead the browser gets:
-//
-//     8 → 9 → 10 → 11 → ... → 20
-//
-// while retaining parallel network requests.
+// No Promise.all() is used to hold back rendering.
 // ============================================================
 
 async function loadAll(
   isRefresh
 ) {
 
-  // Never overlap refresh cycles.
   if (loading) {
     return;
   }
@@ -803,10 +973,12 @@ async function loadAll(
       "dash-status-text"
     );
 
+
   const dot =
     document.getElementById(
       "dash-dot"
     );
+
 
   const feedList =
     document.getElementById(
@@ -814,10 +986,7 @@ async function loadAll(
     );
 
 
-  if (
-    !isRefresh &&
-    feedList
-  ) {
+  if (feedList) {
 
     feedList.innerHTML =
       `<div class="dash-loading">
@@ -841,104 +1010,17 @@ async function loadAll(
   }
 
 
-  // Start every refresh from a clean feed.
+  // Fresh refresh.
   allItems = [];
 
 
-  renderFeed();
-  renderHomePreview();
-
-
   let completed = 0;
+
   let failed = 0;
 
 
   // ----------------------------------------------------------
-  // RENDER QUEUE
-  //
-  // Network requests remain parallel.
-  // Rendering is serialized so each visible state gets a
-  // browser paint opportunity.
-  // ----------------------------------------------------------
-
-  let renderQueue =
-    Promise.resolve();
-
-
-  function queueRender(
-    items
-  ) {
-
-    renderQueue =
-      renderQueue.then(
-        async () => {
-
-          if (
-            items.length > 0
-          ) {
-
-            allItems.push(
-              ...items
-            );
-
-
-            allItems.sort(
-              (a, b) => {
-
-                const aTime =
-                  a.date instanceof Date
-                    ? a.date.getTime()
-                    : 0;
-
-                const bTime =
-                  b.date instanceof Date
-                    ? b.date.getTime()
-                    : 0;
-
-                return (
-                  bTime -
-                  aTime
-                );
-              }
-            );
-
-
-            renderFeed();
-
-            renderHomePreview();
-          }
-
-
-          completed++;
-
-
-          if (statusEl) {
-
-            statusEl.textContent =
-              `Loading · ${completed}/${SOURCES.length} regulators`;
-          }
-
-
-          // Give the browser a real paint opportunity.
-          await new Promise(
-            resolve =>
-              requestAnimationFrame(
-                () =>
-                  requestAnimationFrame(
-                    resolve
-                  )
-              )
-          );
-        }
-      );
-
-
-    return renderQueue;
-  }
-
-
-  // ----------------------------------------------------------
-  // START ALL 21 REQUESTS IMMEDIATELY.
+  // Start ALL sources immediately.
   // ----------------------------------------------------------
 
   const sourcePromises =
@@ -959,10 +1041,50 @@ async function loadAll(
         }
 
 
-        // Queue this regulator's results immediately.
-        await queueRender(
-          items
-        );
+        // ----------------------------------------------------
+        // IMPORTANT:
+        //
+        // Put the source's results into state immediately.
+        // ----------------------------------------------------
+
+        if (
+          items.length > 0
+        ) {
+
+          allItems.push(
+            ...items
+          );
+
+
+          // --------------------------------------------------
+          // IMMEDIATE DOM APPEND.
+          //
+          // This is the part that fixes the problem you saw.
+          // --------------------------------------------------
+
+          appendItemsToFeed(
+            items
+          );
+
+
+          // Homepage preview can update immediately too.
+          renderHomePreview();
+        }
+
+
+        // ----------------------------------------------------
+        // Now, and only now, count this source as visibly
+        // processed.
+        // ----------------------------------------------------
+
+        completed++;
+
+
+        if (statusEl) {
+
+          statusEl.textContent =
+            `Loading · ${completed}/${SOURCES.length} regulators`;
+        }
 
 
         return items;
@@ -970,18 +1092,22 @@ async function loadAll(
     );
 
 
-  // Wait for network completion.
+  // ----------------------------------------------------------
+  // Wait only for completion of the network refresh.
+  //
+  // The DOM has already been updating continuously above.
+  // ----------------------------------------------------------
+
   await Promise.all(
     sourcePromises
   );
 
 
-  // Wait for the final queued render as well.
-  await renderQueue;
-
-
   // ----------------------------------------------------------
-  // FINAL SORT / RENDER
+  // Final chronological ordering.
+  //
+  // This happens ONCE after everything is done, rather than
+  // destroying/rebuilding the dashboard after every feed.
   // ----------------------------------------------------------
 
   allItems.sort(
@@ -992,10 +1118,12 @@ async function loadAll(
           ? a.date.getTime()
           : 0;
 
+
       const bTime =
         b.date instanceof Date
           ? b.date.getTime()
           : 0;
+
 
       return (
         bTime -
@@ -1005,6 +1133,7 @@ async function loadAll(
   );
 
 
+  // Final sorted view.
   renderFeed();
 
   renderHomePreview();
@@ -1093,6 +1222,7 @@ document.addEventListener(
   () => {
 
     setupFilters();
+
 
     loadAll(false);
 
