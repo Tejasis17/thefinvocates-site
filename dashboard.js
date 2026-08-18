@@ -3,10 +3,12 @@
 //
 // Static-site constraint: GitHub Pages has no backend, and most
 // regulator RSS feeds don't allow direct browser fetches (CORS).
-// This routes each feed through allorigins.win, a free public proxy
-// that fetches server-side and returns raw XML with CORS headers.
-// The XML is then parsed natively in the browser to ensure feeds
-// bypass restrictive proxy blocks and caching rules.
+// This routes each feed through free public proxies that return
+// raw XML, completely bypassing JSON conversion to preserve 
+// native date formats (like the FCA feed).
+//
+// Features a Dual-Proxy fallback and Batched Requests to 
+// prevent rate-limiting and ensure maximum uptime.
 // ============================================================
 
 const REFRESH_MINUTES = 15;
@@ -16,7 +18,7 @@ const SOURCES = [
   { name: "FCA",    jurisdiction: "UK",            category: "conduct-markets", feed: "https://www.fca.org.uk/news/rss.xml" },
   { name: "BoE",    jurisdiction: "UK",            category: "central-banks", feed: "https://www.bankofengland.co.uk/rss/news" },
   { name: "PRA",    jurisdiction: "UK",            category: "central-banks", feed: "https://www.bankofengland.co.uk/rss/prudential-regulation" },
-  { name: "BIS/BCBS", jurisdiction: "Global",       category: "standard-setters", feed: "https://www.bis.org/doclist/all_pressrels.rss" },
+  { name: "BIS/BCBS", jurisdiction: "Global",       category: "standard-setters", feed: "https://www.bis.org/doclist/all_rss.xml" },
   { name: "FSB",    jurisdiction: "Global",        category: "standard-setters", feed: "https://www.fsb.org/feed/" },
   { name: "ECB",    jurisdiction: "Eurozone",      category: "central-banks", feed: "https://www.ecb.europa.eu/rss/press.xml" },
   { name: "EBA",    jurisdiction: "EU",            category: "conduct-markets", feed: "https://www.eba.europa.eu/news-press/news/rss.xml" },
@@ -47,7 +49,7 @@ let allItems = [];
 let activeFilter = "all";
 
 function timeAgo(dateStr) {
-  if (!dateStr || dateStr.startsWith("1970")) return "Date unavailable";
+  if (!dateStr || dateStr.includes("1970")) return "Date unavailable";
   
   dateStr = dateStr.replace(/[\n\r\t]/g, " ").trim();
   let then = new Date(dateStr);
@@ -56,20 +58,6 @@ function timeAgo(dateStr) {
     let fixed = dateStr.replace(" ", "T");
     if (!fixed.endsWith("Z") && !fixed.includes("+")) fixed += "Z";
     then = new Date(fixed);
-  }
-
-  if (isNaN(then.getTime())) {
-    const match = dateStr.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
-    if (match) {
-      then = new Date(match[3], match[2] - 1, match[1]);
-    }
-  }
-
-  if (isNaN(then.getTime())) {
-    const match = dateStr.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
-    if (match) {
-      then = new Date(match[1], match[2] - 1, match[3]);
-    }
   }
 
   if (isNaN(then.getTime())) return "Date unavailable";
@@ -84,18 +72,35 @@ function timeAgo(dateStr) {
   return then.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 }
 
+async function fetchXML(url) {
+  // Dual-Proxy System: Tries high-speed proxy first, falls back to secondary if blocked.
+  const proxies = [
+    `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+  ];
+
+  for (const proxy of proxies) {
+    try {
+      const res = await fetch(proxy, { cache: "no-store" });
+      if (res.ok) {
+        const text = await res.text();
+        // Ensure the response is actual XML and not a proxy error HTML page
+        if (text.includes('<rss') || text.includes('<feed') || text.includes('<RDF')) {
+          return text;
+        }
+      }
+    } catch (e) {
+      // Silently catch and try the next proxy
+    }
+  }
+  throw new Error("All proxies failed or returned invalid XML");
+}
+
 async function fetchSource(source) {
   try {
-    const cbUrl = source.feed + (source.feed.includes('?') ? '&' : '?') + '_cb=' + Date.now();
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(cbUrl)}`;
-    const res = await fetch(proxyUrl, { cache: "no-store" });
-    if (!res.ok) throw new Error(`${source.name}: HTTP ${res.status}`);
-    
-    const data = await res.json();
-    if (!data.contents) return [];
-
+    const xmlText = await fetchXML(source.feed);
     const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+    const xmlDoc = parser.parseFromString(xmlText, "text/xml");
 
     const items = Array.from(xmlDoc.querySelectorAll("item, entry")).slice(0, 8);
     
@@ -224,9 +229,17 @@ async function loadAll(isRefresh) {
   if (statusEl) statusEl.textContent = "Refreshing…";
   if (dot) dot.classList.remove("live");
 
-  const results = await Promise.all(SOURCES.map(fetchSource));
+  // Fetch in batches of 5 to prevent proxy rate-limiting (tanking to 0/21)
+  const results = [];
+  const chunkSize = 5;
+  for (let i = 0; i < SOURCES.length; i += chunkSize) {
+    const chunk = SOURCES.slice(i, i + chunkSize);
+    const chunkResults = await Promise.all(chunk.map(fetchSource));
+    results.push(...chunkResults);
+  }
+  
   const merged = results.flat();
-  const failedCount = results.filter((r) => r.length === 0).length;
+  const failedCount = SOURCES.length - results.filter((r) => r.length > 0).length;
 
   merged.sort((a, b) => new Date(b.date) - new Date(a.date));
   allItems = merged;
