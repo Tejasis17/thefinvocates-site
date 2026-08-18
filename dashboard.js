@@ -4,11 +4,12 @@
 
 const REFRESH_MINUTES = 15;
 
-const SOURCES = [
 
-  // ----------------------------------------------------------
-  // INDIA
-  // ----------------------------------------------------------
+// ============================================================
+// SOURCES
+// ============================================================
+
+const SOURCES = [
 
   {
     name: "RBI",
@@ -16,10 +17,6 @@ const SOURCES = [
     category: "central-banks",
     feed: "https://www.rbi.org.in/pressreleases_rss.xml"
   },
-
-  // ----------------------------------------------------------
-  // UNITED KINGDOM
-  // ----------------------------------------------------------
 
   {
     name: "FCA",
@@ -39,15 +36,8 @@ const SOURCES = [
     name: "PRA",
     jurisdiction: "UK",
     category: "central-banks",
-    feed: "https://www.bankofengland.co.uk/rss/prudential-regulation",
-    fallbackFeeds: [
-      "https://www.bankofengland.co.uk/rss/news"
-    ]
+    feed: "https://www.bankofengland.co.uk/rss/news"
   },
-
-  // ----------------------------------------------------------
-  // GLOBAL
-  // ----------------------------------------------------------
 
   {
     name: "BIS/BCBS",
@@ -63,10 +53,6 @@ const SOURCES = [
     feed: "https://www.fsb.org/feed/"
   },
 
-  // ----------------------------------------------------------
-  // EUROPE
-  // ----------------------------------------------------------
-
   {
     name: "ECB",
     jurisdiction: "Eurozone",
@@ -81,10 +67,6 @@ const SOURCES = [
     feed: "https://www.eba.europa.eu/news-press/news/rss.xml"
   },
 
-  // ----------------------------------------------------------
-  // UNITED STATES
-  // ----------------------------------------------------------
-
   {
     name: "Federal Reserve",
     jurisdiction: "US",
@@ -96,49 +78,29 @@ const SOURCES = [
     name: "CFPB",
     jurisdiction: "US",
     category: "us-agencies",
-    feed: "https://www.consumerfinance.gov/about-us/newsroom/feed/",
-    fallbackFeeds: [
-      "https://www.consumerfinance.gov/feed/"
-    ]
+    feed: "https://www.consumerfinance.gov/about-us/newsroom/feed/"
   },
 
   {
     name: "FINRA",
     jurisdiction: "US",
     category: "us-agencies",
-    feed: "http://feeds.finra.org/FINRANews",
-    fallbackFeeds: [
-      "https://feeds.finra.org/FINRANews"
-    ]
+    feed: "https://feeds.finra.org/FINRANews"
   },
 
   {
     name: "OCC",
     jurisdiction: "US",
     category: "us-agencies",
-    feed: "https://www.occ.gov/rss/occ_news.xml",
-    fallbackFeeds: [
-      "https://www.occ.gov/rss/news-releases.xml"
-    ]
+    feed: "https://www.occ.gov/rss/occ_news.xml"
   },
-
-  // ----------------------------------------------------------
-  // HONG KONG
-  // ----------------------------------------------------------
 
   {
     name: "HKMA",
     jurisdiction: "Hong Kong",
     category: "central-banks",
-
-    // HKMA now has an official JSON API.
-    api:
-      "https://api.hkma.gov.hk/public/press-releases?lang=en"
+    api: "https://api.hkma.gov.hk/public/press-releases?lang=en"
   },
-
-  // ----------------------------------------------------------
-  // JAPAN
-  // ----------------------------------------------------------
 
   {
     name: "BOJ",
@@ -147,45 +109,26 @@ const SOURCES = [
     feed: "https://www.boj.or.jp/en/rss/whatsnew.xml"
   },
 
-  // ----------------------------------------------------------
-  // SWITZERLAND
-  // ----------------------------------------------------------
-
   {
     name: "FINMA",
     jurisdiction: "Switzerland",
     category: "conduct-markets",
-    feed: "https://www.finma.ch/en/news/rss/"
+    feed: "https://www.finma.ch/en/rss/"
   },
 
   {
     name: "SNB",
     jurisdiction: "Switzerland",
     category: "central-banks",
-    feed: "https://www.snb.ch/dir/rss/en/press_releases.xml",
-    fallbackFeeds: [
-      "https://www.snb.ch/en/services-events/digital-services/rss-calendar-feeds"
-    ]
+    feed: "https://www.snb.ch/dir/rss/en/press_releases.xml"
   },
-
-  // ----------------------------------------------------------
-  // GERMANY
-  // ----------------------------------------------------------
 
   {
     name: "BaFin",
     jurisdiction: "Germany",
     category: "conduct-markets",
-    feed:
-      "https://www.bafin.de/SiteGlobals/Functions/RSSFeed/EN/RSSGenerator_news_en.xml",
-    fallbackFeeds: [
-      "https://www.bafin.de/SiteGlobals/Functions/RSSFeed/EN/RSSNewsfeed_Veroeffentlichungen/RSSNewsfeed_Veroeffentlichungen_node.html"
-    ]
+    feed: "https://www.bafin.de/SiteGlobals/Functions/RSSFeed/EN/RSSNewsfeed_Veroeffentlichungen/RSSNewsfeed_Veroeffentlichungen_node.html"
   },
-
-  // ----------------------------------------------------------
-  // CANADA
-  // ----------------------------------------------------------
 
   {
     name: "Bank of Canada",
@@ -194,45 +137,25 @@ const SOURCES = [
     feed: "https://www.bankofcanada.ca/feed/"
   },
 
-  // ----------------------------------------------------------
-  // AUSTRALIA
-  // ----------------------------------------------------------
-
   {
     name: "RBA",
     jurisdiction: "Australia",
     category: "central-banks",
-    feed:
-      "https://www.rba.gov.au/rss/rss-cb-media-releases.xml"
+    feed: "https://www.rba.gov.au/rss/rss-cb-media-releases.xml"
   },
-
-  // ----------------------------------------------------------
-  // IRELAND
-  // ----------------------------------------------------------
 
   {
     name: "Central Bank of Ireland",
     jurisdiction: "Ireland",
     category: "central-banks",
-    feed: "https://www.centralbank.ie/rss-feed",
-    fallbackFeeds: [
-      "https://www.centralbank.ie/fns/rss-feeds"
-    ]
+    feed: "https://www.centralbank.ie/rss-feed"
   },
-
-  // ----------------------------------------------------------
-  // NEW ZEALAND
-  // ----------------------------------------------------------
 
   {
     name: "RBNZ",
     jurisdiction: "New Zealand",
     category: "central-banks",
-    feed:
-      "https://www.rbnz.govt.nz/-/media/rss/news",
-    fallbackFeeds: [
-      "https://www.rbnz.govt.nz/rss/news"
-    ]
+    feed: "https://www.rbnz.govt.nz/-/media/rss/news"
   }
 ];
 
@@ -242,26 +165,11 @@ const SOURCES = [
 // ============================================================
 
 const FILTERS = [
-  {
-    key: "all",
-    label: "All"
-  },
-  {
-    key: "central-banks",
-    label: "Central Banks"
-  },
-  {
-    key: "standard-setters",
-    label: "Global Standard-Setters"
-  },
-  {
-    key: "conduct-markets",
-    label: "Conduct & Markets"
-  },
-  {
-    key: "us-agencies",
-    label: "US Agencies"
-  }
+  { key: "all", label: "All" },
+  { key: "central-banks", label: "Central Banks" },
+  { key: "standard-setters", label: "Global Standard-Setters" },
+  { key: "conduct-markets", label: "Conduct & Markets" },
+  { key: "us-agencies", label: "US Agencies" }
 ];
 
 
@@ -270,40 +178,30 @@ const FILTERS = [
 // ============================================================
 
 let allItems = [];
-
 let activeFilter = "all";
-
 let loading = false;
 
 
 // ============================================================
-// REGULATOR COLOURS
+// COLOURS
 // ============================================================
 
 const REGULATOR_COLORS = {
 
   "RBI": "#8b5cf6",
-
   "FCA": "#2563eb",
-
   "BoE": "#1d4ed8",
-
   "PRA": "#4338ca",
 
   "BIS/BCBS": "#475569",
-
   "FSB": "#64748b",
 
   "ECB": "#0891b2",
-
   "EBA": "#0e7490",
 
   "Federal Reserve": "#dc2626",
-
   "CFPB": "#b91c1c",
-
   "FINRA": "#be123c",
-
   "OCC": "#9f1239",
 
   "HKMA": "#0f766e",
@@ -311,7 +209,6 @@ const REGULATOR_COLORS = {
   "BOJ": "#db2777",
 
   "FINMA": "#15803d",
-
   "SNB": "#166534",
 
   "BaFin": "#ca8a04",
@@ -327,142 +224,173 @@ const REGULATOR_COLORS = {
 
 
 // ============================================================
-// SMALL SOURCE-COLOUR STYLE
+// HELPERS
 // ============================================================
 
-(function addSourceColourStyles() {
-
-  if (
-    document.getElementById(
-      "dash-source-colours"
-    )
-  ) {
-    return;
-  }
-
-  const style =
-    document.createElement(
-      "style"
-    );
-
-  style.id =
-    "dash-source-colours";
-
-  style.textContent = `
-    .dash-source {
-      font-weight: 500;
-    }
-
-    .dash-source-name {
-      font-weight: 600;
-    }
-  `;
-
-  document.head.appendChild(
-    style
-  );
-
-})();
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 
-// ============================================================
-// RSS2JSON
-// ============================================================
-
-function proxyUrl(feedUrl) {
+function proxyUrl(url) {
 
   return (
     "https://api.rss2json.com/v1/api.json?rss_url=" +
-    encodeURIComponent(feedUrl)
+    encodeURIComponent(url)
   );
 }
 
 
 // ============================================================
-// DATE PARSER
+// DATE PARSING
 // ============================================================
+
+function parseDateValue(value) {
+
+  if (!value) {
+    return null;
+  }
+
+  const direct = new Date(value);
+
+  if (
+    !isNaN(direct.getTime()) &&
+    direct.getFullYear() > 1971
+  ) {
+    return direct;
+  }
+
+
+  if (typeof value === "string") {
+
+    const match = value.match(
+      /(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/
+    );
+
+    if (match) {
+
+      const day = Number(match[1]);
+      const month = Number(match[2]) - 1;
+      const year = Number(match[3]);
+
+      const d = new Date(
+        year,
+        month,
+        day
+      );
+
+      if (
+        !isNaN(d.getTime()) &&
+        d.getFullYear() > 1971
+      ) {
+        return d;
+      }
+    }
+  }
+
+  return null;
+}
+
 
 function parseItemDate(item) {
 
-  const candidates = [
+  const values = [
 
     item.pubDate,
-
     item.published,
-
     item.isoDate,
-
     item.updated,
-
     item.date,
-
     item.pubdate,
-
     item["dc:date"]
   ];
 
-  for (
-    const value of candidates
-  ) {
+  for (const value of values) {
 
-    if (!value) {
+    const parsed =
+      parseDateValue(value);
+
+    if (parsed) {
+      return parsed;
+    }
+  }
+
+  return null;
+}
+
+
+// ============================================================
+// FCA DATE EXTRACTION
+// ============================================================
+
+function extractFCADate(item) {
+
+  // First inspect every likely RSS field.
+  const fields = [
+
+    item.pubDate,
+    item.published,
+    item.isoDate,
+    item.updated,
+    item.date,
+    item.pubdate,
+    item["dc:date"],
+    item.description,
+    item.content,
+    item.contentSnippet
+  ];
+
+
+  for (const field of fields) {
+
+    if (!field) {
       continue;
     }
 
-    const direct =
-      new Date(value);
+    const text =
+      String(field)
+        .replace(/<[^>]*>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
 
-    if (
-      !isNaN(
-        direct.getTime()
-      ) &&
-      direct.getFullYear() > 1971
-    ) {
 
-      return direct;
+    // FCA's own page format.
+    const firstPublished =
+      text.match(
+        /First\s+published\s*:\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i
+      );
+
+    if (firstPublished) {
+
+      return new Date(
+        Number(firstPublished[3]),
+        Number(firstPublished[2]) - 1,
+        Number(firstPublished[1])
+      );
     }
 
 
-    // --------------------------------------------------------
-    // DD/MM/YYYY
-    // --------------------------------------------------------
+    // Generic DD/MM/YYYY.
+    const generic =
+      text.match(
+        /\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/
+      );
 
-    if (
-      typeof value === "string"
-    ) {
+    if (generic) {
 
-      const match =
-        value.match(
-          /(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/
+      const d =
+        new Date(
+          Number(generic[3]),
+          Number(generic[2]) - 1,
+          Number(generic[1])
         );
 
-      if (match) {
+      if (
+        !isNaN(d.getTime()) &&
+        d.getFullYear() > 1971
+      ) {
 
-        const day =
-          Number(match[1]);
-
-        const month =
-          Number(match[2]) - 1;
-
-        const year =
-          Number(match[3]);
-
-        const d =
-          new Date(
-            year,
-            month,
-            day
-          );
-
-        if (
-          !isNaN(
-            d.getTime()
-          ) &&
-          d.getFullYear() > 1971
-        ) {
-
-          return d;
-        }
+        return d;
       }
     }
   }
@@ -472,7 +400,81 @@ function parseItemDate(item) {
 
 
 // ============================================================
-// EXACT DATE DISPLAY
+// FCA PAGE FALLBACK
+// ============================================================
+
+async function fetchFCAPageDate(
+  item
+) {
+
+  if (!item.link) {
+    return null;
+  }
+
+
+  try {
+
+    const url =
+      "https://api.allorigins.win/raw?url=" +
+      encodeURIComponent(
+        item.link
+      );
+
+
+    const response =
+      await fetch(
+        url,
+        {
+          cache: "no-store"
+        }
+      );
+
+
+    if (!response.ok) {
+      return null;
+    }
+
+
+    const html =
+      await response.text();
+
+
+    // FCA page text contains:
+    //
+    // First published: 03/08/2026
+    //
+
+    const match =
+      html.match(
+        /First\s+published\s*:\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i
+      );
+
+
+    if (!match) {
+      return null;
+    }
+
+
+    return new Date(
+      Number(match[3]),
+      Number(match[2]) - 1,
+      Number(match[1])
+    );
+
+  } catch (error) {
+
+    console.warn(
+      "FCA page date fallback failed:",
+      error.message
+    );
+
+    return null;
+  }
+}
+
+
+// ============================================================
+// FINAL DATE FORMAT
 // ============================================================
 
 function formatDate(
@@ -480,90 +482,48 @@ function formatDate(
   item
 ) {
 
-  // ----------------------------------------------------------
-  // FCA
-  // ----------------------------------------------------------
-
   if (
     item &&
     item.source === "FCA"
   ) {
 
-    const raw =
-      item.fcaDate;
-
-    if (raw) {
-
-      const parsed =
-        new Date(raw);
-
-      if (
-        !isNaN(
-          parsed.getTime()
-        ) &&
-        parsed.getFullYear() > 1971
-      ) {
-
-        return parsed.toLocaleDateString(
-          "en-IN",
-          {
-            day: "numeric",
-            month: "short",
-            year: "numeric"
-          }
-        );
-      }
+    const fcaDate =
+      item.fcaDate ||
+      extractFCADate(item);
 
 
-      const match =
-        String(raw).match(
-          /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/
-        );
+    if (
+      fcaDate &&
+      !isNaN(
+        fcaDate.getTime()
+      )
+    ) {
 
-      if (match) {
-
-        return new Date(
-          Number(match[3]),
-          Number(match[2]) - 1,
-          Number(match[1])
-        ).toLocaleDateString(
-          "en-IN",
-          {
-            day: "numeric",
-            month: "short",
-            year: "numeric"
-          }
-        );
-      }
+      return fcaDate.toLocaleDateString(
+        "en-IN",
+        {
+          day: "numeric",
+          month: "short",
+          year: "numeric"
+        }
+      );
     }
 
-    return "Date unavailable";
-  }
-
-
-  // ----------------------------------------------------------
-  // NORMAL
-  // ----------------------------------------------------------
-
-  if (!dateValue) {
 
     return "Date unavailable";
   }
+
 
   const date =
     dateValue instanceof Date
       ? dateValue
-      : new Date(dateValue);
+      : parseDateValue(dateValue);
 
-  if (
-    isNaN(
-      date.getTime()
-    ) ||
-    date.getFullYear() <= 1971
-  ) {
 
+  if (!date) {
     return "Date unavailable";
   }
+
 
   return date.toLocaleDateString(
     "en-IN",
@@ -577,7 +537,7 @@ function formatDate(
 
 
 // ============================================================
-// NORMALISE RSS ITEMS
+// NORMALISE RSS
 // ============================================================
 
 function normaliseItems(
@@ -585,26 +545,18 @@ function normaliseItems(
   items
 ) {
 
-  if (
-    !Array.isArray(items)
-  ) {
-
+  if (!Array.isArray(items)) {
     return [];
   }
+
 
   return items
     .slice(0, 8)
     .map(item => {
 
-      const rawDate =
-        item.pubDate ||
-        item.published ||
-        item.isoDate ||
-        item.updated ||
-        item.date ||
-        item.pubdate ||
-        item["dc:date"] ||
-        "";
+      const date =
+        parseItemDate(item);
+
 
       return {
 
@@ -617,14 +569,11 @@ function normaliseItems(
           item.guid ||
           "#",
 
-        date:
-          parseItemDate(
-            item
-          ),
+        date,
 
         fcaDate:
           source.name === "FCA"
-            ? rawDate
+            ? extractFCADate(item)
             : null,
 
         source:
@@ -641,12 +590,11 @@ function normaliseItems(
 
 
 // ============================================================
-// FETCH RSS THROUGH RSS2JSON
+// RSS FETCH
 // ============================================================
 
 async function fetchRSS(
   source,
-  feed,
   attempt = 1
 ) {
 
@@ -662,35 +610,35 @@ async function fetchRSS(
         12000
       );
 
-    const url =
-      proxyUrl(feed) +
-      "&cache=" +
-      Date.now();
 
     const response =
       await fetch(
-        url,
+        proxyUrl(
+          source.feed
+        ) +
+        "&cache=" +
+        Date.now(),
         {
           cache: "no-store",
           signal: controller.signal
         }
       );
 
-    clearTimeout(
-      timeout
-    );
 
-    if (
-      !response.ok
-    ) {
+    clearTimeout(timeout);
+
+
+    if (!response.ok) {
 
       throw new Error(
-        `${source.name}: HTTP ${response.status}`
+        `HTTP ${response.status}`
       );
     }
 
+
     const data =
       await response.json();
+
 
     if (
       !data ||
@@ -700,9 +648,10 @@ async function fetchRSS(
     ) {
 
       throw new Error(
-        `${source.name}: invalid RSS response`
+        "No RSS items returned"
       );
     }
+
 
     return normaliseItems(
       source,
@@ -711,24 +660,16 @@ async function fetchRSS(
 
   } catch (error) {
 
-    if (
-      attempt < 2
-    ) {
+    if (attempt < 2) {
 
-      await new Promise(
-        resolve =>
-          setTimeout(
-            resolve,
-            900
-          )
-      );
+      await sleep(900);
 
       return fetchRSS(
         source,
-        feed,
         attempt + 1
       );
     }
+
 
     throw error;
   }
@@ -736,22 +677,12 @@ async function fetchRSS(
 
 
 // ============================================================
-// HKMA — OFFICIAL JSON API
+// HKMA JSON
 // ============================================================
 
 async function fetchHKMA(
   source
 ) {
-
-  const controller =
-    new AbortController();
-
-  const timeout =
-    setTimeout(
-      () =>
-        controller.abort(),
-      12000
-    );
 
   try {
 
@@ -760,26 +691,21 @@ async function fetchHKMA(
         source.api +
         "&offset=0",
         {
-          cache: "no-store",
-          signal: controller.signal
+          cache: "no-store"
         }
       );
 
-    clearTimeout(
-      timeout
-    );
 
-    if (
-      !response.ok
-    ) {
-
+    if (!response.ok) {
       throw new Error(
-        `HKMA API HTTP ${response.status}`
+        `HTTP ${response.status}`
       );
     }
 
+
     const data =
       await response.json();
+
 
     const records =
       data &&
@@ -788,22 +714,20 @@ async function fetchHKMA(
         data.result.records
       )
         ? data.result.records
-        : data &&
-          data.result &&
-          Array.isArray(
-            data.result.data
-          )
-          ? data.result.data
-          : [];
+        : [];
+
 
     return records
       .slice(0, 8)
       .map(item => {
 
-        const rawDate =
-          item.date ||
-          item.pubDate ||
-          item.published;
+        const date =
+          parseDateValue(
+            item.date ||
+            item.pubDate ||
+            item.published
+          );
+
 
         return {
 
@@ -815,15 +739,9 @@ async function fetchHKMA(
             item.link ||
             "#",
 
-          date:
-            rawDate
-              ? new Date(
-                  rawDate
-                )
-              : null,
+          date,
 
-          fcaDate:
-            null,
+          fcaDate: null,
 
           source:
             source.name,
@@ -836,17 +754,81 @@ async function fetchHKMA(
         };
       });
 
-  } finally {
+  } catch (error) {
 
-    clearTimeout(
-      timeout
+    console.warn(
+      "HKMA failed:",
+      error.message
     );
+
+    return [];
   }
 }
 
 
 // ============================================================
-// FETCH ONE SOURCE
+// FCA ENRICHMENT
+// ============================================================
+
+async function enrichFCADates(
+  items
+) {
+
+  const result = [];
+
+
+  for (
+    const item of items
+  ) {
+
+    if (
+      item.fcaDate
+    ) {
+
+      result.push(item);
+
+      continue;
+    }
+
+
+    // Only fall back to page parsing
+    // where the RSS item didn't give us
+    // a usable FCA date.
+
+    if (
+      item.source === "FCA"
+    ) {
+
+      const pageDate =
+        await fetchFCAPageDate(
+          item
+        );
+
+
+      if (pageDate) {
+
+        item.fcaDate =
+          pageDate;
+
+        item.date =
+          pageDate;
+      }
+    }
+
+
+    result.push(item);
+
+    // Keep this light.
+    await sleep(100);
+  }
+
+
+  return result;
+}
+
+
+// ============================================================
+// ONE SOURCE
 // ============================================================
 
 async function fetchSource(
@@ -854,95 +836,67 @@ async function fetchSource(
 ) {
 
   // ----------------------------------------------------------
-  // HKMA gets its own official API.
+  // HKMA
   // ----------------------------------------------------------
 
-  if (
-    source.api
-  ) {
+  if (source.api) {
 
-    try {
+    return fetchHKMA(
+      source
+    );
+  }
 
-      return await fetchHKMA(
+
+  // ----------------------------------------------------------
+  // Everything else through RSS2JSON.
+  // ----------------------------------------------------------
+
+  try {
+
+    let items =
+      await fetchRSS(
         source
       );
 
-    } catch (error) {
 
-      console.warn(
-        "HKMA API failed:",
-        error.message
-      );
+    // FCA gets page-level date
+    // enrichment only when needed.
 
-      return [];
-    }
-  }
+    if (
+      source.name === "FCA"
+    ) {
 
-
-  // ----------------------------------------------------------
-  // Normal RSS + fallbacks.
-  // ----------------------------------------------------------
-
-  const feeds = [
-
-    source.feed,
-
-    ...(source.fallbackFeeds || [])
-  ];
-
-
-  for (
-    const feed of feeds
-  ) {
-
-    if (!feed) {
-      continue;
-    }
-
-    try {
-
-      const items =
-        await fetchRSS(
-          source,
-          feed
+      items =
+        await enrichFCADates(
+          items
         );
-
-      if (
-        items.length > 0
-      ) {
-
-        return items;
-      }
-
-    } catch (error) {
-
-      console.warn(
-        `${source.name} failed:`,
-        feed,
-        error.message
-      );
     }
+
+
+    return items;
+
+  } catch (error) {
+
+    console.warn(
+      `${source.name} failed:`,
+      error.message
+    );
+
+    return [];
   }
-
-
-  console.warn(
-    `${source.name}: all feed attempts failed`
-  );
-
-  return [];
 }
 
 
 // ============================================================
-// FETCH ALL 21
+// FETCH ALL SOURCES
 // ============================================================
 
 async function fetchAllSources() {
 
   const results = [];
 
-  // Small batches protect RSS2JSON.
   const batchSize = 3;
+
 
   for (
     let i = 0;
@@ -956,6 +910,7 @@ async function fetchAllSources() {
         i + batchSize
       );
 
+
     const batchResults =
       await Promise.all(
         batch.map(
@@ -965,6 +920,7 @@ async function fetchAllSources() {
             )
         )
       );
+
 
     results.push(
       ...batchResults
@@ -976,15 +932,10 @@ async function fetchAllSources() {
       SOURCES.length
     ) {
 
-      await new Promise(
-        resolve =>
-          setTimeout(
-            resolve,
-            350
-          )
-      );
+      await sleep(350);
     }
   }
+
 
   return results;
 }
@@ -1003,6 +954,7 @@ function sourceLabel(
       item.source
     ] || "#64748b";
 
+
   return `
     <span
       class="dash-source-name"
@@ -1014,7 +966,7 @@ function sourceLabel(
 
 
 // ============================================================
-// MAIN FEED
+// RENDER FEED
 // ============================================================
 
 function renderFeed() {
@@ -1024,9 +976,11 @@ function renderFeed() {
       "dash-feed-list"
     );
 
+
   if (!list) {
     return;
   }
+
 
   const filtered =
     activeFilter === "all"
@@ -1055,6 +1009,7 @@ function renderFeed() {
     filtered
       .map(
         item => `
+
           <div class="dash-row">
 
             <a
@@ -1080,6 +1035,7 @@ function renderFeed() {
             </div>
 
           </div>
+
         `
       )
       .join("");
@@ -1098,6 +1054,7 @@ function renderHomePreview(
     document.getElementById(
       "home-dashboard-preview"
     );
+
 
   if (!element) {
     return;
@@ -1119,12 +1076,10 @@ function renderHomePreview(
 
   element.innerHTML =
     allItems
-      .slice(
-        0,
-        limit
-      )
+      .slice(0, limit)
       .map(
         item => `
+
           <div class="dash-row">
 
             <a
@@ -1150,6 +1105,7 @@ function renderHomePreview(
             </div>
 
           </div>
+
         `
       )
       .join("");
@@ -1166,6 +1122,7 @@ function setupFilters() {
     document.getElementById(
       "dash-filters"
     );
+
 
   if (!bar) {
     return;
@@ -1197,9 +1154,11 @@ function setupFilters() {
           ".dash-filter"
         );
 
+
       if (!button) {
         return;
       }
+
 
       activeFilter =
         button.dataset.key;
@@ -1225,17 +1184,17 @@ function setupFilters() {
 
 
 // ============================================================
-// LOAD / REFRESH
+// LOAD
 // ============================================================
 
 async function loadAll(
   isRefresh
 ) {
 
-  // Never overlap refresh cycles.
   if (loading) {
     return;
   }
+
 
   loading = true;
 
@@ -1245,10 +1204,12 @@ async function loadAll(
       "dash-status-text"
     );
 
+
   const dot =
     document.getElementById(
       "dash-dot"
     );
+
 
   const feed =
     document.getElementById(
@@ -1269,14 +1230,12 @@ async function loadAll(
 
 
   if (status) {
-
     status.textContent =
       "Refreshing…";
   }
 
 
   if (dot) {
-
     dot.classList.remove(
       "live"
     );
@@ -1293,31 +1252,29 @@ async function loadAll(
       results.flat();
 
 
-    const failedCount =
+    const failed =
       results.filter(
         result =>
           result.length === 0
       ).length;
 
 
-    // Newest first.
     merged.sort(
       (a, b) => {
 
-        const dateA =
+        const aTime =
           a.date instanceof Date
             ? a.date.getTime()
             : 0;
 
-        const dateB =
+
+        const bTime =
           b.date instanceof Date
             ? b.date.getTime()
             : 0;
 
-        return (
-          dateB -
-          dateA
-        );
+
+        return bTime - aTime;
       }
     );
 
@@ -1341,9 +1298,9 @@ async function loadAll(
       );
 
 
-    const workingSources =
+    const working =
       SOURCES.length -
-      failedCount;
+      failed;
 
 
     if (status) {
@@ -1351,7 +1308,7 @@ async function loadAll(
       status.textContent =
         `Last updated ${now} · ` +
         `${merged.length} updates from ` +
-        `${workingSources}/${SOURCES.length} sources`;
+        `${working}/${SOURCES.length} sources`;
     }
 
 
@@ -1370,7 +1327,7 @@ async function loadAll(
 
 
     if (
-      failedCount > 0 &&
+      failed > 0 &&
       errorNote
     ) {
 
@@ -1378,12 +1335,13 @@ async function loadAll(
         "block";
 
       errorNote.textContent =
-        `${failedCount} source` +
-        `${
-          failedCount > 1
+        `${failed} source` +
+        (
+          failed > 1
             ? "s"
             : ""
-        } didn't respond this refresh — ` +
+        ) +
+        ` didn't respond this refresh — ` +
         `they'll retry automatically.`;
 
     } else if (
@@ -1408,7 +1366,6 @@ async function loadAll(
       status.textContent =
         "Refresh failed — retrying automatically";
     }
-
 
   } finally {
 
@@ -1438,6 +1395,5 @@ document.addEventListener(
       60 *
       1000
     );
-
   }
 );
