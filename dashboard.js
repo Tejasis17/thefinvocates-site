@@ -6,9 +6,9 @@
 // This routes each feed through rss2json.com, a free public proxy
 // that fetches server-side and returns JSON with CORS headers.
 //
-// Each source loads independently and renders immediately.
-// One slow regulator never blocks the rest.
-//
+// Every source starts independently and renders progressively.
+// Retries are per-source, so one failed regulator never blocks
+// the rest of the dashboard.
 // ============================================================
 
 const REFRESH_MINUTES = 15;
@@ -20,25 +20,45 @@ const REFRESH_MINUTES = 15;
 
 const SOURCES = [
   { name: "RBI", jurisdiction: "India", category: "central-banks", feed: "https://www.rbi.org.in/pressreleases_rss.xml" },
+
   { name: "FCA", jurisdiction: "UK", category: "conduct-markets", feed: "https://www.fca.org.uk/news/rss.xml" },
+
   { name: "BoE", jurisdiction: "UK", category: "central-banks", feed: "https://www.bankofengland.co.uk/rss/news" },
+
   { name: "PRA", jurisdiction: "UK", category: "central-banks", feed: "https://www.bankofengland.co.uk/rss/prudential-regulation" },
+
   { name: "BIS/BCBS", jurisdiction: "Global", category: "standard-setters", feed: "https://www.bis.org/doclist/all_rss.xml" },
+
   { name: "FSB", jurisdiction: "Global", category: "standard-setters", feed: "https://www.fsb.org/feed/" },
+
   { name: "ECB", jurisdiction: "Eurozone", category: "central-banks", feed: "https://www.ecb.europa.eu/rss/press.xml" },
+
   { name: "EBA", jurisdiction: "EU", category: "conduct-markets", feed: "https://www.eba.europa.eu/news-press/news/rss.xml" },
+
   { name: "Federal Reserve", jurisdiction: "US", category: "central-banks", feed: "https://www.federalreserve.gov/feeds/press_all.xml" },
+
   { name: "CFPB", jurisdiction: "US", category: "us-agencies", feed: "https://www.consumerfinance.gov/about-us/newsroom/feed/" },
+
   { name: "FINRA", jurisdiction: "US", category: "us-agencies", feed: "https://feeds.finra.org/news-and-events/feed" },
+
   { name: "OCC", jurisdiction: "US", category: "us-agencies", feed: "https://www.occ.gov/rss/index-rss.html" },
+
   { name: "HKMA", jurisdiction: "Hong Kong", category: "central-banks", feed: "https://www.hkma.gov.hk/eng/rss/press-releases.xml" },
+
   { name: "BOJ", jurisdiction: "Japan", category: "central-banks", feed: "https://www.boj.or.jp/en/rss/whatsnew.xml" },
+
   { name: "FINMA", jurisdiction: "Switzerland", category: "conduct-markets", feed: "https://www.finma.ch/en/news/rss/" },
+
   { name: "SNB", jurisdiction: "Switzerland", category: "central-banks", feed: "https://www.snb.ch/en/services-events/digital-services/rss-calendar-feeds" },
+
   { name: "BaFin", jurisdiction: "Germany", category: "conduct-markets", feed: "https://www.bafin.de/SiteGlobals/Functions/RSSFeed/EN/RSSGenerator_news_en.xml" },
+
   { name: "Bank of Canada", jurisdiction: "Canada", category: "central-banks", feed: "https://www.bankofcanada.ca/valet/fixed_income_yield_curves/feed" },
+
   { name: "RBA", jurisdiction: "Australia", category: "central-banks", feed: "https://www.rba.gov.au/rss/rss-cb-media-releases.xml" },
+
   { name: "Central Bank of Ireland", jurisdiction: "Ireland", category: "central-banks", feed: "https://www.centralbank.ie/rss-feed" },
+
   { name: "RBNZ", jurisdiction: "New Zealand", category: "central-banks", feed: "https://www.rbnz.govt.nz/-/media/rss/news" },
 ];
 
@@ -61,47 +81,26 @@ const FILTERS = [
 // ============================================================
 
 const REGULATOR_COLORS = {
-
   "RBI": "#8b5cf6",
-
   "FCA": "#2563eb",
-
   "BoE": "#1d4ed8",
-
   "PRA": "#4338ca",
-
   "BIS/BCBS": "#475569",
-
   "FSB": "#64748b",
-
   "ECB": "#0891b2",
-
   "EBA": "#0e7490",
-
   "Federal Reserve": "#dc2626",
-
   "CFPB": "#b91c1c",
-
   "FINRA": "#be123c",
-
   "OCC": "#9f1239",
-
   "HKMA": "#0f766e",
-
   "BOJ": "#db2777",
-
   "FINMA": "#15803d",
-
   "SNB": "#166534",
-
   "BaFin": "#ca8a04",
-
   "Bank of Canada": "#c2410c",
-
   "RBA": "#ea580c",
-
   "Central Bank of Ireland": "#059669",
-
   "RBNZ": "#0284c7"
 };
 
@@ -111,19 +110,17 @@ const REGULATOR_COLORS = {
 // ============================================================
 
 let allItems = [];
-
 let activeFilter = "all";
 
-// Prevent overlapping refresh cycles.
+// Prevent overlapping refreshes.
 let loading = false;
 
 
 // ============================================================
-// PROXY
+// RSS2JSON PROXY
 // ============================================================
 
 function proxyUrl(feedUrl) {
-
   return (
     "https://api.rss2json.com/v1/api.json?rss_url=" +
     encodeURIComponent(feedUrl)
@@ -141,60 +138,41 @@ function parseDate(value) {
     return null;
   }
 
-
-  const direct =
-    new Date(value);
-
+  const direct = new Date(value);
 
   if (
     !isNaN(direct.getTime()) &&
     direct.getFullYear() > 1971
   ) {
-
     return direct;
   }
 
+  if (typeof value === "string") {
 
-  if (
-    typeof value === "string"
-  ) {
-
-    const match =
-      value.match(
-        /(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/
-      );
-
+    const match = value.match(
+      /(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/
+    );
 
     if (match) {
 
-      const day =
-        Number(match[1]);
+      const day = Number(match[1]);
+      const month = Number(match[2]) - 1;
+      const year = Number(match[3]);
 
-      const month =
-        Number(match[2]) - 1;
-
-      const year =
-        Number(match[3]);
-
-
-      const d =
-        new Date(
-          year,
-          month,
-          day
-        );
-
+      const d = new Date(
+        year,
+        month,
+        day
+      );
 
       if (
         !isNaN(d.getTime()) &&
         d.getFullYear() > 1971
       ) {
-
         return d;
       }
     }
   }
-
 
   return null;
 }
@@ -210,22 +188,18 @@ function formatDate(date) {
     return "Date unavailable";
   }
 
-
   const d =
     date instanceof Date
       ? date
       : parseDate(date);
-
 
   if (
     !d ||
     isNaN(d.getTime()) ||
     d.getFullYear() <= 1971
   ) {
-
     return "Date unavailable";
   }
-
 
   return d.toLocaleDateString(
     "en-IN",
@@ -245,57 +219,36 @@ function formatDate(date) {
 function extractFCADate(item) {
 
   const fields = [
-
     item.pubDate,
-
     item.published,
-
     item.isoDate,
-
     item.updated,
-
     item.date,
-
     item.pubdate,
-
     item["dc:date"],
-
     item.description,
-
     item.content,
-
     item.contentSnippet
   ];
 
-
-  for (
-    const field of fields
-  ) {
+  for (const field of fields) {
 
     if (!field) {
       continue;
     }
 
-
     const text =
       String(field)
-        .replace(
-          /<[^>]*>/g,
-          " "
-        )
-        .replace(
-          /\s+/g,
-          " "
-        )
+        .replace(/<[^>]*>/g, " ")
+        .replace(/\s+/g, " ")
         .trim();
 
 
-    // FCA's own page wording.
+    // FCA page/feed wording.
     const firstPublished =
       text.match(
         /First\s+published\s*:?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i
       );
-
 
     if (firstPublished) {
 
@@ -313,7 +266,6 @@ function extractFCADate(item) {
         /\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/
       );
 
-
     if (generic) {
 
       const d =
@@ -323,24 +275,21 @@ function extractFCADate(item) {
           Number(generic[1])
         );
 
-
       if (
         !isNaN(d.getTime()) &&
         d.getFullYear() > 1971
       ) {
-
         return d;
       }
     }
   }
-
 
   return null;
 }
 
 
 // ============================================================
-// FCA ARTICLE PAGE FALLBACK
+// FCA PAGE DATE FALLBACK
 // ============================================================
 
 async function fetchFCAPageDate(item) {
@@ -349,13 +298,11 @@ async function fetchFCAPageDate(item) {
     return null;
   }
 
-
   try {
 
     const url =
       "https://api.allorigins.win/raw?url=" +
       encodeURIComponent(item.link);
-
 
     const response =
       await fetch(
@@ -365,26 +312,21 @@ async function fetchFCAPageDate(item) {
         }
       );
 
-
     if (!response.ok) {
       return null;
     }
 
-
     const html =
       await response.text();
-
 
     const match =
       html.match(
         /First\s+published\s*:?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i
       );
 
-
     if (!match) {
       return null;
     }
-
 
     return new Date(
       Number(match[3]),
@@ -399,7 +341,6 @@ async function fetchFCAPageDate(item) {
       err.message
     );
 
-
     return null;
   }
 }
@@ -408,7 +349,7 @@ async function fetchFCAPageDate(item) {
 // ============================================================
 // FETCH ONE SOURCE
 //
-// Every regulator gets its own independent retry cycle.
+// Each source has its own retry cycle.
 // ============================================================
 
 async function fetchSource(
@@ -428,7 +369,6 @@ async function fetchSource(
         }
       );
 
-
     if (!res.ok) {
 
       throw new Error(
@@ -436,10 +376,8 @@ async function fetchSource(
       );
     }
 
-
     const data =
       await res.json();
-
 
     if (
       !data ||
@@ -472,14 +410,13 @@ async function fetchSource(
               );
 
 
-            // FCA gets special parsing.
+            // FCA gets special handling.
             if (
               source.name === "FCA"
             ) {
 
               const fcaDate =
                 extractFCADate(item);
-
 
               if (fcaDate) {
                 date = fcaDate;
@@ -516,9 +453,9 @@ async function fetchSource(
         );
 
 
-    // --------------------------------------------------------
-    // FCA page fallback.
-    // --------------------------------------------------------
+    // ----------------------------------------------------------
+    // FCA page fallback for items still lacking a date.
+    // ----------------------------------------------------------
 
     if (
       source.name === "FCA"
@@ -538,12 +475,9 @@ async function fetchSource(
               item
             );
 
-
           if (pageDate) {
-            item.date =
-              pageDate;
+            item.date = pageDate;
           }
-
 
           await new Promise(
             resolve =>
@@ -567,6 +501,7 @@ async function fetchSource(
     );
 
 
+    // Retry twice after the initial attempt.
     if (attempt < 3) {
 
       await new Promise(
@@ -576,7 +511,6 @@ async function fetchSource(
             1200 * attempt
           )
       );
-
 
       return fetchSource(
         source,
@@ -589,14 +523,13 @@ async function fetchSource(
       `Giving up on ${source.name} this refresh.`
     );
 
-
     return [];
   }
 }
 
 
 // ============================================================
-// SOURCE LABEL
+// COLOURED SOURCE LABEL
 // ============================================================
 
 function sourceLabel(item) {
@@ -615,7 +548,9 @@ function sourceLabel(item) {
         font-weight:600;
       "
     >${item.source}</span>
-    <span style="opacity:.55;"> · ${item.jurisdiction}</span>
+    <span style="opacity:.55;">
+      · ${item.jurisdiction}
+    </span>
   `;
 }
 
@@ -630,7 +565,6 @@ function renderFeed() {
     document.getElementById(
       "dash-feed-list"
     );
-
 
   if (!list) {
     return;
@@ -664,7 +598,6 @@ function renderFeed() {
     filtered
       .map(
         item => `
-
     <div class="dash-row">
 
       <a
@@ -687,7 +620,6 @@ function renderFeed() {
       </div>
 
     </div>
-
     `
       )
       .join("");
@@ -706,7 +638,6 @@ function renderHomePreview(
     document.getElementById(
       "home-dashboard-preview"
     );
-
 
   if (!el) {
     return;
@@ -734,7 +665,6 @@ function renderHomePreview(
       )
       .map(
         item => `
-
     <div class="dash-row">
 
       <a
@@ -757,7 +687,6 @@ function renderHomePreview(
       </div>
 
     </div>
-
     `
       )
       .join("");
@@ -774,7 +703,6 @@ function setupFilters() {
     document.getElementById(
       "dash-filters"
     );
-
 
   if (!bar) {
     return;
@@ -806,7 +734,6 @@ function setupFilters() {
           ".dash-filter"
         );
 
-
       if (!btn) {
         return;
       }
@@ -836,23 +763,33 @@ function setupFilters() {
 
 
 // ============================================================
-// LOAD ALL — PROGRESSIVE / INSTANT
+// LOAD ALL — PROGRESSIVE
 //
-// ALL sources begin immediately.
+// ALL 21 requests start immediately.
 //
-// Each source:
-//   1. fetches independently
-//   2. retries independently
-//   3. is rendered immediately when it returns
+// The important part is the render queue:
 //
-// A slow source never holds the others hostage.
+// A source can resolve at any time, but its visible update is
+// painted before the next completed source is rendered.
+//
+// This prevents:
+//
+//     8/21 → 20/21
+//
+// from appearing as one visual jump.
+//
+// Instead the browser gets:
+//
+//     8 → 9 → 10 → 11 → ... → 20
+//
+// while retaining parallel network requests.
 // ============================================================
 
 async function loadAll(
   isRefresh
 ) {
 
-  // Never allow overlapping refreshes.
+  // Never overlap refresh cycles.
   if (loading) {
     return;
   }
@@ -866,12 +803,10 @@ async function loadAll(
       "dash-status-text"
     );
 
-
   const dot =
     document.getElementById(
       "dash-dot"
     );
-
 
   const feedList =
     document.getElementById(
@@ -892,36 +827,119 @@ async function loadAll(
 
 
   if (statusEl) {
+
     statusEl.textContent =
-      "Refreshing…";
+      `Loading · 0/${SOURCES.length} regulators`;
   }
 
 
   if (dot) {
+
     dot.classList.remove(
       "live"
     );
   }
 
 
-  // ----------------------------------------------------------
-  // Clear previous results on a fresh refresh.
-  // ----------------------------------------------------------
-
+  // Start every refresh from a clean feed.
   allItems = [];
 
 
   renderFeed();
+  renderHomePreview();
 
-
-  // ----------------------------------------------------------
-  // Start EVERY regulator immediately.
-  // ----------------------------------------------------------
 
   let completed = 0;
-
   let failed = 0;
 
+
+  // ----------------------------------------------------------
+  // RENDER QUEUE
+  //
+  // Network requests remain parallel.
+  // Rendering is serialized so each visible state gets a
+  // browser paint opportunity.
+  // ----------------------------------------------------------
+
+  let renderQueue =
+    Promise.resolve();
+
+
+  function queueRender(
+    items
+  ) {
+
+    renderQueue =
+      renderQueue.then(
+        async () => {
+
+          if (
+            items.length > 0
+          ) {
+
+            allItems.push(
+              ...items
+            );
+
+
+            allItems.sort(
+              (a, b) => {
+
+                const aTime =
+                  a.date instanceof Date
+                    ? a.date.getTime()
+                    : 0;
+
+                const bTime =
+                  b.date instanceof Date
+                    ? b.date.getTime()
+                    : 0;
+
+                return (
+                  bTime -
+                  aTime
+                );
+              }
+            );
+
+
+            renderFeed();
+
+            renderHomePreview();
+          }
+
+
+          completed++;
+
+
+          if (statusEl) {
+
+            statusEl.textContent =
+              `Loading · ${completed}/${SOURCES.length} regulators`;
+          }
+
+
+          // Give the browser a real paint opportunity.
+          await new Promise(
+            resolve =>
+              requestAnimationFrame(
+                () =>
+                  requestAnimationFrame(
+                    resolve
+                  )
+              )
+          );
+        }
+      );
+
+
+    return renderQueue;
+  }
+
+
+  // ----------------------------------------------------------
+  // START ALL 21 REQUESTS IMMEDIATELY.
+  // ----------------------------------------------------------
 
   const sourcePromises =
     SOURCES.map(
@@ -933,9 +951,6 @@ async function loadAll(
           );
 
 
-        completed++;
-
-
         if (
           items.length === 0
         ) {
@@ -944,61 +959,10 @@ async function loadAll(
         }
 
 
-        // ----------------------------------------------------
-        // THIS IS THE IMPORTANT PART:
-        //
-        // As soon as this particular source returns,
-        // put its results into the dashboard.
-        // ----------------------------------------------------
-
-        if (
-          items.length > 0
-        ) {
-
-          allItems.push(
-            ...items
-          );
-
-
-          allItems.sort(
-            (a, b) => {
-
-              const aTime =
-                a.date instanceof Date
-                  ? a.date.getTime()
-                  : 0;
-
-
-              const bTime =
-                b.date instanceof Date
-                  ? b.date.getTime()
-                  : 0;
-
-
-              return (
-                bTime -
-                aTime
-              );
-            }
-          );
-
-
-          // Instant render.
-          renderFeed();
-
-          renderHomePreview();
-        }
-
-
-        // ----------------------------------------------------
-        // Live progress indicator.
-        // ----------------------------------------------------
-
-        if (statusEl) {
-
-          statusEl.textContent =
-            `Loading · ${completed}/${SOURCES.length} regulators`;
-        }
+        // Queue this regulator's results immediately.
+        await queueRender(
+          items
+        );
 
 
         return items;
@@ -1006,16 +970,49 @@ async function loadAll(
     );
 
 
-  // ----------------------------------------------------------
-  // Wait only for the FINAL status.
-  //
-  // The feed itself has already been rendering continuously.
-  // ----------------------------------------------------------
-
+  // Wait for network completion.
   await Promise.all(
     sourcePromises
   );
 
+
+  // Wait for the final queued render as well.
+  await renderQueue;
+
+
+  // ----------------------------------------------------------
+  // FINAL SORT / RENDER
+  // ----------------------------------------------------------
+
+  allItems.sort(
+    (a, b) => {
+
+      const aTime =
+        a.date instanceof Date
+          ? a.date.getTime()
+          : 0;
+
+      const bTime =
+        b.date instanceof Date
+          ? b.date.getTime()
+          : 0;
+
+      return (
+        bTime -
+        aTime
+      );
+    }
+  );
+
+
+  renderFeed();
+
+  renderHomePreview();
+
+
+  // ----------------------------------------------------------
+  // FINAL STATUS
+  // ----------------------------------------------------------
 
   const now =
     new Date().toLocaleTimeString(
