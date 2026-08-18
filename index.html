@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Finvocates — Regulatory Intelligence</title>
-<meta name="description" content="The Finvocates is a regulatory intelligence platform tracking RBI, FCA, FSB and Supreme Court developments, and building ComplAI, a project for compliance operations.">
+<title>Dashboard — The Finvocates</title>
+<meta name="description" content="Live regulatory updates aggregated from 20+ central banks, standard-setters, and market regulators worldwide.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,7 +16,6 @@
       <span class="finvocates">Finvocates</span>
     </a>
     <nav class="main-nav">
-
       <div class="nav-item">
         <a href="consultations.html" class="nav-trigger">Consultations</a>
         <div class="mega">
@@ -38,18 +37,15 @@
           </a>
         </div>
       </div>
-
       <div class="nav-item">
         <a href="articles.html" class="nav-trigger">Articles</a>
         <div class="mega" id="articles-mega">
           <div class="mega-item"><span class="mi-title">Loading…</span></div>
         </div>
       </div>
-
       <div class="nav-item">
         <a href="dashboard.html" class="nav-trigger">Dashboard</a>
       </div>
-
       <div class="nav-item about-item">
         <a href="about.html" class="nav-trigger">About</a>
         <div class="mega">
@@ -60,105 +56,36 @@
           </a>
         </div>
       </div>
-
     </nav>
   </div>
 </header>
 
-<section class="hero">
+<section class="dash-head">
   <div class="wrap">
-    <p class="eyebrow reveal in">Welcome to</p>
-    <h1 class="reveal in">The Finvocates</h1>
-    <p class="lede reveal in">A <span class="accent-word">regulatory intelligence</span> platform, tracking where RBI, FCA and FSB thinking is headed, and building the tools that help compliance teams keep up with it.</p>
-    <div class="cta-row reveal in">
-      <a href="consultations.html" class="btn primary">Read our consultations</a>
-      <a href="about.html" class="btn ghost">About the project</a>
+    <p class="eyebrow reveal in">Live</p>
+    <h1 class="reveal in">Regulatory Dashboard</h1>
+    <p class="lede reveal in">Headline, source, and timestamp — aggregated from 20 central banks, standard-setters, and market regulators. No summarizing, no editorializing. Click through to read the original.</p>
+    <div class="dash-status reveal in">
+      <span class="dash-dot" id="dash-dot"></span>
+      <span id="dash-status-text">Connecting…</span>
     </div>
+    <div class="dash-filters" id="dash-filters"></div>
   </div>
 </section>
 
-<section class="manifesto">
+<section class="dash-feed">
   <div class="wrap">
-    <div class="manifesto-words reveal">
-      <span>Categorical.</span><span>Consistent.</span><span>Calibrated.</span>
+    <div id="dash-feed-list">
+      <div class="dash-loading">Loading live updates…</div>
     </div>
-    <p class="reveal">Every sun rising with new possibilities our country wakes up to everyday, illuminates the ever-evolving economic order of the largest social lineage of the world — India, that is Bharat. Value is created and traded, birthing new money which is a product of our efforts. Our work-product, that is, rupee, is our societal asset we must help safeguard and regulate as active citizens.</p>
-    <p class="reveal">At The Finvocates, regulatory updates and public consultations from financial regulatory authorities of India and the world are tracked, and public consultations responded to, inasmuch as resources allow. Afraid whether the work does justice to what we aim it on, given constraints, the commitment is to max out on possible effort, banking on the belief that when resources, no matter how scarce, are coupled with best effort and structurally consistent categorical planning, they compound into a larger shape and size.</p>
-    <p class="reveal">The fact that a democratic world gives direct opportunities to respond to financial regulatory authorities, and every law-making authority that runs public consultations, is both motivation and reward for the work here. There is no money involved in this project apart from the website domain expense, and that is by design. The aim is to create a lightweight platform that is useful specifically for everyone associated in any way with the financial regulatory space and its impact, of which every citizen of every republic is a part.</p>
-    <p class="reveal">The philosophy is to remain categorical and veracious without exception, and calibrated in approach, respecting the economy of time users invest.</p>
-    <p class="reveal">This project has no association with any regulatory body. This is purely an academic endeavour for facilitating research, regulatory participation via public consultations, and study.</p>
+    <div class="dash-error-note" id="dash-error-note" style="display:none;"></div>
   </div>
 </section>
 
-<section class="impact">
+<section class="dash-disclaimer">
   <div class="wrap">
-    <h2 class="reveal">Our impact</h2>
-    <div class="stat-grid">
-      <div class="stat reveal">
-        <span class="num accent-num">4+</span>
-        <span class="label">Public consultations filed</span>
-        <span class="sub">Supreme Court, RBI, FCA &amp; Bank of England, FSB</span>
-      </div>
-      <div class="stat reveal">
-        <span class="num accent-num">5</span>
-        <span class="label">Regulatory authorities engaged</span>
-        <span class="sub">Across India, the UK and the FSB</span>
-      </div>
-      <div class="stat reveal">
-        <span class="num accent-num">1.1K+</span>
-        <span class="label">LinkedIn community</span>
-        <span class="sub">Indexed #1 for the keyword "The Finvocates"</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section narrow">
-  <div class="wrap">
-    <p class="eyebrow section-kicker reveal">What we do</p>
-    <h2 class="section-title reveal">The confluence of regulation and compliance</h2>
-    <p class="reveal">The Finvocates explores the confluence where <span class="accent-word">regulatory expectations</span> and compliance efforts meet. ComplAI is one such project under development, where we explore building solutions that directly address the problems faced in compliance operations.</p>
-    <p class="reveal">Follow along on LinkedIn and RBI regulatory updates from ComplAI land in your feed.</p>
-    <p class="reveal">Our philosophy is to maintain the highest standards of <span class="accent-word">transparency and trust</span>. We never post anything without real support, evidence or logic. If you don't find a link in one of our posts, DM us, and we'll take it down.</p>
-    <p class="reveal">Right now, The Finvocates, including ComplAI, is run independently by Chakradhar Kale, who is also the founder of this project. He is a student at Government Law College, Mumbai (Batch of 2028).</p>
-    <p class="reveal">If this space is interesting to you, our DMs are always open. Watch this space for more AI-enabled compliance projects.</p>
-
-    <div class="signoff reveal">
-      To connect, email at <a href="mailto:chakradhar@thefinvocates.com">chakradhar@thefinvocates.com</a>.
-      <br><br>
-      Regards,<br>
-      <span class="name">Chakradhar Kale</span><br>
-      The Finvocates
-    </div>
-  </div>
-</section>
-
-<section class="section" style="padding-bottom:56px;">
-  <div class="wrap">
-    <p class="eyebrow section-kicker reveal">Live</p>
-    <h2 class="section-title reveal">Regulatory dashboard</h2>
-    <p class="reveal" style="margin-top:-4px;">Latest headlines across 20 central banks, standard-setters, and market regulators. <a href="dashboard.html" style="color:var(--ink); text-decoration:underline; text-decoration-color:var(--line-strong);">Open the full dashboard →</a></p>
-    <div id="home-dashboard-preview" style="margin-top:20px;">
-      <div class="dash-empty">Loading live updates…</div>
-    </div>
-  </div>
-</section>
-
-<section class="section" style="background:var(--fog); border-top:1px solid var(--line); border-bottom:1px solid var(--line);">
-  <div class="wrap">
-    <p class="eyebrow section-kicker reveal">From the feed</p>
-    <h2 class="section-title reveal">Latest articles &amp; filings</h2>
-    <div class="card-grid" id="home-articles-grid" style="margin-top:28px;">
-      <div class="empty-state">Loading latest posts…</div>
-    </div>
-  </div>
-</section>
-
-<section class="section narrow" style="padding-top:0;">
-  <div class="wrap">
-    <hr class="rule" style="margin-bottom:32px;">
     <p class="eyebrow reveal" style="margin-bottom:10px;">Disclaimer</p>
-    <p class="reveal" style="font-size:0.82rem; color:var(--ash); line-height:1.7;">The views expressed on this website are personal and independent, and do not represent the views of any organisation or institution Chakradhar Kale is or has been affiliated with. Content here, including commentary on regulatory developments and public consultation filings, is for general informational purposes only and does not constitute legal, compliance, or professional advice. Public consultation submissions referenced on this site were filed in an independent, individual capacity.</p>
+    <p class="reveal">This dashboard aggregates publicly available headlines directly from each regulator's own RSS feed and links back to the original source — no content is reproduced or summarized here. Update frequency depends on each regulator's own publishing schedule and feed availability, and a source may be briefly unavailable without affecting the rest of the dashboard. This tool has no association with, and is not endorsed by, any regulator or standard-setting body listed here. It is an independent, personal project for research and informational purposes only, and is not a substitute for checking each authority's official website.</p>
   </div>
 </section>
 
@@ -175,13 +102,7 @@
 <script src="script.js"></script>
 <script src="dashboard.js"></script>
 <script>
-  renderFolderFeed({
-    folder: ARTICLES_FOLDER,
-    gridSelector: "#home-articles-grid",
-    megaSelector: "#articles-mega",
-    limit: 3,
-    emptyLabel: "articles"
-  });
+  renderFolderFeed({ folder: ARTICLES_FOLDER, megaSelector: "#articles-mega", limit: 3, emptyLabel: "articles" });
 </script>
 </body>
 </html>
