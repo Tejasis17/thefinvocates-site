@@ -1,255 +1,94 @@
 // ============================================================
-// THE FINVOCATES — REGULATORY DASHBOARD
+// THE FINVOCATES — regulatory dashboard
+//
+// Static-site constraint: GitHub Pages has no backend, and most
+// regulator RSS feeds don't allow direct browser fetches (CORS).
+// This routes each feed through rss2json.com, a free public proxy
+// that fetches server-side and returns JSON with CORS headers.
+//
+// Sources are fetched in small batches with retries so one
+// temporary proxy failure does not randomly move the dashboard
+// between 13/21, 14/21 and 15/21.
+//
 // ============================================================
 
 const REFRESH_MINUTES = 15;
 
-
-// ============================================================
-// SOURCES
-// ============================================================
-
 const SOURCES = [
+  { name: "RBI", jurisdiction: "India", category: "central-banks", feed: "https://www.rbi.org.in/pressreleases_rss.xml" },
 
-  {
-    name: "RBI",
-    jurisdiction: "India",
-    category: "central-banks",
-    feed: "https://www.rbi.org.in/pressreleases_rss.xml"
-  },
+  { name: "FCA", jurisdiction: "UK", category: "conduct-markets", feed: "https://www.fca.org.uk/news/rss.xml" },
 
-  {
-    name: "FCA",
-    jurisdiction: "UK",
-    category: "conduct-markets",
-    feed: "https://www.fca.org.uk/news/rss.xml"
-  },
+  { name: "BoE", jurisdiction: "UK", category: "central-banks", feed: "https://www.bankofengland.co.uk/rss/news" },
 
-  {
-    name: "BoE",
-    jurisdiction: "UK",
-    category: "central-banks",
-    feed: "https://www.bankofengland.co.uk/rss/news"
-  },
+  { name: "PRA", jurisdiction: "UK", category: "central-banks", feed: "https://www.bankofengland.co.uk/rss/prudential-regulation" },
 
-  {
-    name: "PRA",
-    jurisdiction: "UK",
-    category: "central-banks",
-    feed: "https://www.bankofengland.co.uk/rss/news"
-  },
+  { name: "BIS/BCBS", jurisdiction: "Global", category: "standard-setters", feed: "https://www.bis.org/doclist/all_rss.xml" },
 
-  {
-    name: "BIS/BCBS",
-    jurisdiction: "Global",
-    category: "standard-setters",
-    feed: "https://www.bis.org/doclist/all_pressrels.rss"
-  },
+  { name: "FSB", jurisdiction: "Global", category: "standard-setters", feed: "https://www.fsb.org/feed/" },
 
-  {
-    name: "FSB",
-    jurisdiction: "Global",
-    category: "standard-setters",
-    feed: "https://www.fsb.org/feed/"
-  },
+  { name: "ECB", jurisdiction: "Eurozone", category: "central-banks", feed: "https://www.ecb.europa.eu/rss/press.xml" },
 
-  {
-    name: "ECB",
-    jurisdiction: "Eurozone",
-    category: "central-banks",
-    feed: "https://www.ecb.europa.eu/rss/press.xml"
-  },
+  { name: "EBA", jurisdiction: "EU", category: "conduct-markets", feed: "https://www.eba.europa.eu/news-press/news/rss.xml" },
 
-  {
-    name: "EBA",
-    jurisdiction: "EU",
-    category: "conduct-markets",
-    feed: "https://www.eba.europa.eu/news-press/news/rss.xml"
-  },
+  { name: "Federal Reserve", jurisdiction: "US", category: "central-banks", feed: "https://www.federalreserve.gov/feeds/press_all.xml" },
 
-  {
-    name: "Federal Reserve",
-    jurisdiction: "US",
-    category: "central-banks",
-    feed: "https://www.federalreserve.gov/feeds/press_all.xml"
-  },
+  { name: "CFPB", jurisdiction: "US", category: "us-agencies", feed: "https://www.consumerfinance.gov/about-us/newsroom/feed/" },
 
-  {
-    name: "CFPB",
-    jurisdiction: "US",
-    category: "us-agencies",
-    feed: "https://www.consumerfinance.gov/about-us/newsroom/feed/"
-  },
+  { name: "FINRA", jurisdiction: "US", category: "us-agencies", feed: "https://feeds.finra.org/news-and-events/feed" },
 
-  {
-    name: "FINRA",
-    jurisdiction: "US",
-    category: "us-agencies",
-    feed: "https://feeds.finra.org/FINRANews"
-  },
+  { name: "OCC", jurisdiction: "US", category: "us-agencies", feed: "https://www.occ.gov/rss/index-rss.html" },
 
-  {
-    name: "OCC",
-    jurisdiction: "US",
-    category: "us-agencies",
-    feed: "https://www.occ.gov/rss/occ_news.xml"
-  },
+  { name: "HKMA", jurisdiction: "Hong Kong", category: "central-banks", feed: "https://www.hkma.gov.hk/eng/rss/press-releases.xml" },
 
-  {
-    name: "HKMA",
-    jurisdiction: "Hong Kong",
-    category: "central-banks",
-    api: "https://api.hkma.gov.hk/public/press-releases?lang=en"
-  },
+  { name: "BOJ", jurisdiction: "Japan", category: "central-banks", feed: "https://www.boj.or.jp/en/rss/whatsnew.xml" },
 
-  {
-    name: "BOJ",
-    jurisdiction: "Japan",
-    category: "central-banks",
-    feed: "https://www.boj.or.jp/en/rss/whatsnew.xml"
-  },
+  { name: "FINMA", jurisdiction: "Switzerland", category: "conduct-markets", feed: "https://www.finma.ch/en/news/rss/" },
 
-  {
-    name: "FINMA",
-    jurisdiction: "Switzerland",
-    category: "conduct-markets",
-    feed: "https://www.finma.ch/en/rss/"
-  },
+  { name: "SNB", jurisdiction: "Switzerland", category: "central-banks", feed: "https://www.snb.ch/en/services-events/digital-services/rss-calendar-feeds" },
 
-  {
-    name: "SNB",
-    jurisdiction: "Switzerland",
-    category: "central-banks",
-    feed: "https://www.snb.ch/dir/rss/en/press_releases.xml"
-  },
+  { name: "BaFin", jurisdiction: "Germany", category: "conduct-markets", feed: "https://www.bafin.de/SiteGlobals/Functions/RSSFeed/EN/RSSGenerator_news_en.xml" },
 
-  {
-    name: "BaFin",
-    jurisdiction: "Germany",
-    category: "conduct-markets",
-    feed: "https://www.bafin.de/SiteGlobals/Functions/RSSFeed/EN/RSSNewsfeed_Veroeffentlichungen/RSSNewsfeed_Veroeffentlichungen_node.html"
-  },
+  { name: "Bank of Canada", jurisdiction: "Canada", category: "central-banks", feed: "https://www.bankofcanada.ca/valet/fixed_income_yield_curves/feed" },
 
-  {
-    name: "Bank of Canada",
-    jurisdiction: "Canada",
-    category: "central-banks",
-    feed: "https://www.bankofcanada.ca/feed/"
-  },
+  { name: "RBA", jurisdiction: "Australia", category: "central-banks", feed: "https://www.rba.gov.au/rss/rss-cb-media-releases.xml" },
 
-  {
-    name: "RBA",
-    jurisdiction: "Australia",
-    category: "central-banks",
-    feed: "https://www.rba.gov.au/rss/rss-cb-media-releases.xml"
-  },
+  { name: "Central Bank of Ireland", jurisdiction: "Ireland", category: "central-banks", feed: "https://www.centralbank.ie/rss-feed" },
 
-  {
-    name: "Central Bank of Ireland",
-    jurisdiction: "Ireland",
-    category: "central-banks",
-    feed: "https://www.centralbank.ie/rss-feed"
-  },
-
-  {
-    name: "RBNZ",
-    jurisdiction: "New Zealand",
-    category: "central-banks",
-    feed: "https://www.rbnz.govt.nz/-/media/rss/news"
-  }
+  { name: "RBNZ", jurisdiction: "New Zealand", category: "central-banks", feed: "https://www.rbnz.govt.nz/-/media/rss/news" },
 ];
-
-
-// ============================================================
-// FILTERS
-// ============================================================
 
 const FILTERS = [
   { key: "all", label: "All" },
   { key: "central-banks", label: "Central Banks" },
   { key: "standard-setters", label: "Global Standard-Setters" },
   { key: "conduct-markets", label: "Conduct & Markets" },
-  { key: "us-agencies", label: "US Agencies" }
+  { key: "us-agencies", label: "US Agencies" },
 ];
-
-
-// ============================================================
-// STATE
-// ============================================================
 
 let allItems = [];
 let activeFilter = "all";
+
+// Prevent two refresh cycles from running at once.
 let loading = false;
 
 
 // ============================================================
-// COLOURS
+// RSS2JSON PROXY
 // ============================================================
 
-const REGULATOR_COLORS = {
-
-  "RBI": "#8b5cf6",
-  "FCA": "#2563eb",
-  "BoE": "#1d4ed8",
-  "PRA": "#4338ca",
-
-  "BIS/BCBS": "#475569",
-  "FSB": "#64748b",
-
-  "ECB": "#0891b2",
-  "EBA": "#0e7490",
-
-  "Federal Reserve": "#dc2626",
-  "CFPB": "#b91c1c",
-  "FINRA": "#be123c",
-  "OCC": "#9f1239",
-
-  "HKMA": "#0f766e",
-
-  "BOJ": "#db2777",
-
-  "FINMA": "#15803d",
-  "SNB": "#166534",
-
-  "BaFin": "#ca8a04",
-
-  "Bank of Canada": "#c2410c",
-
-  "RBA": "#ea580c",
-
-  "Central Bank of Ireland": "#059669",
-
-  "RBNZ": "#0284c7"
-};
-
-
-// ============================================================
-// HELPERS
-// ============================================================
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-
-function proxyUrl(url) {
-
-  return (
-    "https://api.rss2json.com/v1/api.json?rss_url=" +
-    encodeURIComponent(url)
-  );
+function proxyUrl(feedUrl) {
+  return `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`;
 }
 
 
 // ============================================================
-// DATE PARSING
+// DATE PARSER
 // ============================================================
 
-function parseDateValue(value) {
+function parseDate(value) {
 
-  if (!value) {
-    return null;
-  }
+  if (!value) return null;
 
   const direct = new Date(value);
 
@@ -260,7 +99,7 @@ function parseDateValue(value) {
     return direct;
   }
 
-
+  // Handles DD/MM/YYYY, DD-MM-YYYY and DD.MM.YYYY.
   if (typeof value === "string") {
 
     const match = value.match(
@@ -292,30 +131,37 @@ function parseDateValue(value) {
 }
 
 
-function parseItemDate(item) {
+// ============================================================
+// EXACT DATE DISPLAY
+// ============================================================
 
-  const values = [
+function formatDate(date) {
 
-    item.pubDate,
-    item.published,
-    item.isoDate,
-    item.updated,
-    item.date,
-    item.pubdate,
-    item["dc:date"]
-  ];
-
-  for (const value of values) {
-
-    const parsed =
-      parseDateValue(value);
-
-    if (parsed) {
-      return parsed;
-    }
+  if (!date) {
+    return "Date unavailable";
   }
 
-  return null;
+  const d =
+    date instanceof Date
+      ? date
+      : parseDate(date);
+
+  if (
+    !d ||
+    isNaN(d.getTime()) ||
+    d.getFullYear() <= 1971
+  ) {
+    return "Date unavailable";
+  }
+
+  return d.toLocaleDateString(
+    "en-IN",
+    {
+      day: "numeric",
+      month: "short",
+      year: "numeric"
+    }
+  );
 }
 
 
@@ -325,9 +171,7 @@ function parseItemDate(item) {
 
 function extractFCADate(item) {
 
-  // First inspect every likely RSS field.
   const fields = [
-
     item.pubDate,
     item.published,
     item.isoDate,
@@ -340,12 +184,9 @@ function extractFCADate(item) {
     item.contentSnippet
   ];
 
-
   for (const field of fields) {
 
-    if (!field) {
-      continue;
-    }
+    if (!field) continue;
 
     const text =
       String(field)
@@ -354,10 +195,10 @@ function extractFCADate(item) {
         .trim();
 
 
-    // FCA's own page format.
+    // FCA page/feed wording.
     const firstPublished =
       text.match(
-        /First\s+published\s*:\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i
+        /First\s+published\s*:?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i
       );
 
     if (firstPublished) {
@@ -370,7 +211,7 @@ function extractFCADate(item) {
     }
 
 
-    // Generic DD/MM/YYYY.
+    // Generic FCA DD/MM/YYYY.
     const generic =
       text.match(
         /\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/
@@ -389,7 +230,6 @@ function extractFCADate(item) {
         !isNaN(d.getTime()) &&
         d.getFullYear() > 1971
       ) {
-
         return d;
       }
     }
@@ -400,26 +240,22 @@ function extractFCADate(item) {
 
 
 // ============================================================
-// FCA PAGE FALLBACK
+// FCA ARTICLE PAGE FALLBACK
+//
+// Only used when FCA RSS doesn't expose a valid date.
 // ============================================================
 
-async function fetchFCAPageDate(
-  item
-) {
+async function fetchFCAPageDate(item) {
 
   if (!item.link) {
     return null;
   }
 
-
   try {
 
     const url =
       "https://api.allorigins.win/raw?url=" +
-      encodeURIComponent(
-        item.link
-      );
-
+      encodeURIComponent(item.link);
 
     const response =
       await fetch(
@@ -429,31 +265,21 @@ async function fetchFCAPageDate(
         }
       );
 
-
     if (!response.ok) {
       return null;
     }
 
-
     const html =
       await response.text();
 
-
-    // FCA page text contains:
-    //
-    // First published: 03/08/2026
-    //
-
     const match =
       html.match(
-        /First\s+published\s*:\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i
+        /First\s+published\s*:?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i
       );
-
 
     if (!match) {
       return null;
     }
-
 
     return new Date(
       Number(match[3]),
@@ -461,11 +287,11 @@ async function fetchFCAPageDate(
       Number(match[1])
     );
 
-  } catch (error) {
+  } catch (err) {
 
     console.warn(
       "FCA page date fallback failed:",
-      error.message
+      err.message
     );
 
     return null;
@@ -474,158 +300,27 @@ async function fetchFCAPageDate(
 
 
 // ============================================================
-// FINAL DATE FORMAT
+// FETCH ONE SOURCE
+//
+// Up to 3 attempts.
 // ============================================================
 
-function formatDate(
-  dateValue,
-  item
-) {
-
-  if (
-    item &&
-    item.source === "FCA"
-  ) {
-
-    const fcaDate =
-      item.fcaDate ||
-      extractFCADate(item);
-
-
-    if (
-      fcaDate &&
-      !isNaN(
-        fcaDate.getTime()
-      )
-    ) {
-
-      return fcaDate.toLocaleDateString(
-        "en-IN",
-        {
-          day: "numeric",
-          month: "short",
-          year: "numeric"
-        }
-      );
-    }
-
-
-    return "Date unavailable";
-  }
-
-
-  const date =
-    dateValue instanceof Date
-      ? dateValue
-      : parseDateValue(dateValue);
-
-
-  if (!date) {
-    return "Date unavailable";
-  }
-
-
-  return date.toLocaleDateString(
-    "en-IN",
-    {
-      day: "numeric",
-      month: "short",
-      year: "numeric"
-    }
-  );
-}
-
-
-// ============================================================
-// NORMALISE RSS
-// ============================================================
-
-function normaliseItems(
-  source,
-  items
-) {
-
-  if (!Array.isArray(items)) {
-    return [];
-  }
-
-
-  return items
-    .slice(0, 8)
-    .map(item => {
-
-      const date =
-        parseItemDate(item);
-
-
-      return {
-
-        title:
-          item.title ||
-          "Untitled update",
-
-        link:
-          item.link ||
-          item.guid ||
-          "#",
-
-        date,
-
-        fcaDate:
-          source.name === "FCA"
-            ? extractFCADate(item)
-            : null,
-
-        source:
-          source.name,
-
-        jurisdiction:
-          source.jurisdiction,
-
-        category:
-          source.category
-      };
-    });
-}
-
-
-// ============================================================
-// RSS FETCH
-// ============================================================
-
-async function fetchRSS(
+async function fetchSource(
   source,
   attempt = 1
 ) {
 
   try {
 
-    const controller =
-      new AbortController();
-
-    const timeout =
-      setTimeout(
-        () =>
-          controller.abort(),
-        12000
-      );
-
-
     const response =
       await fetch(
-        proxyUrl(
-          source.feed
-        ) +
-        "&cache=" +
+        proxyUrl(source.feed) +
+        "&t=" +
         Date.now(),
         {
-          cache: "no-store",
-          signal: controller.signal
+          cache: "no-store"
         }
       );
-
-
-    clearTimeout(timeout);
 
 
     if (!response.ok) {
@@ -642,326 +337,156 @@ async function fetchRSS(
 
     if (
       !data ||
-      !Array.isArray(
-        data.items
-      )
+      data.status !== "ok" ||
+      !Array.isArray(data.items) ||
+      data.items.length === 0
     ) {
 
       throw new Error(
-        "No RSS items returned"
+        "No usable RSS items"
       );
     }
 
 
-    return normaliseItems(
-      source,
+    let items =
       data.items
+        .slice(0, 8)
+        .map(
+          item => {
+
+            let date =
+              parseDate(
+                item.pubDate ||
+                item.published ||
+                item.isoDate ||
+                item.updated ||
+                item.date ||
+                item.pubdate ||
+                item["dc:date"]
+              );
+
+
+            // FCA gets its own date parser.
+            if (
+              source.name === "FCA"
+            ) {
+
+              const fcaDate =
+                extractFCADate(item);
+
+              if (fcaDate) {
+                date = fcaDate;
+              }
+            }
+
+
+            return {
+
+              title:
+                item.title ||
+                "Untitled update",
+
+              link:
+                item.link ||
+                item.guid ||
+                "#",
+
+              date,
+
+              source:
+                source.name,
+
+              jurisdiction:
+                source.jurisdiction,
+
+              category:
+                source.category,
+
+              // Keep original RSS item for
+              // FCA fallback processing.
+              _raw:
+                item
+            };
+          }
+        );
+
+
+    // --------------------------------------------------------
+    // FCA fallback only where RSS did not give a date.
+    // --------------------------------------------------------
+
+    if (
+      source.name === "FCA"
+    ) {
+
+      for (
+        const item of items
+      ) {
+
+        if (
+          !item.date ||
+          item.date.getFullYear() <= 1971
+        ) {
+
+          const pageDate =
+            await fetchFCAPageDate(
+              item
+            );
+
+          if (pageDate) {
+            item.date = pageDate;
+          }
+
+          // Keep FCA page requests gentle.
+          await new Promise(
+            resolve =>
+              setTimeout(
+                resolve,
+                100
+              )
+          );
+        }
+      }
+    }
+
+
+    return items;
+
+  } catch (err) {
+
+    console.warn(
+      `Attempt ${attempt} failed for ${source.name}:`,
+      err.message
     );
 
-  } catch (error) {
 
-    if (attempt < 2) {
+    if (attempt < 3) {
 
-      await sleep(900);
+      // Increasing retry delay:
+      // 1.2s → 2.4s
+      await new Promise(
+        resolve =>
+          setTimeout(
+            resolve,
+            1200 * attempt
+          )
+      );
 
-      return fetchRSS(
+
+      return fetchSource(
         source,
         attempt + 1
       );
     }
 
 
-    throw error;
-  }
-}
-
-
-// ============================================================
-// HKMA JSON
-// ============================================================
-
-async function fetchHKMA(
-  source
-) {
-
-  try {
-
-    const response =
-      await fetch(
-        source.api +
-        "&offset=0",
-        {
-          cache: "no-store"
-        }
-      );
-
-
-    if (!response.ok) {
-      throw new Error(
-        `HTTP ${response.status}`
-      );
-    }
-
-
-    const data =
-      await response.json();
-
-
-    const records =
-      data &&
-      data.result &&
-      Array.isArray(
-        data.result.records
-      )
-        ? data.result.records
-        : [];
-
-
-    return records
-      .slice(0, 8)
-      .map(item => {
-
-        const date =
-          parseDateValue(
-            item.date ||
-            item.pubDate ||
-            item.published
-          );
-
-
-        return {
-
-          title:
-            item.title ||
-            "Untitled update",
-
-          link:
-            item.link ||
-            "#",
-
-          date,
-
-          fcaDate: null,
-
-          source:
-            source.name,
-
-          jurisdiction:
-            source.jurisdiction,
-
-          category:
-            source.category
-        };
-      });
-
-  } catch (error) {
-
     console.warn(
-      "HKMA failed:",
-      error.message
+      `Giving up on ${source.name} for this refresh.`
     );
+
 
     return [];
   }
-}
-
-
-// ============================================================
-// FCA ENRICHMENT
-// ============================================================
-
-async function enrichFCADates(
-  items
-) {
-
-  const result = [];
-
-
-  for (
-    const item of items
-  ) {
-
-    if (
-      item.fcaDate
-    ) {
-
-      result.push(item);
-
-      continue;
-    }
-
-
-    // Only fall back to page parsing
-    // where the RSS item didn't give us
-    // a usable FCA date.
-
-    if (
-      item.source === "FCA"
-    ) {
-
-      const pageDate =
-        await fetchFCAPageDate(
-          item
-        );
-
-
-      if (pageDate) {
-
-        item.fcaDate =
-          pageDate;
-
-        item.date =
-          pageDate;
-      }
-    }
-
-
-    result.push(item);
-
-    // Keep this light.
-    await sleep(100);
-  }
-
-
-  return result;
-}
-
-
-// ============================================================
-// ONE SOURCE
-// ============================================================
-
-async function fetchSource(
-  source
-) {
-
-  // ----------------------------------------------------------
-  // HKMA
-  // ----------------------------------------------------------
-
-  if (source.api) {
-
-    return fetchHKMA(
-      source
-    );
-  }
-
-
-  // ----------------------------------------------------------
-  // Everything else through RSS2JSON.
-  // ----------------------------------------------------------
-
-  try {
-
-    let items =
-      await fetchRSS(
-        source
-      );
-
-
-    // FCA gets page-level date
-    // enrichment only when needed.
-
-    if (
-      source.name === "FCA"
-    ) {
-
-      items =
-        await enrichFCADates(
-          items
-        );
-    }
-
-
-    return items;
-
-  } catch (error) {
-
-    console.warn(
-      `${source.name} failed:`,
-      error.message
-    );
-
-    return [];
-  }
-}
-
-
-// ============================================================
-// FETCH ALL SOURCES
-// ============================================================
-
-async function fetchAllSources() {
-
-  const results = [];
-
-  const batchSize = 3;
-
-
-  for (
-    let i = 0;
-    i < SOURCES.length;
-    i += batchSize
-  ) {
-
-    const batch =
-      SOURCES.slice(
-        i,
-        i + batchSize
-      );
-
-
-    const batchResults =
-      await Promise.all(
-        batch.map(
-          source =>
-            fetchSource(
-              source
-            )
-        )
-      );
-
-
-    results.push(
-      ...batchResults
-    );
-
-
-    if (
-      i + batchSize <
-      SOURCES.length
-    ) {
-
-      await sleep(350);
-    }
-  }
-
-
-  return results;
-}
-
-
-// ============================================================
-// SOURCE LABEL
-// ============================================================
-
-function sourceLabel(
-  item
-) {
-
-  const color =
-    REGULATOR_COLORS[
-      item.source
-    ] || "#64748b";
-
-
-  return `
-    <span
-      class="dash-source-name"
-      style="color:${color}"
-    >${item.source}</span>
-    · ${item.jurisdiction}
-  `;
 }
 
 
@@ -976,18 +501,15 @@ function renderFeed() {
       "dash-feed-list"
     );
 
-
-  if (!list) {
-    return;
-  }
+  if (!list) return;
 
 
   const filtered =
     activeFilter === "all"
       ? allItems
       : allItems.filter(
-          item =>
-            item.category ===
+          i =>
+            i.category ===
             activeFilter
         );
 
@@ -1009,63 +531,54 @@ function renderFeed() {
     filtered
       .map(
         item => `
+    <div class="dash-row">
 
-          <div class="dash-row">
+      <a
+        class="dash-title"
+        href="${item.link}"
+        target="_blank"
+        rel="noopener"
+      >${item.title}</a>
 
-            <a
-              class="dash-title"
-              href="${item.link}"
-              target="_blank"
-              rel="noopener"
-            >${item.title}</a>
+      <div class="dash-meta">
 
-            <div class="dash-meta">
+        <span class="dash-source">
+          ${item.source} · ${item.jurisdiction}
+        </span>
 
-              <span class="dash-source">
-                ${sourceLabel(item)}
-              </span>
+        <span class="dash-time">
+          ${formatDate(item.date)}
+        </span>
 
-              <span class="dash-time">
-                ${formatDate(
-                  item.date,
-                  item
-                )}
-              </span>
+      </div>
 
-            </div>
-
-          </div>
-
-        `
+    </div>`
       )
       .join("");
 }
 
 
 // ============================================================
-// HOME PREVIEW
+// HOMEPAGE PREVIEW
 // ============================================================
 
 function renderHomePreview(
   limit = 5
 ) {
 
-  const element =
+  const el =
     document.getElementById(
       "home-dashboard-preview"
     );
 
-
-  if (!element) {
-    return;
-  }
+  if (!el) return;
 
 
   if (
     allItems.length === 0
   ) {
 
-    element.innerHTML =
+    el.innerHTML =
       `<div class="dash-empty">
         Loading live updates…
       </div>`;
@@ -1074,39 +587,33 @@ function renderHomePreview(
   }
 
 
-  element.innerHTML =
+  el.innerHTML =
     allItems
       .slice(0, limit)
       .map(
         item => `
+    <div class="dash-row">
 
-          <div class="dash-row">
+      <a
+        class="dash-title"
+        href="${item.link}"
+        target="_blank"
+        rel="noopener"
+      >${item.title}</a>
 
-            <a
-              class="dash-title"
-              href="${item.link}"
-              target="_blank"
-              rel="noopener"
-            >${item.title}</a>
+      <div class="dash-meta">
 
-            <div class="dash-meta">
+        <span class="dash-source">
+          ${item.source} · ${item.jurisdiction}
+        </span>
 
-              <span class="dash-source">
-                ${sourceLabel(item)}
-              </span>
+        <span class="dash-time">
+          ${formatDate(item.date)}
+        </span>
 
-              <span class="dash-time">
-                ${formatDate(
-                  item.date,
-                  item
-                )}
-              </span>
+      </div>
 
-            </div>
-
-          </div>
-
-        `
+    </div>`
       )
       .join("");
 }
@@ -1123,45 +630,40 @@ function setupFilters() {
       "dash-filters"
     );
 
-
-  if (!bar) {
-    return;
-  }
+  if (!bar) return;
 
 
   bar.innerHTML =
     FILTERS
       .map(
-        filter =>
+        f =>
           `<button
             class="dash-filter${
-              filter.key === "all"
+              f.key === "all"
                 ? " active"
                 : ""
             }"
-            data-key="${filter.key}"
-          >${filter.label}</button>`
+            data-key="${f.key}"
+          >${f.label}</button>`
       )
       .join("");
 
 
   bar.addEventListener(
     "click",
-    event => {
+    e => {
 
-      const button =
-        event.target.closest(
+      const btn =
+        e.target.closest(
           ".dash-filter"
         );
 
 
-      if (!button) {
-        return;
-      }
+      if (!btn) return;
 
 
       activeFilter =
-        button.dataset.key;
+        btn.dataset.key;
 
 
       bar
@@ -1169,10 +671,10 @@ function setupFilters() {
           ".dash-filter"
         )
         .forEach(
-          item =>
-            item.classList.toggle(
+          b =>
+            b.classList.toggle(
               "active",
-              item === button
+              b === btn
             )
         );
 
@@ -1184,34 +686,38 @@ function setupFilters() {
 
 
 // ============================================================
-// LOAD
+// LOAD ALL SOURCES
+//
+// IMPORTANT:
+// Do NOT hit all 21 simultaneously.
+//
+// Three at a time + retries keeps rss2json
+// from randomly dropping sources.
 // ============================================================
 
 async function loadAll(
   isRefresh
 ) {
 
+  // Never allow overlapping refreshes.
   if (loading) {
     return;
   }
 
-
   loading = true;
 
 
-  const status =
+  const statusEl =
     document.getElementById(
       "dash-status-text"
     );
-
 
   const dot =
     document.getElementById(
       "dash-dot"
     );
 
-
-  const feed =
+  const feedList =
     document.getElementById(
       "dash-feed-list"
     );
@@ -1219,18 +725,18 @@ async function loadAll(
 
   if (
     !isRefresh &&
-    feed
+    feedList
   ) {
 
-    feed.innerHTML =
+    feedList.innerHTML =
       `<div class="dash-loading">
         Loading live updates from ${SOURCES.length} regulators…
       </div>`;
   }
 
 
-  if (status) {
-    status.textContent =
+  if (statusEl) {
+    statusEl.textContent =
       "Refreshing…";
   }
 
@@ -1242,135 +748,184 @@ async function loadAll(
   }
 
 
-  try {
-
-    const results =
-      await fetchAllSources();
+  const results = [];
 
 
-    const merged =
-      results.flat();
+  // ----------------------------------------------------------
+  // Fetch 3 regulators at a time.
+  // ----------------------------------------------------------
+
+  const BATCH_SIZE = 3;
 
 
-    const failed =
-      results.filter(
-        result =>
-          result.length === 0
-      ).length;
+  for (
+    let i = 0;
+    i < SOURCES.length;
+    i += BATCH_SIZE
+  ) {
+
+    const batch =
+      SOURCES.slice(
+        i,
+        i + BATCH_SIZE
+      );
 
 
-    merged.sort(
-      (a, b) => {
-
-        const aTime =
-          a.date instanceof Date
-            ? a.date.getTime()
-            : 0;
-
-
-        const bTime =
-          b.date instanceof Date
-            ? b.date.getTime()
-            : 0;
+    const batchResults =
+      await Promise.all(
+        batch.map(
+          source =>
+            fetchSource(
+              source
+            )
+        )
+      );
 
 
-        return bTime - aTime;
+    results.push(
+      ...batchResults
+    );
+
+
+    // Small pause between batches.
+    if (
+      i + BATCH_SIZE <
+      SOURCES.length
+    ) {
+
+      await new Promise(
+        resolve =>
+          setTimeout(
+            resolve,
+            500
+          )
+      );
+    }
+  }
+
+
+  // ----------------------------------------------------------
+  // Merge everything.
+  // ----------------------------------------------------------
+
+  const merged =
+    results.flat();
+
+
+  const failedCount =
+    results.filter(
+      r =>
+        r.length === 0
+    ).length;
+
+
+  // ----------------------------------------------------------
+  // Newest first.
+  // ----------------------------------------------------------
+
+  merged.sort(
+    (a, b) => {
+
+      const aTime =
+        a.date instanceof Date
+          ? a.date.getTime()
+          : 0;
+
+      const bTime =
+        b.date instanceof Date
+          ? b.date.getTime()
+          : 0;
+
+      return (
+        bTime -
+        aTime
+      );
+    }
+  );
+
+
+  allItems =
+    merged;
+
+
+  renderFeed();
+
+  renderHomePreview();
+
+
+  // ----------------------------------------------------------
+  // Status.
+  // ----------------------------------------------------------
+
+  const now =
+    new Date().toLocaleTimeString(
+      "en-IN",
+      {
+        hour: "2-digit",
+        minute: "2-digit"
       }
     );
 
 
-    allItems =
-      merged;
+  const working =
+    SOURCES.length -
+    failedCount;
 
 
-    renderFeed();
+  if (statusEl) {
 
-    renderHomePreview();
-
-
-    const now =
-      new Date().toLocaleTimeString(
-        "en-IN",
-        {
-          hour: "2-digit",
-          minute: "2-digit"
-        }
-      );
+    statusEl.textContent =
+      `Last updated ${now} · ` +
+      `${merged.length} updates from ` +
+      `${working}/${SOURCES.length} sources`;
+  }
 
 
-    const working =
-      SOURCES.length -
-      failed;
+  if (dot) {
+    dot.classList.add(
+      "live"
+    );
+  }
 
 
-    if (status) {
+  // ----------------------------------------------------------
+  // Error note.
+  // ----------------------------------------------------------
 
-      status.textContent =
-        `Last updated ${now} · ` +
-        `${merged.length} updates from ` +
-        `${working}/${SOURCES.length} sources`;
-    }
-
-
-    if (dot) {
-
-      dot.classList.add(
-        "live"
-      );
-    }
-
-
-    const errorNote =
-      document.getElementById(
-        "dash-error-note"
-      );
-
-
-    if (
-      failed > 0 &&
-      errorNote
-    ) {
-
-      errorNote.style.display =
-        "block";
-
-      errorNote.textContent =
-        `${failed} source` +
-        (
-          failed > 1
-            ? "s"
-            : ""
-        ) +
-        ` didn't respond this refresh — ` +
-        `they'll retry automatically.`;
-
-    } else if (
-      errorNote
-    ) {
-
-      errorNote.style.display =
-        "none";
-    }
-
-
-  } catch (error) {
-
-    console.error(
-      "Dashboard refresh failed:",
-      error
+  const errNote =
+    document.getElementById(
+      "dash-error-note"
     );
 
 
-    if (status) {
+  if (
+    failedCount > 0 &&
+    errNote
+  ) {
 
-      status.textContent =
-        "Refresh failed — retrying automatically";
-    }
+    errNote.style.display =
+      "block";
 
-  } finally {
+    errNote.textContent =
+      `${failedCount} source` +
+      (
+        failedCount > 1
+          ? "s"
+          : ""
+      ) +
+      ` didn't respond after retries — ` +
+      `they will be tried again on the next refresh.`;
 
-    loading = false;
+  } else if (
+    errNote
+  ) {
+
+    errNote.style.display =
+      "none";
   }
+
+
+  loading = false;
 }
 
 
