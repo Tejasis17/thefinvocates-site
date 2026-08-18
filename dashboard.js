@@ -1,6 +1,6 @@
 // ============================================================
 // THE FINVOCATES — regulatory dashboard
-// TRUE PROGRESSIVE RSS LOADING
+// Lightweight progressive RSS dashboard
 // ============================================================
 
 const REFRESH_MINUTES = 15;
@@ -36,7 +36,7 @@ const SOURCES = [
 
 
 // ============================================================
-// FILTERS
+// CATEGORY FILTERS
 // ============================================================
 
 const FILTERS = [
@@ -82,15 +82,26 @@ const REGULATOR_COLORS = {
 // ============================================================
 
 let allItems = [];
-let activeFilter = "all";
+
+let activeCategory =
+  "all";
+
+let activeJurisdiction =
+  "all";
+
 let loading = false;
 
 
+// Last successful results survive failed refreshes.
+const lastSuccessfulItems = {};
+
+
 // ============================================================
-// RSS2JSON PROXY
+// PROXY
 // ============================================================
 
 function proxyUrl(feedUrl) {
+
   return (
     "https://api.rss2json.com/v1/api.json?rss_url=" +
     encodeURIComponent(feedUrl)
@@ -99,14 +110,15 @@ function proxyUrl(feedUrl) {
 
 
 // ============================================================
-// DATE PARSING
+// DATE PARSER
 // ============================================================
 
 function parseDate(value) {
 
   if (!value) return null;
 
-  const direct = new Date(value);
+  const direct =
+    new Date(value);
 
   if (
     !isNaN(direct.getTime()) &&
@@ -115,19 +127,24 @@ function parseDate(value) {
     return direct;
   }
 
-  if (typeof value === "string") {
 
-    const match = value.match(
-      /(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/
-    );
+  if (
+    typeof value === "string"
+  ) {
+
+    const match =
+      value.match(
+        /(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/
+      );
 
     if (match) {
 
-      const d = new Date(
-        Number(match[3]),
-        Number(match[2]) - 1,
-        Number(match[1])
-      );
+      const d =
+        new Date(
+          Number(match[3]),
+          Number(match[2]) - 1,
+          Number(match[1])
+        );
 
       if (
         !isNaN(d.getTime()) &&
@@ -143,12 +160,14 @@ function parseDate(value) {
 
 
 // ============================================================
-// EXACT DATE
+// EXACT DATE DISPLAY
 // ============================================================
 
 function formatDate(date) {
 
-  if (!date) return "Date unavailable";
+  if (!date) {
+    return "Date unavailable";
+  }
 
   const d =
     date instanceof Date
@@ -175,7 +194,7 @@ function formatDate(date) {
 
 
 // ============================================================
-// FCA DATE PARSER
+// FCA DATE EXTRACTION
 // ============================================================
 
 function extractFCADate(item) {
@@ -193,18 +212,31 @@ function extractFCADate(item) {
     item.contentSnippet
   ];
 
-  for (const field of fields) {
+
+  for (
+    const field of fields
+  ) {
 
     if (!field) continue;
 
-    const text = String(field)
-      .replace(/<[^>]*>/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
+    const text =
+      String(field)
+        .replace(
+          /<[^>]*>/g,
+          " "
+        )
+        .replace(
+          /\s+/g,
+          " "
+        )
+        .trim();
 
-    const firstPublished = text.match(
-      /First\s+published\s*:?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i
-    );
+
+    const firstPublished =
+      text.match(
+        /First\s+published\s*:?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i
+      );
+
 
     if (firstPublished) {
 
@@ -215,17 +247,22 @@ function extractFCADate(item) {
       );
     }
 
-    const generic = text.match(
-      /\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/
-    );
+
+    const generic =
+      text.match(
+        /\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/
+      );
+
 
     if (generic) {
 
-      const d = new Date(
-        Number(generic[3]),
-        Number(generic[2]) - 1,
-        Number(generic[1])
-      );
+      const d =
+        new Date(
+          Number(generic[3]),
+          Number(generic[2]) - 1,
+          Number(generic[1])
+        );
+
 
       if (
         !isNaN(d.getTime()) &&
@@ -236,17 +273,23 @@ function extractFCADate(item) {
     }
   }
 
+
   return null;
 }
 
 
 // ============================================================
-// FCA PAGE FALLBACK
+// FCA PAGE DATE FALLBACK
 // ============================================================
 
-async function fetchFCAPageDate(item) {
+async function fetchFCAPageDate(
+  item
+) {
 
-  if (!item.link) return null;
+  if (!item.link) {
+    return null;
+  }
+
 
   try {
 
@@ -254,20 +297,35 @@ async function fetchFCAPageDate(item) {
       "https://api.allorigins.win/raw?url=" +
       encodeURIComponent(item.link);
 
-    const response = await fetch(
-      url,
-      { cache: "no-store" }
-    );
 
-    if (!response.ok) return null;
+    const response =
+      await fetch(
+        url,
+        {
+          cache: "no-store"
+        }
+      );
 
-    const html = await response.text();
 
-    const match = html.match(
-      /First\s+published\s*:?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i
-    );
+    if (!response.ok) {
+      return null;
+    }
 
-    if (!match) return null;
+
+    const html =
+      await response.text();
+
+
+    const match =
+      html.match(
+        /First\s+published\s*:?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i
+      );
+
+
+    if (!match) {
+      return null;
+    }
+
 
     return new Date(
       Number(match[3]),
@@ -298,86 +356,107 @@ async function fetchSource(
 
   try {
 
-    const response = await fetch(
-      proxyUrl(source.feed) +
-      "&t=" +
-      Date.now(),
-      {
-        cache: "no-store"
-      }
-    );
+    const res =
+      await fetch(
+        proxyUrl(source.feed) +
+        "&t=" +
+        Date.now(),
+        {
+          cache: "no-store"
+        }
+      );
 
-    if (!response.ok) {
+
+    if (!res.ok) {
+
       throw new Error(
-        `${source.name}: HTTP ${response.status}`
+        `${source.name}: HTTP ${res.status}`
       );
     }
 
-    const data = await response.json();
+
+    const data =
+      await res.json();
+
 
     if (
       !data ||
-      data.status !== "ok" ||
       !Array.isArray(data.items) ||
       data.items.length === 0
     ) {
+
       throw new Error(
-        `${source.name}: no usable items`
+        `${source.name}: empty feed`
       );
     }
 
-    const items = data.items
-      .slice(0, 8)
-      .map(item => {
 
-        let date = parseDate(
-          item.pubDate ||
-          item.published ||
-          item.isoDate ||
-          item.updated ||
-          item.date ||
-          item.pubdate ||
-          item["dc:date"]
+    const items =
+      data.items
+        .slice(0, 8)
+        .map(
+          item => {
+
+            let date =
+              parseDate(
+                item.pubDate ||
+                item.published ||
+                item.isoDate ||
+                item.updated ||
+                item.date ||
+                item.pubdate ||
+                item["dc:date"]
+              );
+
+
+            if (
+              source.name === "FCA"
+            ) {
+
+              const fcaDate =
+                extractFCADate(item);
+
+
+              if (fcaDate) {
+                date = fcaDate;
+              }
+            }
+
+
+            return {
+
+              title:
+                item.title ||
+                "Untitled update",
+
+              link:
+                item.link ||
+                item.guid ||
+                "#",
+
+              date,
+
+              source:
+                source.name,
+
+              jurisdiction:
+                source.jurisdiction,
+
+              category:
+                source.category
+            };
+          }
         );
 
-        if (source.name === "FCA") {
 
-          const fcaDate =
-            extractFCADate(item);
+    // FCA fallback.
+    if (
+      source.name === "FCA"
+    ) {
 
-          if (fcaDate) {
-            date = fcaDate;
-          }
-        }
-
-        return {
-          title:
-            item.title ||
-            "Untitled update",
-
-          link:
-            item.link ||
-            item.guid ||
-            "#",
-
-          date,
-
-          source:
-            source.name,
-
-          jurisdiction:
-            source.jurisdiction,
-
-          category:
-            source.category
-        };
-      });
-
-
-    // FCA page fallback
-    if (source.name === "FCA") {
-
-      for (const item of items) {
+      for (
+        const item of items
+      ) {
 
         if (
           !item.date ||
@@ -385,7 +464,10 @@ async function fetchSource(
         ) {
 
           const pageDate =
-            await fetchFCAPageDate(item);
+            await fetchFCAPageDate(
+              item
+            );
+
 
           if (pageDate) {
             item.date = pageDate;
@@ -393,6 +475,7 @@ async function fetchSource(
         }
       }
     }
+
 
     return items;
 
@@ -403,20 +486,26 @@ async function fetchSource(
       err.message
     );
 
-    if (attempt < 3) {
 
-      await new Promise(resolve =>
-        setTimeout(
-          resolve,
-          1000 * attempt
-        )
+    if (
+      attempt < 3
+    ) {
+
+      await new Promise(
+        resolve =>
+          setTimeout(
+            resolve,
+            1000 * attempt
+          )
       );
+
 
       return fetchSource(
         source,
         attempt + 1
       );
     }
+
 
     return [];
   }
@@ -427,19 +516,28 @@ async function fetchSource(
 // SOURCE LABEL
 // ============================================================
 
-function sourceLabel(item) {
+function sourceLabel(
+  source
+) {
 
   const color =
-    REGULATOR_COLORS[item.source] ||
-    "#64748b";
+    REGULATOR_COLORS[
+      source.name
+    ] || "#64748b";
+
 
   return `
     <span
-      class="dash-source-name"
-      style="color:${color};font-weight:600;"
-    >${item.source}</span>
-    <span style="opacity:.55;">
-      · ${item.jurisdiction}
+      style="
+        color:${color};
+        font-weight:700;
+      "
+    >${source.name}</span>
+
+    <span
+      style="opacity:.5;"
+    >
+      · ${source.jurisdiction}
     </span>
   `;
 }
@@ -449,25 +547,38 @@ function sourceLabel(item) {
 // CREATE ITEM ROW
 // ============================================================
 
-function createRow(item) {
+function createRow(
+  item
+) {
 
   const row =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
 
-  row.className = "dash-row";
+
+  row.className =
+    "dash-row";
+
 
   row.innerHTML = `
+
     <a
       class="dash-title"
       href="${item.link}"
       target="_blank"
       rel="noopener"
-    >${item.title}</a>
+    >
+      ${item.title}
+    </a>
 
     <div class="dash-meta">
 
       <span class="dash-source">
-        ${sourceLabel(item)}
+        ${sourceLabel({
+          name: item.source,
+          jurisdiction: item.jurisdiction
+        })}
       </span>
 
       <span class="dash-time">
@@ -477,21 +588,13 @@ function createRow(item) {
     </div>
   `;
 
+
   return row;
 }
 
 
 // ============================================================
-// CREATE A PERMANENT SOURCE CONTAINER
-//
-// THIS IS THE IMPORTANT PART.
-//
-// Every regulator gets its own DOM container.
-// RBI cannot overwrite ECB.
-// ECB cannot overwrite BOJ.
-// etc.
-//
-// Once a source appears, it remains visible.
+// SOURCE CONTAINER
 // ============================================================
 
 function createSourceContainer(
@@ -499,35 +602,51 @@ function createSourceContainer(
 ) {
 
   const wrapper =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
+
 
   wrapper.className =
     "dash-source-block";
 
+
   wrapper.dataset.source =
     source.name;
+
 
   wrapper.dataset.category =
     source.category;
 
+
+  wrapper.dataset.jurisdiction =
+    source.jurisdiction;
+
+
+  const color =
+    REGULATOR_COLORS[
+      source.name
+    ] || "#64748b";
+
+
   wrapper.innerHTML = `
+
     <div
       class="dash-source-heading"
       style="
-        border-left:3px solid ${
-          REGULATOR_COLORS[source.name] ||
-          "#64748b"
-        };
+        border-left:3px solid ${color};
         padding-left:10px;
         margin:18px 0 8px;
+        display:flex;
+        align-items:center;
+        gap:8px;
+        flex-wrap:wrap;
       "
     >
+
       <span
         style="
-          color:${
-            REGULATOR_COLORS[source.name] ||
-            "#64748b"
-          };
+          color:${color};
           font-weight:700;
         "
       >
@@ -535,10 +654,7 @@ function createSourceContainer(
       </span>
 
       <span
-        style="
-          opacity:.5;
-          margin-left:6px;
-        "
+        style="opacity:.5;"
       >
         ${source.jurisdiction}
       </span>
@@ -546,62 +662,154 @@ function createSourceContainer(
       <span
         class="dash-source-status"
         style="
-          opacity:.45;
-          margin-left:8px;
+          opacity:.5;
           font-size:.85em;
         "
       >
         Loading…
       </span>
+
+      <button
+        class="dash-source-retry"
+        type="button"
+        data-source="${source.name}"
+        style="
+          margin-left:auto;
+          border:1px solid ${color};
+          color:${color};
+          background:transparent;
+          border-radius:999px;
+          padding:3px 9px;
+          cursor:pointer;
+          font-size:.78em;
+        "
+      >
+        ↻ Retry
+      </button>
+
     </div>
 
-    <div class="dash-source-items"></div>
+    <div
+      class="dash-source-items"
+    ></div>
   `;
+
 
   return wrapper;
 }
 
 
 // ============================================================
-// APPEND SOURCE RESULTS
-//
-// ONLY THIS SOURCE'S CONTAINER IS TOUCHED.
+// BUILD 21 PERMANENT SOURCE CONTAINERS
+// ============================================================
+
+function buildSourceContainers() {
+
+  const list =
+    document.getElementById(
+      "dash-feed-list"
+    );
+
+
+  if (!list) {
+    return;
+  }
+
+
+  list.innerHTML = "";
+
+
+  const fragment =
+    document.createDocumentFragment();
+
+
+  SOURCES.forEach(
+    source => {
+
+      fragment.appendChild(
+        createSourceContainer(
+          source
+        )
+      );
+    }
+  );
+
+
+  list.appendChild(
+    fragment
+  );
+}
+
+
+// ============================================================
+// RENDER ONE SOURCE
 // ============================================================
 
 function renderSourceResult(
   source,
-  items
+  items,
+  statusText
 ) {
 
-  const block =
-    document.querySelector(
-      `.dash-source-block[data-source="${CSS.escape(source.name)}"]`
+  const blocks =
+    document.querySelectorAll(
+      ".dash-source-block"
     );
 
-  if (!block) return;
+
+  let block = null;
+
+
+  blocks.forEach(
+    candidate => {
+
+      if (
+        candidate.dataset.source ===
+        source.name
+      ) {
+        block = candidate;
+      }
+    }
+  );
+
+
+  if (!block) {
+    return;
+  }
+
 
   const itemContainer =
     block.querySelector(
       ".dash-source-items"
     );
 
+
   const status =
     block.querySelector(
       ".dash-source-status"
     );
 
-  if (!itemContainer) return;
+
+  if (!itemContainer) {
+    return;
+  }
 
 
+  // Only replace the contents of THIS regulator.
   itemContainer.innerHTML = "";
 
 
-  if (items.length === 0) {
+  if (
+    items.length === 0
+  ) {
 
     if (status) {
+
       status.textContent =
-        "No updates";
+        statusText ||
+        "Temporarily unavailable";
     }
+
 
     return;
   }
@@ -611,13 +819,14 @@ function renderSourceResult(
     document.createDocumentFragment();
 
 
-  items.forEach(item => {
+  items.forEach(
+    item => {
 
-    fragment.appendChild(
-      createRow(item)
-    );
-
-  });
+      fragment.appendChild(
+        createRow(item)
+      );
+    }
+  );
 
 
   itemContainer.appendChild(
@@ -634,183 +843,172 @@ function renderSourceResult(
 
 
 // ============================================================
-// BUILD SOURCE CONTAINERS
+// JURISDICTIONS
 // ============================================================
 
-function buildSourceContainers() {
+function getJurisdictions() {
 
-  const list =
-    document.getElementById(
-      "dash-feed-list"
-    );
-
-  if (!list) return;
-
-  list.innerHTML = "";
-
-
-  const fragment =
-    document.createDocumentFragment();
-
-
-  SOURCES.forEach(source => {
-
-    fragment.appendChild(
-      createSourceContainer(
-        source
+  return [
+    ...new Set(
+      SOURCES.map(
+        source =>
+          source.jurisdiction
       )
+    )
+  ];
+}
+
+
+// ============================================================
+// JURISDICTION COLOUR
+//
+// For jurisdictions with multiple regulators, use the first
+// regulator's established colour. No new colour scheme is
+// introduced.
+// ============================================================
+
+function jurisdictionColor(
+  jurisdiction
+) {
+
+  const source =
+    SOURCES.find(
+      s =>
+        s.jurisdiction ===
+        jurisdiction
     );
 
-  });
+
+  return source
+    ? (
+        REGULATOR_COLORS[
+          source.name
+        ] || "#64748b"
+      )
+    : "#64748b";
+}
 
 
-  list.appendChild(
-    fragment
+// ============================================================
+// JURISDICTION FILTER BAR
+// ============================================================
+
+function setupJurisdictionFilters() {
+
+  const bar =
+    document.getElementById(
+      "dash-jurisdictions"
+    );
+
+
+  if (!bar) {
+    return;
+  }
+
+
+  const jurisdictions =
+    getJurisdictions();
+
+
+  bar.innerHTML = `
+
+    <button
+      class="dash-filter dash-jurisdiction-filter active"
+      data-jurisdiction="all"
+    >
+      All Jurisdictions
+    </button>
+
+    ${
+      jurisdictions
+        .map(
+          jurisdiction => {
+
+            const color =
+              jurisdictionColor(
+                jurisdiction
+              );
+
+
+            return `
+              <button
+                class="dash-filter dash-jurisdiction-filter"
+                data-jurisdiction="${jurisdiction}"
+                style="
+                  border-color:${color};
+                  color:${color};
+                "
+              >
+                ${jurisdiction}
+              </button>
+            `;
+          }
+        )
+        .join("")
+    }
+  `;
+
+
+  bar.addEventListener(
+    "click",
+    event => {
+
+      const btn =
+        event.target.closest(
+          ".dash-jurisdiction-filter"
+        );
+
+
+      if (!btn) {
+        return;
+      }
+
+
+      activeJurisdiction =
+        btn.dataset.jurisdiction;
+
+
+      bar
+        .querySelectorAll(
+          ".dash-jurisdiction-filter"
+        )
+        .forEach(
+          b =>
+            b.classList.toggle(
+              "active",
+              b === btn
+            )
+        );
+
+
+      renderFilters();
+    }
   );
 }
 
 
 // ============================================================
-// NORMAL RENDER
-//
-// Used after completion / filters.
+// CATEGORY FILTERS
 // ============================================================
 
-function renderFeed() {
-
-  const list =
-    document.getElementById(
-      "dash-feed-list"
-    );
-
-  if (!list) return;
-
-
-  const blocks =
-    list.querySelectorAll(
-      ".dash-source-block"
-    );
-
-
-  blocks.forEach(block => {
-
-    const sourceName =
-      block.dataset.source;
-
-    const category =
-      block.dataset.category;
-
-
-    const visible =
-      activeFilter === "all" ||
-      activeFilter === category;
-
-
-    block.style.display =
-      visible
-        ? ""
-        : "none";
-  });
-}
-
-
-// ============================================================
-// HOMEPAGE PREVIEW
-// ============================================================
-
-function renderHomePreview(
-  limit = 5
-) {
-
-  const el =
-    document.getElementById(
-      "home-dashboard-preview"
-    );
-
-  if (!el) return;
-
-
-  if (allItems.length === 0) {
-
-    el.innerHTML =
-      `<div class="dash-empty">
-        Loading live updates…
-      </div>`;
-
-    return;
-  }
-
-
-  const sorted =
-    [...allItems].sort(
-      (a, b) => {
-
-        const at =
-          a.date instanceof Date
-            ? a.date.getTime()
-            : 0;
-
-        const bt =
-          b.date instanceof Date
-            ? b.date.getTime()
-            : 0;
-
-        return bt - at;
-      }
-    );
-
-
-  el.innerHTML =
-    sorted
-      .slice(0, limit)
-      .map(item => `
-
-        <div class="dash-row">
-
-          <a
-            class="dash-title"
-            href="${item.link}"
-            target="_blank"
-            rel="noopener"
-          >${item.title}</a>
-
-          <div class="dash-meta">
-
-            <span class="dash-source">
-              ${sourceLabel(item)}
-            </span>
-
-            <span class="dash-time">
-              ${formatDate(item.date)}
-            </span>
-
-          </div>
-
-        </div>
-
-      `)
-      .join("");
-}
-
-
-// ============================================================
-// FILTERS
-// ============================================================
-
-function setupFilters() {
+function setupCategoryFilters() {
 
   const bar =
     document.getElementById(
       "dash-filters"
     );
 
-  if (!bar) return;
+
+  if (!bar) {
+    return;
+  }
 
 
   bar.innerHTML =
     FILTERS
       .map(
-        f => `
+        f =>
+          `
           <button
             class="dash-filter${
               f.key === "all"
@@ -821,7 +1019,7 @@ function setupFilters() {
           >
             ${f.label}
           </button>
-        `
+          `
       )
       .join("");
 
@@ -835,10 +1033,13 @@ function setupFilters() {
           ".dash-filter"
         );
 
-      if (!btn) return;
+
+      if (!btn) {
+        return;
+      }
 
 
-      activeFilter =
+      activeCategory =
         btn.dataset.key;
 
 
@@ -855,34 +1056,401 @@ function setupFilters() {
         );
 
 
-      renderFeed();
+      renderFilters();
     }
   );
 }
 
 
 // ============================================================
-// LOAD ALL
+// APPLY BOTH FILTERS
+// ============================================================
+
+function renderFilters() {
+
+  const blocks =
+    document.querySelectorAll(
+      ".dash-source-block"
+    );
+
+
+  blocks.forEach(
+    block => {
+
+      const category =
+        block.dataset.category;
+
+
+      const jurisdiction =
+        block.dataset.jurisdiction;
+
+
+      const categoryMatch =
+        activeCategory === "all" ||
+        category === activeCategory;
+
+
+      const jurisdictionMatch =
+        activeJurisdiction === "all" ||
+        jurisdiction ===
+          activeJurisdiction;
+
+
+      block.style.display =
+        categoryMatch &&
+        jurisdictionMatch
+          ? ""
+          : "none";
+    }
+  );
+}
+
+
+// ============================================================
+// HOMEPAGE PREVIEW
+// ============================================================
+
+function renderHomePreview(
+  limit = 5
+) {
+
+  const el =
+    document.getElementById(
+      "home-dashboard-preview"
+    );
+
+
+  if (!el) {
+    return;
+  }
+
+
+  if (
+    allItems.length === 0
+  ) {
+
+    el.innerHTML =
+      `
+      <div class="dash-empty">
+        Loading live updates…
+      </div>
+      `;
+
+    return;
+  }
+
+
+  const sorted =
+    [...allItems]
+      .sort(
+        (a, b) => {
+
+          const at =
+            a.date instanceof Date
+              ? a.date.getTime()
+              : 0;
+
+
+          const bt =
+            b.date instanceof Date
+              ? b.date.getTime()
+              : 0;
+
+
+          return bt - at;
+        }
+      );
+
+
+  el.innerHTML =
+    sorted
+      .slice(0, limit)
+      .map(
+        item =>
+          `
+          <div class="dash-row">
+
+            <a
+              class="dash-title"
+              href="${item.link}"
+              target="_blank"
+              rel="noopener"
+            >
+              ${item.title}
+            </a>
+
+            <div class="dash-meta">
+
+              <span class="dash-source">
+                ${sourceLabel({
+                  name: item.source,
+                  jurisdiction:
+                    item.jurisdiction
+                })}
+              </span>
+
+              <span class="dash-time">
+                ${formatDate(item.date)}
+              </span>
+
+            </div>
+
+          </div>
+          `
+      )
+      .join("");
+}
+
+
+// ============================================================
+// REBUILD ALL ITEMS FROM SUCCESSFUL SOURCE SNAPSHOTS
+// ============================================================
+
+function rebuildAllItems() {
+
+  allItems = [];
+
+
+  SOURCES.forEach(
+    source => {
+
+      const items =
+        lastSuccessfulItems[
+          source.name
+        ];
+
+
+      if (
+        Array.isArray(items)
+      ) {
+
+        allItems.push(
+          ...items
+        );
+      }
+    }
+  );
+
+
+  allItems.sort(
+    (a, b) => {
+
+      const at =
+        a.date instanceof Date
+          ? a.date.getTime()
+          : 0;
+
+
+      const bt =
+        b.date instanceof Date
+          ? b.date.getTime()
+          : 0;
+
+
+      return bt - at;
+    }
+  );
+}
+
+
+// ============================================================
+// RETRY ONE REGULATOR
+// ============================================================
+
+async function retrySource(
+  source
+) {
+
+  const block =
+    [...document.querySelectorAll(
+      ".dash-source-block"
+    )]
+      .find(
+        el =>
+          el.dataset.source ===
+          source.name
+      );
+
+
+  if (!block) {
+    return;
+  }
+
+
+  const retryButton =
+    block.querySelector(
+      ".dash-source-retry"
+    );
+
+
+  const status =
+    block.querySelector(
+      ".dash-source-status"
+    );
+
+
+  if (retryButton) {
+
+    retryButton.disabled =
+      true;
+
+    retryButton.textContent =
+      "↻ Retrying…";
+
+    retryButton.style.opacity =
+      ".55";
+  }
+
+
+  if (status) {
+
+    status.textContent =
+      "Retrying…";
+  }
+
+
+  const items =
+    await fetchSource(
+      source
+    );
+
+
+  if (
+    items.length > 0
+  ) {
+
+    lastSuccessfulItems[
+      source.name
+    ] = items;
+
+
+    renderSourceResult(
+      source,
+      items,
+      `${items.length} updates`
+    );
+
+  } else {
+
+    // DO NOT delete old results.
+    const old =
+      lastSuccessfulItems[
+        source.name
+      ];
+
+
+    if (
+      old &&
+      old.length > 0
+    ) {
+
+      renderSourceResult(
+        source,
+        old,
+        "Retry failed · showing last results"
+      );
+
+    } else {
+
+      renderSourceResult(
+        source,
+        [],
+        "Temporarily unavailable"
+      );
+    }
+  }
+
+
+  rebuildAllItems();
+
+  renderHomePreview();
+
+  renderFilters();
+
+
+  if (retryButton) {
+
+    retryButton.disabled =
+      false;
+
+    retryButton.textContent =
+      "↻ Retry";
+
+    retryButton.style.opacity =
+      "1";
+  }
+}
+
+
+// ============================================================
+// RETRY BUTTON LISTENER
+// ============================================================
+
+function setupRetryButtons() {
+
+  const list =
+    document.getElementById(
+      "dash-feed-list"
+    );
+
+
+  if (!list) {
+    return;
+  }
+
+
+  list.addEventListener(
+    "click",
+    event => {
+
+      const button =
+        event.target.closest(
+          ".dash-source-retry"
+        );
+
+
+      if (!button) {
+        return;
+      }
+
+
+      const source =
+        SOURCES.find(
+          s =>
+            s.name ===
+            button.dataset.source
+        );
+
+
+      if (!source) {
+        return;
+      }
+
+
+      retrySource(
+        source
+      );
+    }
+  );
+}
+
+
+// ============================================================
+// GLOBAL REFRESH
 //
-// 21 requests start simultaneously.
-//
-// EACH RESPONSE:
-//     fetch completes
-//          ↓
-//     source container populated
-//          ↓
-//     allItems updated
-//          ↓
-//     counter increments
-//
-// There is NO Promise.all() controlling the UI.
+// Existing successful data stays visible.
+// Each source independently replaces ONLY its own data if
+// the new fetch succeeds.
 // ============================================================
 
 async function loadAll(
   isRefresh
 ) {
 
-  if (loading) return;
+  if (loading) {
+    return;
+  }
+
 
   loading = true;
 
@@ -892,6 +1460,7 @@ async function loadAll(
       "dash-status-text"
     );
 
+
   const dot =
     document.getElementById(
       "dash-dot"
@@ -899,23 +1468,18 @@ async function loadAll(
 
 
   if (dot) {
-    dot.classList.remove("live");
+
+    dot.classList.remove(
+      "live"
+    );
   }
 
 
-  // ----------------------------------------------------------
-  // Start every refresh with 21 EMPTY SOURCE CONTAINERS.
-  // ----------------------------------------------------------
+  // On first load create the 21 slots.
+  if (!isRefresh) {
 
-  buildSourceContainers();
-
-
-  allItems = [];
-
-
-  let completed = 0;
-
-  let failed = 0;
+    buildSourceContainers();
+  }
 
 
   if (statusEl) {
@@ -925,10 +1489,15 @@ async function loadAll(
   }
 
 
+  let completed =
+    0;
+
+  let failed =
+    0;
+
+
   // ----------------------------------------------------------
-  // ALL 21 REQUESTS START HERE.
-  //
-  // Promise.all is deliberately NOT used to control rendering.
+  // Each feed is independent.
   // ----------------------------------------------------------
 
   SOURCES.forEach(
@@ -940,44 +1509,62 @@ async function loadAll(
         );
 
 
-      // ------------------------------------------------------
-      // STORE THIS SOURCE'S RESULTS.
-      // ------------------------------------------------------
+      if (
+        items.length > 0
+      ) {
 
-      if (items.length > 0) {
+        // Save last known good result.
+        lastSuccessfulItems[
+          source.name
+        ] = items;
 
-        allItems.push(
-          ...items
+
+        // Immediately update THIS regulator.
+        renderSourceResult(
+          source,
+          items,
+          `${items.length} updates`
         );
 
       } else {
 
         failed++;
+
+
+        // Keep previous successful result.
+        const old =
+          lastSuccessfulItems[
+            source.name
+          ];
+
+
+        if (
+          old &&
+          old.length > 0
+        ) {
+
+          renderSourceResult(
+            source,
+            old,
+            "Refresh unavailable · showing last results"
+          );
+
+        } else {
+
+          renderSourceResult(
+            source,
+            [],
+            "Temporarily unavailable"
+          );
+        }
       }
 
 
-      // ------------------------------------------------------
-      // IMMEDIATELY PUT THIS SOURCE'S RESULTS ON SCREEN.
-      //
-      // Nothing else is rebuilt.
-      // ------------------------------------------------------
-
-      renderSourceResult(
-        source,
-        items
-      );
-
-
-      // ------------------------------------------------------
-      // Update homepage preview.
-      // ------------------------------------------------------
+      // Rebuild master state from last known good results.
+      rebuildAllItems();
 
       renderHomePreview();
 
-
-      // ------------------------------------------------------
-      // NOW increment the visible progress count.
-      // ------------------------------------------------------
 
       completed++;
 
@@ -990,7 +1577,7 @@ async function loadAll(
 
 
       // ------------------------------------------------------
-      // Final state.
+      // When every request has finished.
       // ------------------------------------------------------
 
       if (
@@ -1010,7 +1597,7 @@ async function loadAll(
 
 
 // ============================================================
-// FINISH REFRESH
+// FINISH GLOBAL REFRESH
 // ============================================================
 
 function finishRefresh(
@@ -1019,28 +1606,11 @@ function finishRefresh(
   dot
 ) {
 
-  // Sort state only.
-  allItems.sort(
-    (a, b) => {
-
-      const at =
-        a.date instanceof Date
-          ? a.date.getTime()
-          : 0;
-
-      const bt =
-        b.date instanceof Date
-          ? b.date.getTime()
-          : 0;
-
-      return bt - at;
-    }
-  );
-
-
-  renderFeed();
+  rebuildAllItems();
 
   renderHomePreview();
+
+  renderFilters();
 
 
   const now =
@@ -1053,9 +1623,19 @@ function finishRefresh(
     );
 
 
-  const working =
-    SOURCES.length -
-    failed;
+  // Number of regulators with a current/last-known-good result.
+  const successfulSources =
+    SOURCES.filter(
+      source =>
+        Array.isArray(
+          lastSuccessfulItems[
+            source.name
+          ]
+        ) &&
+        lastSuccessfulItems[
+          source.name
+        ].length > 0
+    ).length;
 
 
   if (statusEl) {
@@ -1063,12 +1643,15 @@ function finishRefresh(
     statusEl.textContent =
       `Last updated ${now} · ` +
       `${allItems.length} updates from ` +
-      `${working}/${SOURCES.length} sources`;
+      `${successfulSources}/${SOURCES.length} sources`;
   }
 
 
   if (dot) {
-    dot.classList.add("live");
+
+    dot.classList.add(
+      "live"
+    );
   }
 
 
@@ -1086,15 +1669,19 @@ function finishRefresh(
     errNote.style.display =
       "block";
 
+
     errNote.textContent =
       `${failed} source${
         failed > 1
           ? "s"
           : ""
-      } didn't respond this refresh — ` +
-      `they will retry automatically.`;
+      } unavailable this refresh — ` +
+      `existing results have been retained. ` +
+      `Use that regulator's ↻ Retry button if needed.`;
 
-  } else if (errNote) {
+  } else if (
+    errNote
+  ) {
 
     errNote.style.display =
       "none";
@@ -1113,13 +1700,21 @@ document.addEventListener(
   "DOMContentLoaded",
   () => {
 
-    setupFilters();
+    setupCategoryFilters();
+
+    setupJurisdictionFilters();
+
+    setupRetryButtons();
+
+    buildSourceContainers();
 
     loadAll(false);
 
 
     setInterval(
-      () => loadAll(true),
+      () =>
+        loadAll(true),
+
       REFRESH_MINUTES *
       60 *
       1000
