@@ -1,9 +1,5 @@
 // ============================================================
 // THE FINVOCATES — regulatory dashboard
-//
-// Static-site constraint: GitHub Pages has no backend, and most
-// regulator RSS feeds don't allow direct browser fetches (CORS).
-// This routes each feed through rss2json.com, a free public proxy.
 // ============================================================
 
 const REFRESH_MINUTES = 15;
@@ -19,17 +15,17 @@ const SOURCES = [
   { name: "EBA", jurisdiction: "EU", category: "conduct-markets", feed: "https://www.eba.europa.eu/news-press/news/rss.xml" },
   { name: "Federal Reserve", jurisdiction: "US", category: "central-banks", feed: "https://www.federalreserve.gov/feeds/press_all.xml" },
   { name: "CFPB", jurisdiction: "US", category: "us-agencies", feed: "https://www.consumerfinance.gov/about-us/newsroom/feed/" },
-  { name: "FINRA", jurisdiction: "US", category: "us-agencies", feed: "https://feeds.finra.org/news-and-events/feed" },
+  { name: "FINRA", jurisdiction: "US", category: "us-agencies", feed: "http://feeds.finra.org/FINRANews" },
   { name: "OCC", jurisdiction: "US", category: "us-agencies", feed: "https://www.occ.gov/rss/occ_news.xml" },
   { name: "HKMA", jurisdiction: "Hong Kong", category: "central-banks", feed: "https://www.hkma.gov.hk/eng/rss/press-releases.xml" },
   { name: "BOJ", jurisdiction: "Japan", category: "central-banks", feed: "https://www.boj.or.jp/en/rss/whatsnew.xml" },
   { name: "FINMA", jurisdiction: "Switzerland", category: "conduct-markets", feed: "https://www.finma.ch/en/news/rss/" },
   { name: "SNB", jurisdiction: "Switzerland", category: "central-banks", feed: "https://www.snb.ch/dir/rss/en/press_releases.xml" },
-  { name: "BaFin", jurisdiction: "Germany", category: "conduct-markets", feed: "https://www.bafin.de/SiteGlobals/Functions/RSSFeed/EN/RSSGenerator_news_en.xml" },
+  { name: "BaFin", jurisdiction: "Germany", category: "conduct-markets", feed: "https://www.bafin.de/SiteGlobals/Functions/RSSFeed/EN/RSSNewsfeed_Veroeffentlichungen/RSSNewsfeed_Veroeffentlichungen_node.html" },
   { name: "Bank of Canada", jurisdiction: "Canada", category: "central-banks", feed: "https://www.bankofcanada.ca/feed/" },
   { name: "RBA", jurisdiction: "Australia", category: "central-banks", feed: "https://www.rba.gov.au/rss/rss-cb-media-releases.xml" },
   { name: "Central Bank of Ireland", jurisdiction: "Ireland", category: "central-banks", feed: "https://www.centralbank.ie/rss-feed" },
-  { name: "RBNZ", jurisdiction: "New Zealand", category: "central-banks", feed: "https://www.rbnz.govt.nz/-/media/rss/news" },
+  { name: "RBNZ", jurisdiction: "New Zealand", category: "central-banks", feed: "https://www.rbnz.govt.nz/-/media/rss/news" }
 ];
 
 const FILTERS = [
@@ -37,21 +33,73 @@ const FILTERS = [
   { key: "central-banks", label: "Central Banks" },
   { key: "standard-setters", label: "Global Standard-Setters" },
   { key: "conduct-markets", label: "Conduct & Markets" },
-  { key: "us-agencies", label: "US Agencies" },
+  { key: "us-agencies", label: "US Agencies" }
 ];
 
 let allItems = [];
 let activeFilter = "all";
 let loading = false;
 
+
+// ============================================================
+// SUBTLE REGULATOR COLOURS
+// ============================================================
+
+const REGULATOR_COLORS = {
+  "RBI": "#8b5cf6",
+  "FCA": "#2563eb",
+  "BoE": "#1d4ed8",
+  "PRA": "#4338ca",
+  "BIS/BCBS": "#475569",
+  "FSB": "#64748b",
+  "ECB": "#0891b2",
+  "EBA": "#0e7490",
+  "Federal Reserve": "#dc2626",
+  "CFPB": "#b91c1c",
+  "FINRA": "#be123c",
+  "OCC": "#9f1239",
+  "HKMA": "#0f766e",
+  "BOJ": "#db2777",
+  "FINMA": "#15803d",
+  "SNB": "#166534",
+  "BaFin": "#ca8a04",
+  "Bank of Canada": "#c2410c",
+  "RBA": "#ea580c",
+  "Central Bank of Ireland": "#059669",
+  "RBNZ": "#0284c7"
+};
+
+
+// Add only the small amount of styling required for the
+// source colour. No HTML structure is changed.
+(function addSourceColourStyles() {
+  if (document.getElementById("dash-source-colours")) return;
+
+  const style = document.createElement("style");
+  style.id = "dash-source-colours";
+
+  style.textContent = `
+    .dash-source {
+      font-weight: 500;
+    }
+
+    .dash-source-name {
+      font-weight: 600;
+    }
+  `;
+
+  document.head.appendChild(style);
+})();
+
+
 function proxyUrl(feedUrl) {
   return `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`;
 }
 
 
-/* ------------------------------------------------------------
-   DATE PARSING
-   ------------------------------------------------------------ */
+// ============================================================
+// DATE PARSING
+// ============================================================
 
 function parseItemDate(item) {
   const candidates = [
@@ -60,19 +108,26 @@ function parseItemDate(item) {
     item.isoDate,
     item.updated,
     item.date,
+    item.pubdate
   ];
 
   for (const value of candidates) {
     if (!value) continue;
 
-    // First: let JavaScript parse standard RSS/RFC dates normally.
+    // Standard RSS/RFC dates.
     const direct = new Date(value);
 
-    if (!isNaN(direct.getTime()) && direct.getFullYear() > 1971) {
+    if (
+      !isNaN(direct.getTime()) &&
+      direct.getFullYear() > 1971
+    ) {
       return direct;
     }
 
-    // Fallback for dates returned without a timezone.
+    // Fallback for simple dates such as:
+    // 18/08/2026
+    // 18-08-2026
+    // 18.08.2026
     if (typeof value === "string") {
       const cleaned = value.trim();
 
@@ -111,9 +166,9 @@ function parseItemDate(item) {
 }
 
 
-/* ------------------------------------------------------------
-   RELATIVE TIME
-   ------------------------------------------------------------ */
+// ============================================================
+// EXACT DATE DISPLAY
+// ============================================================
 
 function timeAgo(dateValue) {
   if (!dateValue) return "Date unavailable";
@@ -130,21 +185,6 @@ function timeAgo(dateValue) {
     return "Date unavailable";
   }
 
-  const mins = Math.round(
-    (Date.now() - then.getTime()) / 60000
-  );
-
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-
-  const hrs = Math.round(mins / 60);
-
-  if (hrs < 24) return `${hrs}h ago`;
-
-  const days = Math.round(hrs / 24);
-
-  if (days < 30) return `${days}d ago`;
-
   return then.toLocaleDateString("en-IN", {
     day: "numeric",
     month: "short",
@@ -153,9 +193,9 @@ function timeAgo(dateValue) {
 }
 
 
-/* ------------------------------------------------------------
-   FETCH ONE SOURCE
-   ------------------------------------------------------------ */
+// ============================================================
+// FETCH ONE SOURCE
+// ============================================================
 
 async function fetchSource(source, attempt = 1) {
   try {
@@ -165,7 +205,10 @@ async function fetchSource(source, attempt = 1) {
       controller.abort();
     }, 12000);
 
-    const res = await fetch(proxyUrl(source.feed), {
+    const url =
+      `${proxyUrl(source.feed)}&cache=${Date.now()}`;
+
+    const res = await fetch(url, {
       cache: "no-store",
       signal: controller.signal
     });
@@ -186,7 +229,7 @@ async function fetchSource(source, attempt = 1) {
       );
     }
 
-    return data.items.slice(0, 8).map((item) => ({
+    return data.items.slice(0, 8).map(item => ({
       title: item.title || "Untitled update",
       link: item.link || item.guid || "#",
       date: parseItemDate(item),
@@ -197,13 +240,15 @@ async function fetchSource(source, attempt = 1) {
 
   } catch (err) {
 
-    // One retry for temporary proxy/feed failures.
     if (attempt < 2) {
       await new Promise(resolve =>
-        setTimeout(resolve, 1000)
+        setTimeout(resolve, 900)
       );
 
-      return fetchSource(source, attempt + 1);
+      return fetchSource(
+        source,
+        attempt + 1
+      );
     }
 
     console.warn(
@@ -216,14 +261,15 @@ async function fetchSource(source, attempt = 1) {
 }
 
 
-/* ------------------------------------------------------------
-   FETCH ALL 21
-   Small batches avoid hammering rss2json simultaneously.
-   ------------------------------------------------------------ */
+// ============================================================
+// FETCH ALL SOURCES
+//
+// Small batches reduce the probability of RSS2JSON
+// throttling without introducing any backend.
+// ============================================================
 
 async function fetchAllSources() {
   const results = [];
-
   const batchSize = 3;
 
   for (
@@ -231,19 +277,28 @@ async function fetchAllSources() {
     i < SOURCES.length;
     i += batchSize
   ) {
-    const batch = SOURCES.slice(
-      i,
-      i + batchSize
+
+    const batch =
+      SOURCES.slice(
+        i,
+        i + batchSize
+      );
+
+    const batchResults =
+      await Promise.all(
+        batch.map(source =>
+          fetchSource(source)
+        )
+      );
+
+    results.push(
+      ...batchResults
     );
 
-    const batchResults = await Promise.all(
-      batch.map(source => fetchSource(source))
-    );
-
-    results.push(...batchResults);
-
-    // Tiny pause between batches.
-    if (i + batchSize < SOURCES.length) {
+    if (
+      i + batchSize <
+      SOURCES.length
+    ) {
       await new Promise(resolve =>
         setTimeout(resolve, 350)
       );
@@ -254,13 +309,34 @@ async function fetchAllSources() {
 }
 
 
-/* ------------------------------------------------------------
-   RENDER MAIN FEED
-   ------------------------------------------------------------ */
+// ============================================================
+// SOURCE LABEL
+// ============================================================
+
+function sourceLabel(item) {
+  const color =
+    REGULATOR_COLORS[item.source] ||
+    "#64748b";
+
+  return `
+    <span
+      class="dash-source-name"
+      style="color:${color}"
+    >${item.source}</span>
+    · ${item.jurisdiction}
+  `;
+}
+
+
+// ============================================================
+// MAIN FEED
+// ============================================================
 
 function renderFeed() {
   const list =
-    document.getElementById("dash-feed-list");
+    document.getElementById(
+      "dash-feed-list"
+    );
 
   if (!list) return;
 
@@ -268,7 +344,9 @@ function renderFeed() {
     activeFilter === "all"
       ? allItems
       : allItems.filter(
-          i => i.category === activeFilter
+          i =>
+            i.category ===
+            activeFilter
         );
 
   if (filtered.length === 0) {
@@ -280,35 +358,40 @@ function renderFeed() {
     return;
   }
 
-  list.innerHTML = filtered
-    .map(
-      item => `
-    <div class="dash-row">
-      <a
-        class="dash-title"
-        href="${item.link}"
-        target="_blank"
-        rel="noopener"
-      >${item.title}</a>
+  list.innerHTML =
+    filtered
+      .map(
+        item => `
+      <div class="dash-row">
 
-      <div class="dash-meta">
-        <span class="dash-source">
-          ${item.source} · ${item.jurisdiction}
-        </span>
+        <a
+          class="dash-title"
+          href="${item.link}"
+          target="_blank"
+          rel="noopener"
+        >${item.title}</a>
 
-        <span class="dash-time">
-          ${timeAgo(item.date)}
-        </span>
-      </div>
-    </div>`
-    )
-    .join("");
+        <div class="dash-meta">
+
+          <span class="dash-source">
+            ${sourceLabel(item)}
+          </span>
+
+          <span class="dash-time">
+            ${timeAgo(item.date)}
+          </span>
+
+        </div>
+
+      </div>`
+      )
+      .join("");
 }
 
 
-/* ------------------------------------------------------------
-   HOME PREVIEW
-   ------------------------------------------------------------ */
+// ============================================================
+// HOME PREVIEW
+// ============================================================
 
 function renderHomePreview(limit = 5) {
   const el =
@@ -327,80 +410,98 @@ function renderHomePreview(limit = 5) {
     return;
   }
 
-  el.innerHTML = allItems
-    .slice(0, limit)
-    .map(
-      item => `
-    <div class="dash-row">
-      <a
-        class="dash-title"
-        href="${item.link}"
-        target="_blank"
-        rel="noopener"
-      >${item.title}</a>
+  el.innerHTML =
+    allItems
+      .slice(0, limit)
+      .map(
+        item => `
+      <div class="dash-row">
 
-      <div class="dash-meta">
-        <span class="dash-source">
-          ${item.source} · ${item.jurisdiction}
-        </span>
+        <a
+          class="dash-title"
+          href="${item.link}"
+          target="_blank"
+          rel="noopener"
+        >${item.title}</a>
 
-        <span class="dash-time">
-          ${timeAgo(item.date)}
-        </span>
-      </div>
-    </div>`
-    )
-    .join("");
+        <div class="dash-meta">
+
+          <span class="dash-source">
+            ${sourceLabel(item)}
+          </span>
+
+          <span class="dash-time">
+            ${timeAgo(item.date)}
+          </span>
+
+        </div>
+
+      </div>`
+      )
+      .join("");
 }
 
 
-/* ------------------------------------------------------------
-   FILTERS
-   ------------------------------------------------------------ */
+// ============================================================
+// FILTERS
+// ============================================================
 
 function setupFilters() {
   const bar =
-    document.getElementById("dash-filters");
+    document.getElementById(
+      "dash-filters"
+    );
 
   if (!bar) return;
 
-  bar.innerHTML = FILTERS.map(
-    f =>
-      `<button
-        class="dash-filter${f.key === "all" ? " active" : ""}"
-        data-key="${f.key}"
-      >${f.label}</button>`
-  ).join("");
+  bar.innerHTML =
+    FILTERS.map(
+      f =>
+        `<button
+          class="dash-filter${f.key === "all" ? " active" : ""}"
+          data-key="${f.key}"
+        >${f.label}</button>`
+    ).join("");
 
-  bar.addEventListener("click", e => {
-    const btn =
-      e.target.closest(".dash-filter");
+  bar.addEventListener(
+    "click",
+    e => {
 
-    if (!btn) return;
+      const btn =
+        e.target.closest(
+          ".dash-filter"
+        );
 
-    activeFilter = btn.dataset.key;
+      if (!btn) return;
 
-    bar
-      .querySelectorAll(".dash-filter")
-      .forEach(b =>
-        b.classList.toggle(
-          "active",
-          b === btn
+      activeFilter =
+        btn.dataset.key;
+
+      bar
+        .querySelectorAll(
+          ".dash-filter"
         )
-      );
+        .forEach(b =>
+          b.classList.toggle(
+            "active",
+            b === btn
+          )
+        );
 
-    renderFeed();
-  });
+      renderFeed();
+    }
+  );
 }
 
 
-/* ------------------------------------------------------------
-   LOAD / REFRESH
-   ------------------------------------------------------------ */
+// ============================================================
+// LOAD / REFRESH
+// ============================================================
 
 async function loadAll(isRefresh) {
 
-  // Never allow refresh cycles to overlap.
+  // Prevent a refresh from starting while
+  // the previous refresh is still running.
   if (loading) return;
 
   loading = true;
@@ -411,14 +512,19 @@ async function loadAll(isRefresh) {
     );
 
   const dot =
-    document.getElementById("dash-dot");
+    document.getElementById(
+      "dash-dot"
+    );
 
   const feedList =
     document.getElementById(
       "dash-feed-list"
     );
 
-  if (!isRefresh && feedList) {
+  if (
+    !isRefresh &&
+    feedList
+  ) {
     feedList.innerHTML =
       `<div class="dash-loading">
         Loading live updates from ${SOURCES.length} regulators…
@@ -431,7 +537,9 @@ async function loadAll(isRefresh) {
   }
 
   if (dot) {
-    dot.classList.remove("live");
+    dot.classList.remove(
+      "live"
+    );
   }
 
   try {
@@ -447,21 +555,25 @@ async function loadAll(isRefresh) {
         r => r.length === 0
       ).length;
 
-    merged.sort((a, b) => {
-      const da =
-        a.date instanceof Date
-          ? a.date.getTime()
-          : 0;
+    merged.sort(
+      (a, b) => {
 
-      const db =
-        b.date instanceof Date
-          ? b.date.getTime()
-          : 0;
+        const da =
+          a.date instanceof Date
+            ? a.date.getTime()
+            : 0;
 
-      return db - da;
-    });
+        const db =
+          b.date instanceof Date
+            ? b.date.getTime()
+            : 0;
 
-    allItems = merged;
+        return db - da;
+      }
+    );
+
+    allItems =
+      merged;
 
     renderFeed();
     renderHomePreview();
@@ -476,7 +588,8 @@ async function loadAll(isRefresh) {
       );
 
     const workingSources =
-      SOURCES.length - failedCount;
+      SOURCES.length -
+      failedCount;
 
     if (statusEl) {
       statusEl.textContent =
@@ -486,7 +599,9 @@ async function loadAll(isRefresh) {
     }
 
     if (dot) {
-      dot.classList.add("live");
+      dot.classList.add(
+        "live"
+      );
     }
 
     const errNote =
@@ -494,7 +609,10 @@ async function loadAll(isRefresh) {
         "dash-error-note"
       );
 
-    if (failedCount > 0 && errNote) {
+    if (
+      failedCount > 0 &&
+      errNote
+    ) {
 
       errNote.style.display =
         "block";
@@ -530,9 +648,9 @@ async function loadAll(isRefresh) {
 }
 
 
-/* ------------------------------------------------------------
-   START
-   ------------------------------------------------------------ */
+// ============================================================
+// START
+// ============================================================
 
 document.addEventListener(
   "DOMContentLoaded",
@@ -544,7 +662,9 @@ document.addEventListener(
 
     setInterval(
       () => loadAll(true),
-      REFRESH_MINUTES * 60 * 1000
+      REFRESH_MINUTES *
+      60 *
+      1000
     );
 
   }
