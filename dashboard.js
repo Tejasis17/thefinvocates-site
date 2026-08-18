@@ -1,82 +1,352 @@
 // ============================================================
-// THE FINVOCATES — regulatory dashboard
+// THE FINVOCATES — REGULATORY DASHBOARD
 // ============================================================
 
 const REFRESH_MINUTES = 15;
 
 const SOURCES = [
-  { name: "RBI", jurisdiction: "India", category: "central-banks", feed: "https://www.rbi.org.in/pressreleases_rss.xml" },
-  { name: "FCA", jurisdiction: "UK", category: "conduct-markets", feed: "https://www.fca.org.uk/news/rss.xml" },
-  { name: "BoE", jurisdiction: "UK", category: "central-banks", feed: "https://www.bankofengland.co.uk/rss/news" },
-  { name: "PRA", jurisdiction: "UK", category: "central-banks", feed: "https://www.bankofengland.co.uk/rss/prudential-regulation" },
-  { name: "BIS/BCBS", jurisdiction: "Global", category: "standard-setters", feed: "https://www.bis.org/doclist/all_pressrels.rss" },
-  { name: "FSB", jurisdiction: "Global", category: "standard-setters", feed: "https://www.fsb.org/feed/" },
-  { name: "ECB", jurisdiction: "Eurozone", category: "central-banks", feed: "https://www.ecb.europa.eu/rss/press.xml" },
-  { name: "EBA", jurisdiction: "EU", category: "conduct-markets", feed: "https://www.eba.europa.eu/news-press/news/rss.xml" },
-  { name: "Federal Reserve", jurisdiction: "US", category: "central-banks", feed: "https://www.federalreserve.gov/feeds/press_all.xml" },
-  { name: "CFPB", jurisdiction: "US", category: "us-agencies", feed: "https://www.consumerfinance.gov/about-us/newsroom/feed/" },
-  { name: "FINRA", jurisdiction: "US", category: "us-agencies", feed: "http://feeds.finra.org/FINRANews" },
-  { name: "OCC", jurisdiction: "US", category: "us-agencies", feed: "https://www.occ.gov/rss/occ_news.xml" },
-  { name: "HKMA", jurisdiction: "Hong Kong", category: "central-banks", feed: "https://www.hkma.gov.hk/eng/rss/press-releases.xml" },
-  { name: "BOJ", jurisdiction: "Japan", category: "central-banks", feed: "https://www.boj.or.jp/en/rss/whatsnew.xml" },
-  { name: "FINMA", jurisdiction: "Switzerland", category: "conduct-markets", feed: "https://www.finma.ch/en/news/rss/" },
-  { name: "SNB", jurisdiction: "Switzerland", category: "central-banks", feed: "https://www.snb.ch/dir/rss/en/press_releases.xml" },
-  { name: "BaFin", jurisdiction: "Germany", category: "conduct-markets", feed: "https://www.bafin.de/SiteGlobals/Functions/RSSFeed/EN/RSSNewsfeed_Veroeffentlichungen/RSSNewsfeed_Veroeffentlichungen_node.html" },
-  { name: "Bank of Canada", jurisdiction: "Canada", category: "central-banks", feed: "https://www.bankofcanada.ca/feed/" },
-  { name: "RBA", jurisdiction: "Australia", category: "central-banks", feed: "https://www.rba.gov.au/rss/rss-cb-media-releases.xml" },
-  { name: "Central Bank of Ireland", jurisdiction: "Ireland", category: "central-banks", feed: "https://www.centralbank.ie/rss-feed" },
-  { name: "RBNZ", jurisdiction: "New Zealand", category: "central-banks", feed: "https://www.rbnz.govt.nz/-/media/rss/news" }
+
+  // ----------------------------------------------------------
+  // INDIA
+  // ----------------------------------------------------------
+
+  {
+    name: "RBI",
+    jurisdiction: "India",
+    category: "central-banks",
+    feed: "https://www.rbi.org.in/pressreleases_rss.xml"
+  },
+
+  // ----------------------------------------------------------
+  // UNITED KINGDOM
+  // ----------------------------------------------------------
+
+  {
+    name: "FCA",
+    jurisdiction: "UK",
+    category: "conduct-markets",
+    feed: "https://www.fca.org.uk/news/rss.xml"
+  },
+
+  {
+    name: "BoE",
+    jurisdiction: "UK",
+    category: "central-banks",
+    feed: "https://www.bankofengland.co.uk/rss/news"
+  },
+
+  {
+    name: "PRA",
+    jurisdiction: "UK",
+    category: "central-banks",
+    feed: "https://www.bankofengland.co.uk/rss/prudential-regulation",
+    fallbackFeeds: [
+      "https://www.bankofengland.co.uk/rss/news"
+    ]
+  },
+
+  // ----------------------------------------------------------
+  // GLOBAL
+  // ----------------------------------------------------------
+
+  {
+    name: "BIS/BCBS",
+    jurisdiction: "Global",
+    category: "standard-setters",
+    feed: "https://www.bis.org/doclist/all_pressrels.rss"
+  },
+
+  {
+    name: "FSB",
+    jurisdiction: "Global",
+    category: "standard-setters",
+    feed: "https://www.fsb.org/feed/"
+  },
+
+  // ----------------------------------------------------------
+  // EUROPE
+  // ----------------------------------------------------------
+
+  {
+    name: "ECB",
+    jurisdiction: "Eurozone",
+    category: "central-banks",
+    feed: "https://www.ecb.europa.eu/rss/press.xml"
+  },
+
+  {
+    name: "EBA",
+    jurisdiction: "EU",
+    category: "conduct-markets",
+    feed: "https://www.eba.europa.eu/news-press/news/rss.xml"
+  },
+
+  // ----------------------------------------------------------
+  // UNITED STATES
+  // ----------------------------------------------------------
+
+  {
+    name: "Federal Reserve",
+    jurisdiction: "US",
+    category: "central-banks",
+    feed: "https://www.federalreserve.gov/feeds/press_all.xml"
+  },
+
+  {
+    name: "CFPB",
+    jurisdiction: "US",
+    category: "us-agencies",
+    feed: "https://www.consumerfinance.gov/about-us/newsroom/feed/",
+    fallbackFeeds: [
+      "https://www.consumerfinance.gov/feed/"
+    ]
+  },
+
+  {
+    name: "FINRA",
+    jurisdiction: "US",
+    category: "us-agencies",
+    feed: "http://feeds.finra.org/FINRANews",
+    fallbackFeeds: [
+      "https://feeds.finra.org/FINRANews"
+    ]
+  },
+
+  {
+    name: "OCC",
+    jurisdiction: "US",
+    category: "us-agencies",
+    feed: "https://www.occ.gov/rss/occ_news.xml",
+    fallbackFeeds: [
+      "https://www.occ.gov/rss/news-releases.xml"
+    ]
+  },
+
+  // ----------------------------------------------------------
+  // HONG KONG
+  // ----------------------------------------------------------
+
+  {
+    name: "HKMA",
+    jurisdiction: "Hong Kong",
+    category: "central-banks",
+
+    // HKMA now has an official JSON API.
+    api:
+      "https://api.hkma.gov.hk/public/press-releases?lang=en"
+  },
+
+  // ----------------------------------------------------------
+  // JAPAN
+  // ----------------------------------------------------------
+
+  {
+    name: "BOJ",
+    jurisdiction: "Japan",
+    category: "central-banks",
+    feed: "https://www.boj.or.jp/en/rss/whatsnew.xml"
+  },
+
+  // ----------------------------------------------------------
+  // SWITZERLAND
+  // ----------------------------------------------------------
+
+  {
+    name: "FINMA",
+    jurisdiction: "Switzerland",
+    category: "conduct-markets",
+    feed: "https://www.finma.ch/en/news/rss/"
+  },
+
+  {
+    name: "SNB",
+    jurisdiction: "Switzerland",
+    category: "central-banks",
+    feed: "https://www.snb.ch/dir/rss/en/press_releases.xml",
+    fallbackFeeds: [
+      "https://www.snb.ch/en/services-events/digital-services/rss-calendar-feeds"
+    ]
+  },
+
+  // ----------------------------------------------------------
+  // GERMANY
+  // ----------------------------------------------------------
+
+  {
+    name: "BaFin",
+    jurisdiction: "Germany",
+    category: "conduct-markets",
+    feed:
+      "https://www.bafin.de/SiteGlobals/Functions/RSSFeed/EN/RSSGenerator_news_en.xml",
+    fallbackFeeds: [
+      "https://www.bafin.de/SiteGlobals/Functions/RSSFeed/EN/RSSNewsfeed_Veroeffentlichungen/RSSNewsfeed_Veroeffentlichungen_node.html"
+    ]
+  },
+
+  // ----------------------------------------------------------
+  // CANADA
+  // ----------------------------------------------------------
+
+  {
+    name: "Bank of Canada",
+    jurisdiction: "Canada",
+    category: "central-banks",
+    feed: "https://www.bankofcanada.ca/feed/"
+  },
+
+  // ----------------------------------------------------------
+  // AUSTRALIA
+  // ----------------------------------------------------------
+
+  {
+    name: "RBA",
+    jurisdiction: "Australia",
+    category: "central-banks",
+    feed:
+      "https://www.rba.gov.au/rss/rss-cb-media-releases.xml"
+  },
+
+  // ----------------------------------------------------------
+  // IRELAND
+  // ----------------------------------------------------------
+
+  {
+    name: "Central Bank of Ireland",
+    jurisdiction: "Ireland",
+    category: "central-banks",
+    feed: "https://www.centralbank.ie/rss-feed",
+    fallbackFeeds: [
+      "https://www.centralbank.ie/fns/rss-feeds"
+    ]
+  },
+
+  // ----------------------------------------------------------
+  // NEW ZEALAND
+  // ----------------------------------------------------------
+
+  {
+    name: "RBNZ",
+    jurisdiction: "New Zealand",
+    category: "central-banks",
+    feed:
+      "https://www.rbnz.govt.nz/-/media/rss/news",
+    fallbackFeeds: [
+      "https://www.rbnz.govt.nz/rss/news"
+    ]
+  }
 ];
+
+
+// ============================================================
+// FILTERS
+// ============================================================
 
 const FILTERS = [
-  { key: "all", label: "All" },
-  { key: "central-banks", label: "Central Banks" },
-  { key: "standard-setters", label: "Global Standard-Setters" },
-  { key: "conduct-markets", label: "Conduct & Markets" },
-  { key: "us-agencies", label: "US Agencies" }
+  {
+    key: "all",
+    label: "All"
+  },
+  {
+    key: "central-banks",
+    label: "Central Banks"
+  },
+  {
+    key: "standard-setters",
+    label: "Global Standard-Setters"
+  },
+  {
+    key: "conduct-markets",
+    label: "Conduct & Markets"
+  },
+  {
+    key: "us-agencies",
+    label: "US Agencies"
+  }
 ];
 
+
+// ============================================================
+// STATE
+// ============================================================
+
 let allItems = [];
+
 let activeFilter = "all";
+
 let loading = false;
 
 
 // ============================================================
-// SUBTLE REGULATOR COLOURS
+// REGULATOR COLOURS
 // ============================================================
 
 const REGULATOR_COLORS = {
+
   "RBI": "#8b5cf6",
+
   "FCA": "#2563eb",
+
   "BoE": "#1d4ed8",
+
   "PRA": "#4338ca",
+
   "BIS/BCBS": "#475569",
+
   "FSB": "#64748b",
+
   "ECB": "#0891b2",
+
   "EBA": "#0e7490",
+
   "Federal Reserve": "#dc2626",
+
   "CFPB": "#b91c1c",
+
   "FINRA": "#be123c",
+
   "OCC": "#9f1239",
+
   "HKMA": "#0f766e",
+
   "BOJ": "#db2777",
+
   "FINMA": "#15803d",
+
   "SNB": "#166534",
+
   "BaFin": "#ca8a04",
+
   "Bank of Canada": "#c2410c",
+
   "RBA": "#ea580c",
+
   "Central Bank of Ireland": "#059669",
+
   "RBNZ": "#0284c7"
 };
 
 
-// Add only the small amount of styling required for the
-// source colour. No HTML structure is changed.
-(function addSourceColourStyles() {
-  if (document.getElementById("dash-source-colours")) return;
+// ============================================================
+// SMALL SOURCE-COLOUR STYLE
+// ============================================================
 
-  const style = document.createElement("style");
-  style.id = "dash-source-colours";
+(function addSourceColourStyles() {
+
+  if (
+    document.getElementById(
+      "dash-source-colours"
+    )
+  ) {
+    return;
+  }
+
+  const style =
+    document.createElement(
+      "style"
+    );
+
+  style.id =
+    "dash-source-colours";
 
   style.textContent = `
     .dash-source {
@@ -88,75 +358,110 @@ const REGULATOR_COLORS = {
     }
   `;
 
-  document.head.appendChild(style);
+  document.head.appendChild(
+    style
+  );
+
 })();
 
 
+// ============================================================
+// RSS2JSON
+// ============================================================
+
 function proxyUrl(feedUrl) {
-  return `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`;
+
+  return (
+    "https://api.rss2json.com/v1/api.json?rss_url=" +
+    encodeURIComponent(feedUrl)
+  );
 }
 
 
 // ============================================================
-// DATE PARSING
+// DATE PARSER
 // ============================================================
 
 function parseItemDate(item) {
+
   const candidates = [
+
     item.pubDate,
+
     item.published,
+
     item.isoDate,
+
     item.updated,
+
     item.date,
-    item.pubdate
+
+    item.pubdate,
+
+    item["dc:date"]
   ];
 
-  for (const value of candidates) {
-    if (!value) continue;
+  for (
+    const value of candidates
+  ) {
 
-    // Standard RSS/RFC dates.
-    const direct = new Date(value);
+    if (!value) {
+      continue;
+    }
+
+    const direct =
+      new Date(value);
 
     if (
-      !isNaN(direct.getTime()) &&
+      !isNaN(
+        direct.getTime()
+      ) &&
       direct.getFullYear() > 1971
     ) {
+
       return direct;
     }
 
-    // Fallback for simple dates such as:
-    // 18/08/2026
-    // 18-08-2026
-    // 18.08.2026
-    if (typeof value === "string") {
-      const cleaned = value.trim();
 
-      const match = cleaned.match(
-        /^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/
-      );
+    // --------------------------------------------------------
+    // DD/MM/YYYY
+    // --------------------------------------------------------
 
-      if (match) {
-        const day = Number(match[1]);
-        const month = Number(match[2]) - 1;
-        const year = Number(match[3]);
-        const hour = Number(match[4] || 0);
-        const minute = Number(match[5] || 0);
-        const second = Number(match[6] || 0);
+    if (
+      typeof value === "string"
+    ) {
 
-        const fallback = new Date(
-          year,
-          month,
-          day,
-          hour,
-          minute,
-          second
+      const match =
+        value.match(
+          /(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/
         );
 
+      if (match) {
+
+        const day =
+          Number(match[1]);
+
+        const month =
+          Number(match[2]) - 1;
+
+        const year =
+          Number(match[3]);
+
+        const d =
+          new Date(
+            year,
+            month,
+            day
+          );
+
         if (
-          !isNaN(fallback.getTime()) &&
-          fallback.getFullYear() > 1971
+          !isNaN(
+            d.getTime()
+          ) &&
+          d.getFullYear() > 1971
         ) {
-          return fallback;
+
+          return d;
         }
       }
     }
@@ -170,26 +475,373 @@ function parseItemDate(item) {
 // EXACT DATE DISPLAY
 // ============================================================
 
-function timeAgo(dateValue) {
-  if (!dateValue) return "Date unavailable";
+function formatDate(
+  dateValue,
+  item
+) {
 
-  const then =
+  // ----------------------------------------------------------
+  // FCA
+  // ----------------------------------------------------------
+
+  if (
+    item &&
+    item.source === "FCA"
+  ) {
+
+    const raw =
+      item.fcaDate;
+
+    if (raw) {
+
+      const parsed =
+        new Date(raw);
+
+      if (
+        !isNaN(
+          parsed.getTime()
+        ) &&
+        parsed.getFullYear() > 1971
+      ) {
+
+        return parsed.toLocaleDateString(
+          "en-IN",
+          {
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+          }
+        );
+      }
+
+
+      const match =
+        String(raw).match(
+          /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/
+        );
+
+      if (match) {
+
+        return new Date(
+          Number(match[3]),
+          Number(match[2]) - 1,
+          Number(match[1])
+        ).toLocaleDateString(
+          "en-IN",
+          {
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+          }
+        );
+      }
+    }
+
+    return "Date unavailable";
+  }
+
+
+  // ----------------------------------------------------------
+  // NORMAL
+  // ----------------------------------------------------------
+
+  if (!dateValue) {
+
+    return "Date unavailable";
+  }
+
+  const date =
     dateValue instanceof Date
       ? dateValue
       : new Date(dateValue);
 
   if (
-    isNaN(then.getTime()) ||
-    then.getFullYear() <= 1971
+    isNaN(
+      date.getTime()
+    ) ||
+    date.getFullYear() <= 1971
   ) {
+
     return "Date unavailable";
   }
 
-  return then.toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric"
-  });
+  return date.toLocaleDateString(
+    "en-IN",
+    {
+      day: "numeric",
+      month: "short",
+      year: "numeric"
+    }
+  );
+}
+
+
+// ============================================================
+// NORMALISE RSS ITEMS
+// ============================================================
+
+function normaliseItems(
+  source,
+  items
+) {
+
+  if (
+    !Array.isArray(items)
+  ) {
+
+    return [];
+  }
+
+  return items
+    .slice(0, 8)
+    .map(item => {
+
+      const rawDate =
+        item.pubDate ||
+        item.published ||
+        item.isoDate ||
+        item.updated ||
+        item.date ||
+        item.pubdate ||
+        item["dc:date"] ||
+        "";
+
+      return {
+
+        title:
+          item.title ||
+          "Untitled update",
+
+        link:
+          item.link ||
+          item.guid ||
+          "#",
+
+        date:
+          parseItemDate(
+            item
+          ),
+
+        fcaDate:
+          source.name === "FCA"
+            ? rawDate
+            : null,
+
+        source:
+          source.name,
+
+        jurisdiction:
+          source.jurisdiction,
+
+        category:
+          source.category
+      };
+    });
+}
+
+
+// ============================================================
+// FETCH RSS THROUGH RSS2JSON
+// ============================================================
+
+async function fetchRSS(
+  source,
+  feed,
+  attempt = 1
+) {
+
+  try {
+
+    const controller =
+      new AbortController();
+
+    const timeout =
+      setTimeout(
+        () =>
+          controller.abort(),
+        12000
+      );
+
+    const url =
+      proxyUrl(feed) +
+      "&cache=" +
+      Date.now();
+
+    const response =
+      await fetch(
+        url,
+        {
+          cache: "no-store",
+          signal: controller.signal
+        }
+      );
+
+    clearTimeout(
+      timeout
+    );
+
+    if (
+      !response.ok
+    ) {
+
+      throw new Error(
+        `${source.name}: HTTP ${response.status}`
+      );
+    }
+
+    const data =
+      await response.json();
+
+    if (
+      !data ||
+      !Array.isArray(
+        data.items
+      )
+    ) {
+
+      throw new Error(
+        `${source.name}: invalid RSS response`
+      );
+    }
+
+    return normaliseItems(
+      source,
+      data.items
+    );
+
+  } catch (error) {
+
+    if (
+      attempt < 2
+    ) {
+
+      await new Promise(
+        resolve =>
+          setTimeout(
+            resolve,
+            900
+          )
+      );
+
+      return fetchRSS(
+        source,
+        feed,
+        attempt + 1
+      );
+    }
+
+    throw error;
+  }
+}
+
+
+// ============================================================
+// HKMA — OFFICIAL JSON API
+// ============================================================
+
+async function fetchHKMA(
+  source
+) {
+
+  const controller =
+    new AbortController();
+
+  const timeout =
+    setTimeout(
+      () =>
+        controller.abort(),
+      12000
+    );
+
+  try {
+
+    const response =
+      await fetch(
+        source.api +
+        "&offset=0",
+        {
+          cache: "no-store",
+          signal: controller.signal
+        }
+      );
+
+    clearTimeout(
+      timeout
+    );
+
+    if (
+      !response.ok
+    ) {
+
+      throw new Error(
+        `HKMA API HTTP ${response.status}`
+      );
+    }
+
+    const data =
+      await response.json();
+
+    const records =
+      data &&
+      data.result &&
+      Array.isArray(
+        data.result.records
+      )
+        ? data.result.records
+        : data &&
+          data.result &&
+          Array.isArray(
+            data.result.data
+          )
+          ? data.result.data
+          : [];
+
+    return records
+      .slice(0, 8)
+      .map(item => {
+
+        const rawDate =
+          item.date ||
+          item.pubDate ||
+          item.published;
+
+        return {
+
+          title:
+            item.title ||
+            "Untitled update",
+
+          link:
+            item.link ||
+            "#",
+
+          date:
+            rawDate
+              ? new Date(
+                  rawDate
+                )
+              : null,
+
+          fcaDate:
+            null,
+
+          source:
+            source.name,
+
+          jurisdiction:
+            source.jurisdiction,
+
+          category:
+            source.category
+        };
+      });
+
+  } finally {
+
+    clearTimeout(
+      timeout
+    );
+  }
 }
 
 
@@ -197,79 +849,99 @@ function timeAgo(dateValue) {
 // FETCH ONE SOURCE
 // ============================================================
 
-async function fetchSource(source, attempt = 1) {
-  try {
-    const controller = new AbortController();
+async function fetchSource(
+  source
+) {
 
-    const timeout = setTimeout(() => {
-      controller.abort();
-    }, 12000);
+  // ----------------------------------------------------------
+  // HKMA gets its own official API.
+  // ----------------------------------------------------------
 
-    const url =
-      `${proxyUrl(source.feed)}&cache=${Date.now()}`;
+  if (
+    source.api
+  ) {
 
-    const res = await fetch(url, {
-      cache: "no-store",
-      signal: controller.signal
-    });
+    try {
 
-    clearTimeout(timeout);
-
-    if (!res.ok) {
-      throw new Error(
-        `${source.name}: HTTP ${res.status}`
+      return await fetchHKMA(
+        source
       );
+
+    } catch (error) {
+
+      console.warn(
+        "HKMA API failed:",
+        error.message
+      );
+
+      return [];
     }
-
-    const data = await res.json();
-
-    if (!data || !Array.isArray(data.items)) {
-      throw new Error(
-        `${source.name}: no RSS items`
-      );
-    }
-
-    return data.items.slice(0, 8).map(item => ({
-      title: item.title || "Untitled update",
-      link: item.link || item.guid || "#",
-      date: parseItemDate(item),
-      source: source.name,
-      jurisdiction: source.jurisdiction,
-      category: source.category
-    }));
-
-  } catch (err) {
-
-    if (attempt < 2) {
-      await new Promise(resolve =>
-        setTimeout(resolve, 900)
-      );
-
-      return fetchSource(
-        source,
-        attempt + 1
-      );
-    }
-
-    console.warn(
-      `Skipped ${source.name}:`,
-      err.message
-    );
-
-    return [];
   }
+
+
+  // ----------------------------------------------------------
+  // Normal RSS + fallbacks.
+  // ----------------------------------------------------------
+
+  const feeds = [
+
+    source.feed,
+
+    ...(source.fallbackFeeds || [])
+  ];
+
+
+  for (
+    const feed of feeds
+  ) {
+
+    if (!feed) {
+      continue;
+    }
+
+    try {
+
+      const items =
+        await fetchRSS(
+          source,
+          feed
+        );
+
+      if (
+        items.length > 0
+      ) {
+
+        return items;
+      }
+
+    } catch (error) {
+
+      console.warn(
+        `${source.name} failed:`,
+        feed,
+        error.message
+      );
+    }
+  }
+
+
+  console.warn(
+    `${source.name}: all feed attempts failed`
+  );
+
+  return [];
 }
 
 
 // ============================================================
-// FETCH ALL SOURCES
-//
-// Small batches reduce the probability of RSS2JSON
-// throttling without introducing any backend.
+// FETCH ALL 21
 // ============================================================
 
 async function fetchAllSources() {
+
   const results = [];
+
+  // Small batches protect RSS2JSON.
   const batchSize = 3;
 
   for (
@@ -286,8 +958,11 @@ async function fetchAllSources() {
 
     const batchResults =
       await Promise.all(
-        batch.map(source =>
-          fetchSource(source)
+        batch.map(
+          source =>
+            fetchSource(
+              source
+            )
         )
       );
 
@@ -295,12 +970,18 @@ async function fetchAllSources() {
       ...batchResults
     );
 
+
     if (
       i + batchSize <
       SOURCES.length
     ) {
-      await new Promise(resolve =>
-        setTimeout(resolve, 350)
+
+      await new Promise(
+        resolve =>
+          setTimeout(
+            resolve,
+            350
+          )
       );
     }
   }
@@ -313,10 +994,14 @@ async function fetchAllSources() {
 // SOURCE LABEL
 // ============================================================
 
-function sourceLabel(item) {
+function sourceLabel(
+  item
+) {
+
   const color =
-    REGULATOR_COLORS[item.source] ||
-    "#64748b";
+    REGULATOR_COLORS[
+      item.source
+    ] || "#64748b";
 
   return `
     <span
@@ -333,23 +1018,30 @@ function sourceLabel(item) {
 // ============================================================
 
 function renderFeed() {
+
   const list =
     document.getElementById(
       "dash-feed-list"
     );
 
-  if (!list) return;
+  if (!list) {
+    return;
+  }
 
   const filtered =
     activeFilter === "all"
       ? allItems
       : allItems.filter(
-          i =>
-            i.category ===
+          item =>
+            item.category ===
             activeFilter
         );
 
-  if (filtered.length === 0) {
+
+  if (
+    filtered.length === 0
+  ) {
+
     list.innerHTML =
       `<div class="dash-empty">
         No updates loaded for this filter yet.
@@ -358,32 +1050,37 @@ function renderFeed() {
     return;
   }
 
+
   list.innerHTML =
     filtered
       .map(
         item => `
-      <div class="dash-row">
+          <div class="dash-row">
 
-        <a
-          class="dash-title"
-          href="${item.link}"
-          target="_blank"
-          rel="noopener"
-        >${item.title}</a>
+            <a
+              class="dash-title"
+              href="${item.link}"
+              target="_blank"
+              rel="noopener"
+            >${item.title}</a>
 
-        <div class="dash-meta">
+            <div class="dash-meta">
 
-          <span class="dash-source">
-            ${sourceLabel(item)}
-          </span>
+              <span class="dash-source">
+                ${sourceLabel(item)}
+              </span>
 
-          <span class="dash-time">
-            ${timeAgo(item.date)}
-          </span>
+              <span class="dash-time">
+                ${formatDate(
+                  item.date,
+                  item
+                )}
+              </span>
 
-        </div>
+            </div>
 
-      </div>`
+          </div>
+        `
       )
       .join("");
 }
@@ -393,16 +1090,25 @@ function renderFeed() {
 // HOME PREVIEW
 // ============================================================
 
-function renderHomePreview(limit = 5) {
-  const el =
+function renderHomePreview(
+  limit = 5
+) {
+
+  const element =
     document.getElementById(
       "home-dashboard-preview"
     );
 
-  if (!el) return;
+  if (!element) {
+    return;
+  }
 
-  if (allItems.length === 0) {
-    el.innerHTML =
+
+  if (
+    allItems.length === 0
+  ) {
+
+    element.innerHTML =
       `<div class="dash-empty">
         Loading live updates…
       </div>`;
@@ -410,33 +1116,41 @@ function renderHomePreview(limit = 5) {
     return;
   }
 
-  el.innerHTML =
+
+  element.innerHTML =
     allItems
-      .slice(0, limit)
+      .slice(
+        0,
+        limit
+      )
       .map(
         item => `
-      <div class="dash-row">
+          <div class="dash-row">
 
-        <a
-          class="dash-title"
-          href="${item.link}"
-          target="_blank"
-          rel="noopener"
-        >${item.title}</a>
+            <a
+              class="dash-title"
+              href="${item.link}"
+              target="_blank"
+              rel="noopener"
+            >${item.title}</a>
 
-        <div class="dash-meta">
+            <div class="dash-meta">
 
-          <span class="dash-source">
-            ${sourceLabel(item)}
-          </span>
+              <span class="dash-source">
+                ${sourceLabel(item)}
+              </span>
 
-          <span class="dash-time">
-            ${timeAgo(item.date)}
-          </span>
+              <span class="dash-time">
+                ${formatDate(
+                  item.date,
+                  item
+                )}
+              </span>
 
-        </div>
+            </div>
 
-      </div>`
+          </div>
+        `
       )
       .join("");
 }
@@ -447,46 +1161,62 @@ function renderHomePreview(limit = 5) {
 // ============================================================
 
 function setupFilters() {
+
   const bar =
     document.getElementById(
       "dash-filters"
     );
 
-  if (!bar) return;
+  if (!bar) {
+    return;
+  }
+
 
   bar.innerHTML =
-    FILTERS.map(
-      f =>
-        `<button
-          class="dash-filter${f.key === "all" ? " active" : ""}"
-          data-key="${f.key}"
-        >${f.label}</button>`
-    ).join("");
+    FILTERS
+      .map(
+        filter =>
+          `<button
+            class="dash-filter${
+              filter.key === "all"
+                ? " active"
+                : ""
+            }"
+            data-key="${filter.key}"
+          >${filter.label}</button>`
+      )
+      .join("");
+
 
   bar.addEventListener(
     "click",
-    e => {
+    event => {
 
-      const btn =
-        e.target.closest(
+      const button =
+        event.target.closest(
           ".dash-filter"
         );
 
-      if (!btn) return;
+      if (!button) {
+        return;
+      }
 
       activeFilter =
-        btn.dataset.key;
+        button.dataset.key;
+
 
       bar
         .querySelectorAll(
           ".dash-filter"
         )
-        .forEach(b =>
-          b.classList.toggle(
-            "active",
-            b === btn
-          )
+        .forEach(
+          item =>
+            item.classList.toggle(
+              "active",
+              item === button
+            )
         );
+
 
       renderFeed();
     }
@@ -498,15 +1228,19 @@ function setupFilters() {
 // LOAD / REFRESH
 // ============================================================
 
-async function loadAll(isRefresh) {
+async function loadAll(
+  isRefresh
+) {
 
-  // Prevent a refresh from starting while
-  // the previous refresh is still running.
-  if (loading) return;
+  // Never overlap refresh cycles.
+  if (loading) {
+    return;
+  }
 
   loading = true;
 
-  const statusEl =
+
+  const status =
     document.getElementById(
       "dash-status-text"
     );
@@ -516,67 +1250,86 @@ async function loadAll(isRefresh) {
       "dash-dot"
     );
 
-  const feedList =
+  const feed =
     document.getElementById(
       "dash-feed-list"
     );
 
+
   if (
     !isRefresh &&
-    feedList
+    feed
   ) {
-    feedList.innerHTML =
+
+    feed.innerHTML =
       `<div class="dash-loading">
         Loading live updates from ${SOURCES.length} regulators…
       </div>`;
   }
 
-  if (statusEl) {
-    statusEl.textContent =
+
+  if (status) {
+
+    status.textContent =
       "Refreshing…";
   }
 
+
   if (dot) {
+
     dot.classList.remove(
       "live"
     );
   }
+
 
   try {
 
     const results =
       await fetchAllSources();
 
+
     const merged =
       results.flat();
 
+
     const failedCount =
       results.filter(
-        r => r.length === 0
+        result =>
+          result.length === 0
       ).length;
 
+
+    // Newest first.
     merged.sort(
       (a, b) => {
 
-        const da =
+        const dateA =
           a.date instanceof Date
             ? a.date.getTime()
             : 0;
 
-        const db =
+        const dateB =
           b.date instanceof Date
             ? b.date.getTime()
             : 0;
 
-        return db - da;
+        return (
+          dateB -
+          dateA
+        );
       }
     );
+
 
     allItems =
       merged;
 
+
     renderFeed();
+
     renderHomePreview();
+
 
     const now =
       new Date().toLocaleTimeString(
@@ -587,59 +1340,75 @@ async function loadAll(isRefresh) {
         }
       );
 
+
     const workingSources =
       SOURCES.length -
       failedCount;
 
-    if (statusEl) {
-      statusEl.textContent =
+
+    if (status) {
+
+      status.textContent =
         `Last updated ${now} · ` +
         `${merged.length} updates from ` +
         `${workingSources}/${SOURCES.length} sources`;
     }
 
+
     if (dot) {
+
       dot.classList.add(
         "live"
       );
     }
 
-    const errNote =
+
+    const errorNote =
       document.getElementById(
         "dash-error-note"
       );
 
+
     if (
       failedCount > 0 &&
-      errNote
+      errorNote
     ) {
 
-      errNote.style.display =
+      errorNote.style.display =
         "block";
 
-      errNote.textContent =
+      errorNote.textContent =
         `${failedCount} source` +
-        `${failedCount > 1 ? "s" : ""}` +
-        ` didn't respond this refresh — ` +
+        `${
+          failedCount > 1
+            ? "s"
+            : ""
+        } didn't respond this refresh — ` +
         `they'll retry automatically.`;
 
-    } else if (errNote) {
+    } else if (
+      errorNote
+    ) {
 
-      errNote.style.display =
+      errorNote.style.display =
         "none";
     }
 
-  } catch (err) {
+
+  } catch (error) {
 
     console.error(
       "Dashboard refresh failed:",
-      err
+      error
     );
 
-    if (statusEl) {
-      statusEl.textContent =
+
+    if (status) {
+
+      status.textContent =
         "Refresh failed — retrying automatically";
     }
+
 
   } finally {
 
@@ -660,8 +1429,11 @@ document.addEventListener(
 
     loadAll(false);
 
+
     setInterval(
-      () => loadAll(true),
+      () =>
+        loadAll(true),
+
       REFRESH_MINUTES *
       60 *
       1000
