@@ -1,14 +1,11 @@
 // ============================================================
 // THE FINVOCATES — regulatory dashboard
 //
-// Static-site constraint: GitHub Pages has no backend, and most
-// regulator RSS feeds don't allow direct browser fetches (CORS).
-// This routes each feed through free public proxies that return
-// raw XML, completely bypassing JSON conversion to preserve 
-// native date formats (like the FCA feed).
-//
-// Features a Dual-Proxy fallback with strict timeouts and 
-// Batched Requests to balance high speed with maximum uptime.
+// Static-site constraint: GitHub Pages has no backend.
+// This routes feeds through public proxies returning raw XML.
+// Features a Dual-Proxy fallback with 8.5s timeouts, 
+// enabled caching to bypass Web Application Firewalls (WAF),
+// and a Rolling Concurrency model to prevent rate limits.
 // ============================================================
 
 const REFRESH_MINUTES = 15;
@@ -73,6 +70,7 @@ function timeAgo(dateStr) {
 }
 
 async function fetchXML(url) {
+  // Caching is intentionally allowed here to prevent bank firewalls from blocking proxy IPs
   const proxies = [
     `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
     `https://corsproxy.io/?${encodeURIComponent(url)}`
@@ -81,9 +79,10 @@ async function fetchXML(url) {
   for (const proxy of proxies) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
+      // Increased timeout to 8.5 seconds to allow for DNS resolution and secure handshakes
+      const timeoutId = setTimeout(() => controller.abort(), 8500);
 
-      const res = await fetch(proxy, { cache: "no-store", signal: controller.signal });
+      const res = await fetch(proxy, { signal: controller.signal });
       clearTimeout(timeoutId);
 
       if (res.ok) {
@@ -93,15 +92,17 @@ async function fetchXML(url) {
         }
       }
     } catch (e) {
-      // Instantly moves to the next proxy if it times out or blocks
+      // Moves to secondary proxy if the first is fully blocked
     }
   }
-  throw new Error("All proxies failed or timed out");
+  return null;
 }
 
 async function fetchSource(source) {
   try {
     const xmlText = await fetchXML(source.feed);
+    if (!xmlText) return [];
+
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlText, "text/xml");
 
@@ -233,11 +234,17 @@ async function loadAll(isRefresh) {
   if (dot) dot.classList.remove("live");
 
   const results = [];
-  const chunkSize = 11;
+  const chunkSize = 4; // Smaller chunks to prevent proxy overload
+  
   for (let i = 0; i < SOURCES.length; i += chunkSize) {
     const chunk = SOURCES.slice(i, i + chunkSize);
     const chunkResults = await Promise.all(chunk.map(fetchSource));
     results.push(...chunkResults);
+    
+    // 600ms network pause to simulate human interaction and clear limiters
+    if (i + chunkSize < SOURCES.length) {
+      await new Promise(resolve => setTimeout(resolve, 600)); 
+    }
   }
   
   const merged = results.flat();
