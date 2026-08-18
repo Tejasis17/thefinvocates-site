@@ -1,6 +1,10 @@
 // ============================================================
-// THE FINVOCATES — Regulatory Intelligence Dashboard
-// Lightweight • Progressive • Colour Coded • Per-source Retry
+// THE FINVOCATES — regulatory dashboard
+//
+// Lightweight progressive dashboard.
+// Network/fetch layer is adaptable; UI remains deliberately
+// simple and unchanged in spirit.
+//
 // ============================================================
 
 const REFRESH_MINUTES = 15;
@@ -11,57 +15,173 @@ const REFRESH_MINUTES = 15;
 // ============================================================
 
 const SOURCES = [
-  { name:"RBI", jurisdiction:"India", category:"central-banks", feed:"https://www.rbi.org.in/pressreleases_rss.xml" },
-  { name:"FCA", jurisdiction:"UK", category:"conduct-markets", feed:"https://www.fca.org.uk/news/rss.xml" },
-  { name:"BoE", jurisdiction:"UK", category:"central-banks", feed:"https://www.bankofengland.co.uk/rss/news" },
-  { name:"PRA", jurisdiction:"UK", category:"central-banks", feed:"https://www.bankofengland.co.uk/rss/prudential-regulation" },
-  { name:"BIS/BCBS", jurisdiction:"Global", category:"standard-setters", feed:"https://www.bis.org/doclist/all_rss.xml" },
-  { name:"FSB", jurisdiction:"Global", category:"standard-setters", feed:"https://www.fsb.org/feed/" },
-  { name:"ECB", jurisdiction:"Eurozone", category:"central-banks", feed:"https://www.ecb.europa.eu/rss/press.xml" },
-  { name:"EBA", jurisdiction:"EU", category:"conduct-markets", feed:"https://www.eba.europa.eu/news-press/news/rss.xml" },
-  { name:"Federal Reserve", jurisdiction:"US", category:"central-banks", feed:"https://www.federalreserve.gov/feeds/press_all.xml" },
-  { name:"CFPB", jurisdiction:"US", category:"us-agencies", feed:"https://www.consumerfinance.gov/about-us/newsroom/feed/" },
-  { name:"FINRA", jurisdiction:"US", category:"us-agencies", feed:"https://feeds.finra.org/news-and-events/feed" },
-  { name:"OCC", jurisdiction:"US", category:"us-agencies", feed:"https://www.occ.gov/rss/index-rss.html" },
-  { name:"HKMA", jurisdiction:"Hong Kong", category:"central-banks", feed:"https://www.hkma.gov.hk/eng/rss/press-releases.xml" },
-  { name:"BOJ", jurisdiction:"Japan", category:"central-banks", feed:"https://www.boj.or.jp/en/rss/whatsnew.xml" },
-  { name:"FINMA", jurisdiction:"Switzerland", category:"conduct-markets", feed:"https://www.finma.ch/en/news/rss/" },
-  { name:"SNB", jurisdiction:"Switzerland", category:"central-banks", feed:"https://www.snb.ch/en/services-events/digital-services/rss-calendar-feeds" },
-  { name:"BaFin", jurisdiction:"Germany", category:"conduct-markets", feed:"https://www.bafin.de/SiteGlobals/Functions/RSSFeed/EN/RSSGenerator_news_en.xml" },
-  { name:"Bank of Canada", jurisdiction:"Canada", category:"central-banks", feed:"https://www.bankofcanada.ca/valet/fixed_income_yield_curves/feed" },
-  { name:"RBA", jurisdiction:"Australia", category:"central-banks", feed:"https://www.rba.gov.au/rss/rss-cb-media-releases.xml" },
-  { name:"Central Bank of Ireland", jurisdiction:"Ireland", category:"central-banks", feed:"https://www.centralbank.ie/rss-feed" },
-  { name:"RBNZ", jurisdiction:"New Zealand", category:"central-banks", feed:"https://www.rbnz.govt.nz/-/media/rss/news" }
+
+  {
+    name: "RBI",
+    jurisdiction: "India",
+    category: "central-banks",
+    feed: "https://www.rbi.org.in/pressreleases_rss.xml"
+  },
+
+  {
+    name: "FCA",
+    jurisdiction: "UK",
+    category: "conduct-markets",
+    feed: "https://www.fca.org.uk/news/rss.xml"
+  },
+
+  {
+    name: "BoE",
+    jurisdiction: "UK",
+    category: "central-banks",
+    feed: "https://www.bankofengland.co.uk/rss/news"
+  },
+
+  {
+    name: "PRA",
+    jurisdiction: "UK",
+    category: "central-banks",
+    feed: "https://www.bankofengland.co.uk/rss/prudential-regulation",
+    fallbackFeeds: [
+      "https://www.bankofengland.co.uk/rss/news"
+    ]
+  },
+
+  {
+    name: "BIS/BCBS",
+    jurisdiction: "Global",
+    category: "standard-setters",
+    // BIS press releases feed
+    feed: "https://www.bis.org/doclist/all_pressrels.rss"
+  },
+
+  {
+    name: "FSB",
+    jurisdiction: "Global",
+    category: "standard-setters",
+    feed: "https://www.fsb.org/feed/"
+  },
+
+  {
+    name: "ECB",
+    jurisdiction: "Eurozone",
+    category: "central-banks",
+    feed: "https://www.ecb.europa.eu/rss/press.xml"
+  },
+
+  {
+    name: "EBA",
+    jurisdiction: "EU",
+    category: "conduct-markets",
+    feed: "https://www.eba.europa.eu/news-press/news/rss.xml"
+  },
+
+  {
+    name: "Federal Reserve",
+    jurisdiction: "US",
+    category: "central-banks",
+    feed: "https://www.federalreserve.gov/feeds/press_all.xml"
+  },
+
+  {
+    name: "CFPB",
+    jurisdiction: "US",
+    category: "us-agencies",
+    feed: "https://www.consumerfinance.gov/about-us/newsroom/feed/"
+  },
+
+  {
+    name: "FINRA",
+    jurisdiction: "US",
+    category: "us-agencies",
+    feed: "http://feeds.finra.org/FINRANews",
+    fallbackFeeds: [
+      "https://feeds.finra.org/FINRANews"
+    ]
+  },
+
+  {
+    name: "OCC",
+    jurisdiction: "US",
+    category: "us-agencies",
+    feed: "https://www.occ.gov/rss/occ_news.xml",
+    fallbackPage: "https://www.occ.gov/rss/index-rss.html"
+  },
+
+  {
+    name: "HKMA",
+    jurisdiction: "Hong Kong",
+    category: "central-banks",
+
+    // HKMA first-party API.
+    api: "https://api.hkma.gov.hk/public/press-releases?lang=en&offset=0"
+  },
+
+  {
+    name: "BOJ",
+    jurisdiction: "Japan",
+    category: "central-banks",
+    feed: "https://www.boj.or.jp/en/rss/whatsnew.xml"
+  },
+
+  {
+    name: "FINMA",
+    jurisdiction: "Switzerland",
+    category: "conduct-markets",
+    feed: "https://www.finma.ch/en/news/rss/",
+    fallbackPage: "https://www.finma.ch/en/rss/"
+  },
+
+  {
+    name: "SNB",
+    jurisdiction: "Switzerland",
+    category: "central-banks",
+
+    // Direct feed preferred. If the implementation changes,
+    // the RSS-services page is used to discover it.
+    feed: "https://www.snb.ch/dir/rss/en/press_releases.xml",
+    fallbackPage: "https://www.snb.ch/en/services-events/digital-services/rss-calendar-feeds"
+  },
+
+  {
+    name: "BaFin",
+    jurisdiction: "Germany",
+    category: "conduct-markets",
+    feed: "https://www.bafin.de/SiteGlobals/Functions/RSSFeed/EN/RSSGenerator_news_en.xml",
+    fallbackPage: "https://www.bafin.de/EN/PublikationenDaten/publikationen_node_en.html"
+  },
+
+  {
+    name: "Bank of Canada",
+    jurisdiction: "Canada",
+    category: "central-banks",
+    feed: "https://www.bankofcanada.ca/feed/",
+    fallbackPage: "https://www.bankofcanada.ca/rss-feeds/"
+  },
+
+  {
+    name: "RBA",
+    jurisdiction: "Australia",
+    category: "central-banks",
+    feed: "https://www.rba.gov.au/rss/rss-cb-media-releases.xml"
+  },
+
+  {
+    name: "Central Bank of Ireland",
+    jurisdiction: "Ireland",
+    category: "central-banks",
+    feed: "https://www.centralbank.ie/rss-feed",
+    fallbackPage: "https://www.centralbank.ie/fns/rss-feeds"
+  },
+
+  {
+    name: "RBNZ",
+    jurisdiction: "New Zealand",
+    category: "central-banks",
+    feed: "https://www.rbnz.govt.nz/-/media/rss/news",
+    fallbackPage: "https://www.rbnz.govt.nz/news"
+  }
 ];
-
-
-// ============================================================
-// COLOURS
-// ============================================================
-
-const REGULATOR_COLORS = {
-  "RBI":"#8b5cf6",
-  "FCA":"#2563eb",
-  "BoE":"#1d4ed8",
-  "PRA":"#4338ca",
-  "BIS/BCBS":"#475569",
-  "FSB":"#64748b",
-  "ECB":"#0891b2",
-  "EBA":"#0e7490",
-  "Federal Reserve":"#dc2626",
-  "CFPB":"#b91c1c",
-  "FINRA":"#be123c",
-  "OCC":"#9f1239",
-  "HKMA":"#0f766e",
-  "BOJ":"#db2777",
-  "FINMA":"#15803d",
-  "SNB":"#166534",
-  "BaFin":"#ca8a04",
-  "Bank of Canada":"#c2410c",
-  "RBA":"#ea580c",
-  "Central Bank of Ireland":"#059669",
-  "RBNZ":"#0284c7"
-};
 
 
 // ============================================================
@@ -69,12 +189,41 @@ const REGULATOR_COLORS = {
 // ============================================================
 
 const CATEGORIES = [
-  { key:"all", label:"All" },
-  { key:"central-banks", label:"Central Banks" },
-  { key:"standard-setters", label:"Global Standard-Setters" },
-  { key:"conduct-markets", label:"Conduct & Markets" },
-  { key:"us-agencies", label:"US Agencies" }
+  { key: "all", label: "All" },
+  { key: "central-banks", label: "Central Banks" },
+  { key: "standard-setters", label: "Global Standard-Setters" },
+  { key: "conduct-markets", label: "Conduct & Markets" },
+  { key: "us-agencies", label: "US Agencies" }
 ];
+
+
+// ============================================================
+// REGULATOR COLOURS
+// ============================================================
+
+const REGULATOR_COLORS = {
+  "RBI": "#8b5cf6",
+  "FCA": "#2563eb",
+  "BoE": "#1d4ed8",
+  "PRA": "#4338ca",
+  "BIS/BCBS": "#475569",
+  "FSB": "#64748b",
+  "ECB": "#0891b2",
+  "EBA": "#0e7490",
+  "Federal Reserve": "#dc2626",
+  "CFPB": "#b91c1c",
+  "FINRA": "#be123c",
+  "OCC": "#9f1239",
+  "HKMA": "#0f766e",
+  "BOJ": "#db2777",
+  "FINMA": "#15803d",
+  "SNB": "#166534",
+  "BaFin": "#ca8a04",
+  "Bank of Canada": "#c2410c",
+  "RBA": "#ea580c",
+  "Central Bank of Ireland": "#059669",
+  "RBNZ": "#0284c7"
+};
 
 
 // ============================================================
@@ -89,37 +238,38 @@ const lastSuccessfulItems = {};
 
 
 // ============================================================
-// HELPERS
+// BASIC HELPERS
 // ============================================================
 
-function escapeHtml(value) {
-
-  return String(value ?? "")
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 
 function sourceColor(name) {
-
   return REGULATOR_COLORS[name] || "#64748b";
 }
 
 
-function proxyRss2Json(url) {
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
+
+function rss2jsonUrl(feed) {
   return (
     "https://api.rss2json.com/v1/api.json?rss_url=" +
-    encodeURIComponent(url)
+    encodeURIComponent(feed)
   );
 }
 
 
-function proxyAllOrigins(url) {
-
+function allOriginsUrl(url) {
   return (
     "https://api.allorigins.win/raw?url=" +
     encodeURIComponent(url)
@@ -128,41 +278,41 @@ function proxyAllOrigins(url) {
 
 
 // ============================================================
-// DATE
+// DATE PARSING
 // ============================================================
 
 function parseDate(value) {
 
   if (!value) return null;
 
-  const d = new Date(value);
+  const direct = new Date(value);
 
   if (
-    !isNaN(d.getTime()) &&
-    d.getFullYear() > 1971
+    !isNaN(direct.getTime()) &&
+    direct.getFullYear() > 1971
   ) {
-    return d;
+    return direct;
   }
 
   if (typeof value === "string") {
 
-    const m = value.match(
+    const match = value.match(
       /(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/
     );
 
-    if (m) {
+    if (match) {
 
-      const x = new Date(
-        Number(m[3]),
-        Number(m[2]) - 1,
-        Number(m[1])
+      const d = new Date(
+        Number(match[3]),
+        Number(match[2]) - 1,
+        Number(match[1])
       );
 
       if (
-        !isNaN(x.getTime()) &&
-        x.getFullYear() > 1971
+        !isNaN(d.getTime()) &&
+        d.getFullYear() > 1971
       ) {
-        return x;
+        return d;
       }
     }
   }
@@ -173,7 +323,9 @@ function parseDate(value) {
 
 function formatDate(date) {
 
-  if (!date) return "Date unavailable";
+  if (!date) {
+    return "Date unavailable";
+  }
 
   const d =
     date instanceof Date
@@ -191,9 +343,9 @@ function formatDate(date) {
   return d.toLocaleDateString(
     "en-IN",
     {
-      day:"numeric",
-      month:"short",
-      year:"numeric"
+      day: "numeric",
+      month: "short",
+      year: "numeric"
     }
   );
 }
@@ -222,8 +374,8 @@ function extractFCADate(item) {
     if (!field) continue;
 
     const text = String(field)
-      .replace(/<[^>]*>/g," ")
-      .replace(/\s+/g," ")
+      .replace(/<[^>]*>/g, " ")
+      .replace(/\s+/g, " ")
       .trim();
 
     const first = text.match(
@@ -245,18 +397,11 @@ function extractFCADate(item) {
 
     if (generic) {
 
-      const d = new Date(
+      return new Date(
         Number(generic[3]),
         Number(generic[2]) - 1,
         Number(generic[1])
       );
-
-      if (
-        !isNaN(d.getTime()) &&
-        d.getFullYear() > 1971
-      ) {
-        return d;
-      }
     }
   }
 
@@ -265,20 +410,19 @@ function extractFCADate(item) {
 
 
 // ============================================================
-// NORMALISE RSS ITEM
+// NORMALISE ONE ITEM
 // ============================================================
 
 function normaliseItem(item, source) {
 
-  let date =
-    parseDate(
-      item.pubDate ||
-      item.published ||
-      item.isoDate ||
-      item.updated ||
-      item.date ||
-      item["dc:date"]
-    );
+  let date = parseDate(
+    item.pubDate ||
+    item.published ||
+    item.isoDate ||
+    item.updated ||
+    item.date ||
+    item["dc:date"]
+  );
 
   if (source.name === "FCA") {
 
@@ -304,22 +448,90 @@ function normaliseItem(item, source) {
 
     date,
 
-    source:source.name,
-
-    jurisdiction:
-      source.jurisdiction,
-
-    category:
-      source.category
+    source: source.name,
+    jurisdiction: source.jurisdiction,
+    category: source.category
   };
 }
 
 
 // ============================================================
-// PARSE RAW XML FALLBACK
+// RSS2JSON FETCH
 // ============================================================
 
-function parseXmlFeed(xml, source) {
+async function tryRss2Json(source) {
+
+  const response =
+    await fetch(
+      rss2jsonUrl(source.feed) +
+      "&t=" +
+      Date.now(),
+      {
+        cache: "no-store"
+      }
+    );
+
+  if (!response.ok) {
+
+    throw new Error(
+      `RSS2JSON HTTP ${response.status}`
+    );
+  }
+
+  const data =
+    await response.json();
+
+  if (
+    !data ||
+    !Array.isArray(data.items) ||
+    !data.items.length
+  ) {
+
+    throw new Error(
+      "RSS2JSON returned no items"
+    );
+  }
+
+  return data.items
+    .slice(0, 8)
+    .map(
+      item =>
+        normaliseItem(
+          item,
+          source
+        )
+    );
+}
+
+
+// ============================================================
+// RAW XML FETCH
+// ============================================================
+
+async function tryRawXml(
+  source,
+  url
+) {
+
+  const response =
+    await fetch(
+      allOriginsUrl(url) +
+      "&t=" +
+      Date.now(),
+      {
+        cache: "no-store"
+      }
+    );
+
+  if (!response.ok) {
+
+    throw new Error(
+      `Raw feed HTTP ${response.status}`
+    );
+  }
+
+  const xml =
+    await response.text();
 
   const parser =
     new DOMParser();
@@ -336,44 +548,53 @@ function parseXmlFeed(xml, source) {
   ];
 
   if (!nodes.length) {
-    return [];
+
+    throw new Error(
+      "No RSS/Atom entries"
+    );
   }
 
   return nodes
-    .slice(0,8)
+    .slice(0, 8)
     .map(node => {
 
       const title =
         node.querySelector("title")
           ?.textContent
-          ?.trim();
+          ?.trim() ||
+        "Untitled update";
 
       const linkNode =
         node.querySelector("link");
 
-      let link =
+      const link =
         linkNode?.getAttribute("href") ||
         linkNode?.textContent?.trim() ||
         "#";
 
       const date =
-        node.querySelector("pubDate")?.textContent ||
-        node.querySelector("published")?.textContent ||
-        node.querySelector("updated")?.textContent ||
-        node.querySelector("date")?.textContent ||
-        node.querySelector("dc\\:date")?.textContent ||
+        node.querySelector("pubDate")
+          ?.textContent ||
+        node.querySelector("published")
+          ?.textContent ||
+        node.querySelector("updated")
+          ?.textContent ||
+        node.querySelector("date")
+          ?.textContent ||
         "";
 
       const description =
-        node.querySelector("description")?.textContent ||
-        node.querySelector("summary")?.textContent ||
+        node.querySelector("description")
+          ?.textContent ||
+        node.querySelector("summary")
+          ?.textContent ||
         "";
 
       return normaliseItem(
         {
           title,
           link,
-          pubDate:date,
+          pubDate: date,
           description
         },
         source
@@ -383,153 +604,341 @@ function parseXmlFeed(xml, source) {
 
 
 // ============================================================
-// FETCH RSS2JSON
+// DISCOVER RSS LINK FROM A REGULATOR'S RSS/NEWS PAGE
+//
+// Useful for directory-style pages such as FINMA/OCC/CBI/SNB.
 // ============================================================
 
-async function tryRss2Json(source) {
+async function discoverFeedFromPage(
+  source
+) {
+
+  if (!source.fallbackPage) {
+    return [];
+  }
+
+  try {
+
+    const response =
+      await fetch(
+        allOriginsUrl(
+          source.fallbackPage
+        ) +
+        "&t=" +
+        Date.now(),
+        {
+          cache: "no-store"
+        }
+      );
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const html =
+      await response.text();
+
+    const doc =
+      new DOMParser()
+        .parseFromString(
+          html,
+          "text/html"
+        );
+
+
+    const links =
+      [...doc.querySelectorAll("a")]
+
+
+    // Prefer explicit RSS/feed links.
+    const candidates =
+      links.filter(
+        link => {
+
+          const text =
+            (
+              link.textContent ||
+              ""
+            ).toLowerCase();
+
+          const href =
+            (
+              link.getAttribute(
+                "href"
+              ) ||
+              ""
+            ).toLowerCase();
+
+          return (
+            text.includes("rss") ||
+            text.includes("feed") ||
+            href.includes("rss") ||
+            href.includes("feed")
+          );
+        }
+      );
+
+
+    for (
+      const link of candidates
+    ) {
+
+      let href =
+        link.getAttribute(
+          "href"
+        );
+
+      if (!href) continue;
+
+
+      try {
+
+        href =
+          new URL(
+            href,
+            source.fallbackPage
+          ).href;
+
+      } catch (_) {
+
+        continue;
+      }
+
+
+      // Ignore links that merely point back
+      // to the same HTML page.
+      if (
+        href ===
+        source.fallbackPage
+      ) {
+        continue;
+      }
+
+
+      if (
+        /rss|feed/i.test(
+          href
+        )
+      ) {
+
+        try {
+
+          const items =
+            await tryRawXml(
+              source,
+              href
+            );
+
+          if (items.length) {
+            return items;
+          }
+
+        } catch (_) {
+          // Continue looking.
+        }
+      }
+    }
+
+  } catch (err) {
+
+    console.warn(
+      `${source.name}: feed discovery failed`,
+      err.message
+    );
+  }
+
+  return [];
+}
+
+
+// ============================================================
+// HKMA API
+// ============================================================
+
+async function tryHKMA(
+  source
+) {
 
   const response =
     await fetch(
-      proxyRss2Json(source.feed) +
+      source.api +
       "&t=" +
       Date.now(),
       {
-        cache:"no-store"
+        cache: "no-store"
       }
     );
 
   if (!response.ok) {
+
     throw new Error(
-      `rss2json HTTP ${response.status}`
+      `HKMA API HTTP ${response.status}`
     );
   }
 
   const data =
     await response.json();
 
-  if (
-    !data ||
-    !Array.isArray(data.items) ||
-    !data.items.length
-  ) {
+
+  const records =
+    data?.result?.records ||
+    data?.result?.data ||
+    [];
+
+
+  if (!Array.isArray(records) ||
+      !records.length) {
+
     throw new Error(
-      "rss2json returned no items"
+      "HKMA returned no records"
     );
   }
 
-  return data.items
-    .slice(0,8)
+
+  return records
+    .slice(0, 8)
     .map(
-      item =>
-        normaliseItem(
-          item,
-          source
-        )
-    );
-}
+      record => {
+
+        const date =
+          parseDate(
+            record.date ||
+            record.pubDate ||
+            record.published
+          );
 
 
-// ============================================================
-// FETCH RAW XML
-// ============================================================
+        return {
+          title:
+            record.title ||
+            "Untitled update",
 
-async function tryRawXml(source) {
+          link:
+            record.link ||
+            "#",
 
-  const response =
-    await fetch(
-      proxyAllOrigins(source.feed) +
-      "&t=" +
-      Date.now(),
-      {
-        cache:"no-store"
+          date,
+
+          source:
+            source.name,
+
+          jurisdiction:
+            source.jurisdiction,
+
+          category:
+            source.category
+        };
       }
     );
-
-  if (!response.ok) {
-    throw new Error(
-      `raw proxy HTTP ${response.status}`
-    );
-  }
-
-  const xml =
-    await response.text();
-
-  const items =
-    parseXmlFeed(
-      xml,
-      source
-    );
-
-  if (!items.length) {
-    throw new Error(
-      "raw XML contained no items"
-    );
-  }
-
-  return items;
 }
 
 
 // ============================================================
 // FETCH ONE SOURCE
+//
+// Order:
+//
+// 1. Official API where available
+// 2. Primary RSS through RSS2JSON
+// 3. Raw primary RSS
+// 4. Discovered RSS from official fallback page
+// 5. Fallback feed URLs
 // ============================================================
 
-async function fetchSource(source) {
+async function fetchSource(
+  source
+) {
 
-  // First path: RSS2JSON
+  // HKMA
+  if (source.api) {
+
+    try {
+
+      return await tryHKMA(
+        source
+      );
+
+    } catch (err) {
+
+      console.warn(
+        "HKMA API failed:",
+        err.message
+      );
+    }
+  }
+
+
+  // Primary RSS.
   try {
 
     return await tryRss2Json(
       source
     );
 
-  } catch (firstError) {
+  } catch (err) {
 
     console.warn(
       `${source.name}: RSS2JSON failed`,
-      firstError.message
+      err.message
     );
   }
 
 
-  // Second path: raw XML through AllOrigins
+  // Raw primary RSS.
   try {
 
     return await tryRawXml(
-      source
+      source,
+      source.feed
     );
 
-  } catch (secondError) {
+  } catch (err) {
 
     console.warn(
-      `${source.name}: raw XML failed`,
-      secondError.message
+      `${source.name}: raw feed failed`,
+      err.message
     );
   }
 
 
-  // Third attempt: RSS2JSON once more.
-  // Useful for intermittent proxy failures.
-  try {
-
-    await new Promise(
-      resolve =>
-        setTimeout(
-          resolve,
-          700
-        )
-    );
-
-    return await tryRss2Json(
+  // Discover a real RSS URL from official page.
+  const discovered =
+    await discoverFeedFromPage(
       source
     );
 
-  } catch (thirdError) {
+  if (discovered.length) {
+    return discovered;
+  }
 
-    console.warn(
-      `${source.name}: final attempt failed`,
-      thirdError.message
-    );
+
+  // Alternate feed URLs, where configured.
+  for (
+    const fallback of (
+      source.fallbackFeeds || []
+    )
+  ) {
+
+    try {
+
+      return await tryRss2Json({
+        ...source,
+        feed: fallback
+      });
+
+    } catch (_) {
+
+      try {
+
+        return await tryRawXml(
+          source,
+          fallback
+        );
+
+      } catch (_) {
+        // Continue.
+      }
+    }
   }
 
 
@@ -538,12 +947,18 @@ async function fetchSource(source) {
 
 
 // ============================================================
-// SOURCE BLOCK
+// CREATE SOURCE BLOCK
 // ============================================================
 
 function createSourceBlock(
   source
 ) {
+
+  const color =
+    sourceColor(
+      source.name
+    );
+
 
   const block =
     document.createElement(
@@ -561,12 +976,6 @@ function createSourceBlock(
 
   block.dataset.jurisdiction =
     source.jurisdiction;
-
-
-  const color =
-    sourceColor(
-      source.name
-    );
 
 
   block.innerHTML = `
@@ -630,6 +1039,7 @@ function createSourceBlock(
     <div class="dash-source-items"></div>
   `;
 
+
   return block;
 }
 
@@ -646,6 +1056,7 @@ function buildDashboard() {
     );
 
   if (!list) return;
+
 
   list.innerHTML = "";
 
@@ -673,13 +1084,13 @@ function buildDashboard() {
 
 
 // ============================================================
-// RENDER SOURCE
+// RENDER ONE SOURCE
 // ============================================================
 
 function renderSource(
   source,
   items,
-  status
+  statusText
 ) {
 
   const block =
@@ -687,10 +1098,11 @@ function renderSource(
       ".dash-source-block"
     )]
       .find(
-        x =>
-          x.dataset.source ===
+        node =>
+          node.dataset.source ===
           source.name
       );
+
 
   if (!block) return;
 
@@ -700,7 +1112,7 @@ function renderSource(
       ".dash-source-items"
     );
 
-  const statusEl =
+  const status =
     block.querySelector(
       ".dash-source-status"
     );
@@ -709,16 +1121,14 @@ function renderSource(
   if (!container) return;
 
 
-  // IMPORTANT:
-  // We only clear this regulator's own items.
   container.innerHTML = "";
 
 
   if (!items.length) {
 
-    if (statusEl) {
-      statusEl.textContent =
-        status ||
+    if (status) {
+      status.textContent =
+        statusText ||
         "Temporarily unavailable";
     }
 
@@ -756,6 +1166,7 @@ function renderSource(
         <div class="dash-meta">
 
           <span class="dash-source">
+
             <span
               style="
                 color:${sourceColor(item.source)};
@@ -768,6 +1179,7 @@ function renderSource(
             <span style="opacity:.5;">
               · ${escapeHtml(item.jurisdiction)}
             </span>
+
           </span>
 
           <span class="dash-time">
@@ -790,22 +1202,22 @@ function renderSource(
   );
 
 
-  if (statusEl) {
+  if (status) {
 
-    statusEl.textContent =
-      status ||
+    status.textContent =
+      statusText ||
       `${items.length} updates`;
   }
 }
 
 
 // ============================================================
-// REBUILD MASTER ITEM LIST
+// MASTER STATE
 // ============================================================
 
-function rebuildItems() {
+function rebuildAllItems() {
 
-  allItems = [];
+  const merged = [];
 
 
   SOURCES.forEach(
@@ -818,11 +1230,10 @@ function rebuildItems() {
 
 
       if (
-        Array.isArray(items) &&
-        items.length
+        Array.isArray(items)
       ) {
 
-        allItems.push(
+        merged.push(
           ...items
         );
       }
@@ -830,7 +1241,7 @@ function rebuildItems() {
   );
 
 
-  allItems.sort(
+  merged.sort(
     (a,b) => {
 
       const at =
@@ -846,432 +1257,9 @@ function rebuildItems() {
       return bt - at;
     }
   );
-}
 
 
-// ============================================================
-// FILTER UI
-//
-// CREATED ENTIRELY BY JS.
-// No special HTML container required.
-// ============================================================
-
-function createFilterUI() {
-
-  const feedList =
-    document.getElementById(
-      "dash-feed-list"
-    );
-
-  if (!feedList) return;
-
-
-  // Remove previously created filter area.
-  const old =
-    document.getElementById(
-      "dash-live-filters"
-    );
-
-  if (old) {
-    old.remove();
-  }
-
-
-  const wrapper =
-    document.createElement(
-      "div"
-    );
-
-  wrapper.id =
-    "dash-live-filters";
-
-  wrapper.style.cssText = `
-    margin:0 0 18px 0;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-  `;
-
-
-  // ----------------------------------------------------------
-  // JURISDICTIONS
-  // ----------------------------------------------------------
-
-  const jurisdictions = [
-    ...new Set(
-      SOURCES.map(
-        s => s.jurisdiction
-      )
-    )
-  ];
-
-
-  const jurisdictionRow =
-    document.createElement(
-      "div"
-    );
-
-  jurisdictionRow.style.cssText = `
-    display:flex;
-    flex-wrap:wrap;
-    gap:6px;
-    align-items:center;
-  `;
-
-
-  const jurisdictionLabel =
-    document.createElement(
-      "span"
-    );
-
-  jurisdictionLabel.textContent =
-    "Jurisdiction";
-
-  jurisdictionLabel.style.cssText = `
-    font-size:.78em;
-    opacity:.5;
-    margin-right:3px;
-  `;
-
-
-  jurisdictionRow.appendChild(
-    jurisdictionLabel
-  );
-
-
-  const allJurisdiction =
-    makeFilterButton(
-      "All",
-      "#64748b",
-      activeJurisdiction === "all"
-    );
-
-
-  allJurisdiction.dataset.jurisdiction =
-    "all";
-
-
-  jurisdictionRow.appendChild(
-    allJurisdiction
-  );
-
-
-  jurisdictions.forEach(
-    jurisdiction => {
-
-      const source =
-        SOURCES.find(
-          s =>
-            s.jurisdiction ===
-            jurisdiction
-        );
-
-
-      const color =
-        sourceColor(
-          source?.name
-        );
-
-
-      const button =
-        makeFilterButton(
-          jurisdiction,
-          color,
-          activeJurisdiction ===
-            jurisdiction
-        );
-
-
-      button.dataset.jurisdiction =
-        jurisdiction;
-
-
-      jurisdictionRow.appendChild(
-        button
-      );
-    }
-  );
-
-
-  // ----------------------------------------------------------
-  // CATEGORY
-  // ----------------------------------------------------------
-
-  const categoryRow =
-    document.createElement(
-      "div"
-    );
-
-  categoryRow.style.cssText = `
-    display:flex;
-    flex-wrap:wrap;
-    gap:6px;
-    align-items:center;
-  `;
-
-
-  const categoryLabel =
-    document.createElement(
-      "span"
-    );
-
-  categoryLabel.textContent =
-    "Category";
-
-  categoryLabel.style.cssText = `
-    font-size:.78em;
-    opacity:.5;
-    margin-right:3px;
-  `;
-
-
-  categoryRow.appendChild(
-    categoryLabel
-  );
-
-
-  CATEGORIES.forEach(
-    category => {
-
-      const button =
-        makeFilterButton(
-          category.label,
-          "#64748b",
-          activeCategory ===
-            category.key
-        );
-
-
-      button.dataset.category =
-        category.key;
-
-
-      categoryRow.appendChild(
-        button
-      );
-    }
-  );
-
-
-  wrapper.appendChild(
-    jurisdictionRow
-  );
-
-  wrapper.appendChild(
-    categoryRow
-  );
-
-
-  feedList.parentNode.insertBefore(
-    wrapper,
-    feedList
-  );
-
-
-  // ----------------------------------------------------------
-  // EVENTS
-  // ----------------------------------------------------------
-
-  wrapper.addEventListener(
-    "click",
-    event => {
-
-      const jurisdictionButton =
-        event.target.closest(
-          "[data-jurisdiction]"
-        );
-
-
-      if (jurisdictionButton) {
-
-        activeJurisdiction =
-          jurisdictionButton
-            .dataset
-            .jurisdiction;
-
-
-        refreshFilterButtons();
-
-        applyFilters();
-
-        return;
-      }
-
-
-      const categoryButton =
-        event.target.closest(
-          "[data-category]"
-        );
-
-
-      if (categoryButton) {
-
-        activeCategory =
-          categoryButton
-            .dataset
-            .category;
-
-
-        refreshFilterButtons();
-
-        applyFilters();
-      }
-    }
-  );
-}
-
-
-// ============================================================
-// FILTER BUTTON
-// ============================================================
-
-function makeFilterButton(
-  label,
-  color,
-  active
-) {
-
-  const button =
-    document.createElement(
-      "button"
-    );
-
-  button.type =
-    "button";
-
-  button.textContent =
-    label;
-
-
-  button.className =
-    "dash-live-filter";
-
-
-  button.style.cssText = `
-    border:1px solid ${color};
-    color:${color};
-    background:${
-      active
-        ? color
-        : "transparent"
-    };
-    ${
-      active
-        ? "color:#fff;"
-        : ""
-    }
-    border-radius:999px;
-    padding:5px 11px;
-    cursor:pointer;
-    font-size:.78em;
-    transition:all .15s ease;
-  `;
-
-
-  return button;
-}
-
-
-// ============================================================
-// REFRESH FILTER BUTTON VISUALS
-// ============================================================
-
-function refreshFilterButtons() {
-
-  document
-    .querySelectorAll(
-      ".dash-live-filter"
-    )
-    .forEach(
-      button => {
-
-        const jurisdiction =
-          button.dataset
-            .jurisdiction;
-
-        const category =
-          button.dataset
-            .category;
-
-
-        let active = false;
-
-
-        if (
-          jurisdiction !== undefined
-        ) {
-
-          active =
-            jurisdiction ===
-            activeJurisdiction;
-
-        } else if (
-          category !== undefined
-        ) {
-
-          active =
-            category ===
-            activeCategory;
-        }
-
-
-        const color =
-          button.style.borderColor;
-
-
-        button.style.background =
-          active
-            ? color
-            : "transparent";
-
-
-        button.style.color =
-          active
-            ? "#fff"
-            : color;
-      }
-    );
-}
-
-
-// ============================================================
-// APPLY FILTERS
-// ============================================================
-
-function applyFilters() {
-
-  document
-    .querySelectorAll(
-      ".dash-source-block"
-    )
-    .forEach(
-      block => {
-
-        const category =
-          block.dataset.category;
-
-        const jurisdiction =
-          block.dataset.jurisdiction;
-
-
-        const categoryOK =
-          activeCategory === "all" ||
-          activeCategory === category;
-
-
-        const jurisdictionOK =
-          activeJurisdiction === "all" ||
-          activeJurisdiction ===
-            jurisdiction;
-
-
-        block.style.display =
-          categoryOK &&
-          jurisdictionOK
-            ? ""
-            : "none";
-      }
-    );
+  return merged;
 }
 
 
@@ -1286,10 +1274,15 @@ function renderHomePreview() {
       "home-dashboard-preview"
     );
 
+
   if (!el) return;
 
 
-  if (!allItems.length) {
+  const items =
+    rebuildAllItems();
+
+
+  if (!items.length) {
 
     el.innerHTML =
       `<div class="dash-empty">
@@ -1301,7 +1294,7 @@ function renderHomePreview() {
 
 
   el.innerHTML =
-    allItems
+    items
       .slice(0,5)
       .map(
         item =>
@@ -1350,7 +1343,415 @@ function renderHomePreview() {
 
 
 // ============================================================
-// RETRY ONE REGULATOR
+// FILTER BUTTON CREATION
+// ============================================================
+
+function makeFilterButton(
+  label,
+  color,
+  active
+) {
+
+  const button =
+    document.createElement(
+      "button"
+    );
+
+
+  button.type =
+    "button";
+
+
+  button.className =
+    "dash-live-filter";
+
+
+  button.textContent =
+    label;
+
+
+  button.style.cssText = `
+    border:1px solid ${color};
+    color:${active ? "#fff" : color};
+    background:${active ? color : "transparent"};
+    border-radius:999px;
+    padding:5px 11px;
+    cursor:pointer;
+    font-size:.78em;
+  `;
+
+
+  return button;
+}
+
+
+// ============================================================
+// FILTER UI
+// ============================================================
+
+function createFilterUI() {
+
+  const list =
+    document.getElementById(
+      "dash-feed-list"
+    );
+
+
+  if (!list) return;
+
+
+  const old =
+    document.getElementById(
+      "dash-live-filters"
+    );
+
+
+  if (old) {
+    old.remove();
+  }
+
+
+  const wrapper =
+    document.createElement(
+      "div"
+    );
+
+
+  wrapper.id =
+    "dash-live-filters";
+
+
+  wrapper.style.cssText = `
+    margin-bottom:18px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  `;
+
+
+  // ----------------------------------------------------------
+  // Jurisdiction row
+  // ----------------------------------------------------------
+
+  const jurisdictions =
+    [
+      ...new Set(
+        SOURCES.map(
+          s =>
+            s.jurisdiction
+        )
+      )
+    ];
+
+
+  const jRow =
+    document.createElement(
+      "div"
+    );
+
+
+  jRow.style.cssText = `
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    align-items:center;
+  `;
+
+
+  const jLabel =
+    document.createElement(
+      "span"
+    );
+
+
+  jLabel.textContent =
+    "Jurisdiction";
+
+
+  jLabel.style.cssText = `
+    font-size:.78em;
+    opacity:.5;
+    margin-right:3px;
+  `;
+
+
+  jRow.appendChild(
+    jLabel
+  );
+
+
+  const allJ =
+    makeFilterButton(
+      "All",
+      "#64748b",
+      activeJurisdiction ===
+        "all"
+    );
+
+
+  allJ.dataset.jurisdiction =
+    "all";
+
+
+  jRow.appendChild(
+    allJ
+  );
+
+
+  jurisdictions.forEach(
+    jurisdiction => {
+
+      const firstSource =
+        SOURCES.find(
+          s =>
+            s.jurisdiction ===
+            jurisdiction
+        );
+
+
+      const color =
+        sourceColor(
+          firstSource?.name
+        );
+
+
+      const button =
+        makeFilterButton(
+          jurisdiction,
+          color,
+          activeJurisdiction ===
+            jurisdiction
+        );
+
+
+      button.dataset.jurisdiction =
+        jurisdiction;
+
+
+      jRow.appendChild(
+        button
+      );
+    }
+  );
+
+
+  // ----------------------------------------------------------
+  // Category row
+  // ----------------------------------------------------------
+
+  const cRow =
+    document.createElement(
+      "div"
+    );
+
+
+  cRow.style.cssText = `
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    align-items:center;
+  `;
+
+
+  const cLabel =
+    document.createElement(
+      "span"
+    );
+
+
+  cLabel.textContent =
+    "Category";
+
+
+  cLabel.style.cssText = `
+    font-size:.78em;
+    opacity:.5;
+    margin-right:3px;
+  `;
+
+
+  cRow.appendChild(
+    cLabel
+  );
+
+
+  CATEGORIES.forEach(
+    category => {
+
+      const button =
+        makeFilterButton(
+          category.label,
+          "#64748b",
+          activeCategory ===
+            category.key
+        );
+
+
+      button.dataset.category =
+        category.key;
+
+
+      cRow.appendChild(
+        button
+      );
+    }
+  );
+
+
+  wrapper.appendChild(
+    jRow
+  );
+
+  wrapper.appendChild(
+    cRow
+  );
+
+
+  list.parentNode.insertBefore(
+    wrapper,
+    list
+  );
+
+
+  wrapper.addEventListener(
+    "click",
+    event => {
+
+      const jButton =
+        event.target.closest(
+          "[data-jurisdiction]"
+        );
+
+
+      if (jButton) {
+
+        activeJurisdiction =
+          jButton.dataset
+            .jurisdiction;
+
+        updateFilters();
+
+        return;
+      }
+
+
+      const cButton =
+        event.target.closest(
+          "[data-category]"
+        );
+
+
+      if (cButton) {
+
+        activeCategory =
+          cButton.dataset
+            .category;
+
+        updateFilters();
+      }
+    }
+  );
+}
+
+
+// ============================================================
+// UPDATE FILTER VISIBILITY
+// ============================================================
+
+function updateFilters() {
+
+  document
+    .querySelectorAll(
+      ".dash-live-filter"
+    )
+    .forEach(
+      button => {
+
+        const jurisdiction =
+          button.dataset
+            .jurisdiction;
+
+        const category =
+          button.dataset
+            .category;
+
+
+        let active = false;
+
+
+        if (
+          jurisdiction !== undefined
+        ) {
+
+          active =
+            jurisdiction ===
+            activeJurisdiction;
+
+        } else if (
+          category !== undefined
+        ) {
+
+          active =
+            category ===
+            activeCategory;
+        }
+
+
+        const color =
+          button.style.borderColor;
+
+
+        button.style.background =
+          active
+            ? color
+            : "transparent";
+
+        button.style.color =
+          active
+            ? "#fff"
+            : color;
+      }
+    );
+
+
+  document
+    .querySelectorAll(
+      ".dash-source-block"
+    )
+    .forEach(
+      block => {
+
+        const category =
+          block.dataset.category;
+
+        const jurisdiction =
+          block.dataset.jurisdiction;
+
+
+        const showCategory =
+          activeCategory === "all" ||
+          activeCategory ===
+            category;
+
+
+        const showJurisdiction =
+          activeJurisdiction === "all" ||
+          activeJurisdiction ===
+            jurisdiction;
+
+
+        block.style.display =
+          showCategory &&
+          showJurisdiction
+            ? ""
+            : "none";
+      }
+    );
+}
+
+
+// ============================================================
+// RETRY ONE SOURCE
 // ============================================================
 
 async function retrySource(
@@ -1396,7 +1797,6 @@ async function retrySource(
 
 
   if (status) {
-
     status.textContent =
       "Trying feed…";
   }
@@ -1437,7 +1837,7 @@ async function retrySource(
       renderSource(
         source,
         old,
-        "Retry failed · showing previous results"
+        "Retry failed · previous results retained"
       );
 
     } else {
@@ -1451,11 +1851,9 @@ async function retrySource(
   }
 
 
-  rebuildItems();
-
   renderHomePreview();
 
-  applyFilters();
+  updateFilters();
 
 
   if (button) {
@@ -1473,7 +1871,7 @@ async function retrySource(
 
 
 // ============================================================
-// RETRY EVENT
+// RETRY EVENTS
 // ============================================================
 
 function setupRetry() {
@@ -1482,6 +1880,7 @@ function setupRetry() {
     document.getElementById(
       "dash-feed-list"
     );
+
 
   if (!list) return;
 
@@ -1508,10 +1907,7 @@ function setupRetry() {
 
 
       if (source) {
-
-        retrySource(
-          source
-        );
+        retrySource(source);
       }
     }
   );
@@ -1529,7 +1925,7 @@ async function loadAll() {
   loading = true;
 
 
-  const statusEl =
+  const status =
     document.getElementById(
       "dash-status-text"
     );
@@ -1548,9 +1944,9 @@ async function loadAll() {
   let completed = 0;
 
 
-  if (statusEl) {
+  if (status) {
 
-    statusEl.textContent =
+    status.textContent =
       `Loading · 0/${SOURCES.length} regulators`;
   }
 
@@ -1571,7 +1967,6 @@ async function loadAll() {
         ] = items;
 
 
-        // IMMEDIATE DISPLAY
         renderSource(
           source,
           items,
@@ -1580,21 +1975,21 @@ async function loadAll() {
 
       } else {
 
-        const old =
+        const previous =
           lastSuccessfulItems[
             source.name
           ];
 
 
         if (
-          old &&
-          old.length
+          previous &&
+          previous.length
         ) {
 
           renderSource(
             source,
-            old,
-            "Refresh unavailable · showing previous results"
+            previous,
+            "Refresh unavailable · previous results retained"
           );
 
         } else {
@@ -1608,8 +2003,11 @@ async function loadAll() {
       }
 
 
-      // Update global state without touching source DOM.
-      rebuildItems();
+      // IMPORTANT:
+      // Master state is updated without rebuilding
+      // the source DOM.
+      rebuildAllItems();
+
 
       renderHomePreview();
 
@@ -1617,10 +2015,24 @@ async function loadAll() {
       completed++;
 
 
-      if (statusEl) {
+      if (status) {
 
-        statusEl.textContent =
-          `Loading · ${completed}/${SOURCES.length} regulators`;
+        const working =
+          SOURCES.filter(
+            s =>
+              Array.isArray(
+                lastSuccessfulItems[
+                  s.name
+                ]
+              ) &&
+              lastSuccessfulItems[
+                s.name
+              ].length > 0
+          ).length;
+
+
+        status.textContent =
+          `Loading · ${completed}/${SOURCES.length} regulators · ${working} available`;
       }
 
 
@@ -1630,7 +2042,7 @@ async function loadAll() {
       ) {
 
         finishLoad(
-          statusEl,
+          status,
           dot
         );
       }
@@ -1644,15 +2056,29 @@ async function loadAll() {
 // ============================================================
 
 function finishLoad(
-  statusEl,
+  status,
   dot
 ) {
 
-  rebuildItems();
+  rebuildAllItems();
 
   renderHomePreview();
 
-  applyFilters();
+  updateFilters();
+
+
+  const working =
+    SOURCES.filter(
+      s =>
+        Array.isArray(
+          lastSuccessfulItems[
+            s.name
+          ]
+        ) &&
+        lastSuccessfulItems[
+          s.name
+        ].length > 0
+    ).length;
 
 
   const now =
@@ -1665,20 +2091,11 @@ function finishLoad(
     );
 
 
-  const working =
-    SOURCES.filter(
-      source =>
-        lastSuccessfulItems[
-          source.name
-        ]?.length
-    ).length;
+  if (status) {
 
-
-  if (statusEl) {
-
-    statusEl.textContent =
+    status.textContent =
       `Last updated ${now} · ` +
-      `${allItems.length} updates from ` +
+      `${rebuildAllItems().length} updates from ` +
       `${working}/${SOURCES.length} sources`;
   }
 
@@ -1706,11 +2123,11 @@ function finishLoad(
       note.style.display =
         "block";
 
+
       note.textContent =
         `${failed} source${
           failed === 1 ? "" : "s"
-        } unavailable — ` +
-        `existing results retained. ` +
+        } unavailable — existing results retained. ` +
         `Use its ↻ Retry button if needed.`;
 
     } else {
