@@ -1,5 +1,6 @@
 // ============================================================
 // THE FINVOCATES — Regulatory Dashboard
+// Live • Progressive • Lightweight
 // ============================================================
 
 const REFRESH_MINUTES = 15;
@@ -10,186 +11,264 @@ const REFRESH_MINUTES = 15;
 // ============================================================
 
 const SOURCES = [
+
   {
     name: "RBI",
+    fullName: "Reserve Bank of India",
     jurisdiction: "India",
     category: "central-banks",
-    feed: "https://www.rbi.org.in/pressreleases_rss.xml"
+
+    // BOTH RBI FEEDS — intentionally preserved.
+    feeds: [
+      "https://www.rbi.org.in/pressreleases_rss.xml",
+      "https://rbi.org.in/notifications_rss.xml"
+    ]
   },
+
   {
     name: "FCA",
+    fullName: "Financial Conduct Authority",
     jurisdiction: "UK",
     category: "conduct-markets",
-    feed: "https://www.fca.org.uk/news/rss.xml"
+
+    feeds: [
+      "https://www.fca.org.uk/news/rss.xml"
+    ]
   },
+
   {
     name: "BoE",
+    fullName: "Bank of England",
     jurisdiction: "UK",
     category: "central-banks",
-    feed: "https://www.bankofengland.co.uk/rss/news"
+
+    feeds: [
+      "https://www.bankofengland.co.uk/rss/news"
+    ]
   },
+
   {
     name: "PRA",
+    fullName: "Prudential Regulation Authority",
     jurisdiction: "UK",
     category: "central-banks",
-    feed: "https://www.bankofengland.co.uk/rss/prudential-regulation",
-    fallbackFeeds: [
+
+    feeds: [
+      "https://www.bankofengland.co.uk/rss/prudential-regulation",
       "https://www.bankofengland.co.uk/rss/news"
     ]
   },
 
   {
     name: "BIS/BCBS",
+    fullName: "Bank for International Settlements / Basel Committee on Banking Supervision",
     jurisdiction: "Global",
     category: "standard-setters",
-    feed: "https://www.bis.org/doclist/all_pressrels.rss"
+
+    feeds: [
+      "https://www.bis.org/doclist/all_pressrels.rss"
+    ]
   },
 
   {
     name: "FSB",
+    fullName: "Financial Stability Board",
     jurisdiction: "Global",
     category: "standard-setters",
-    feed: "https://www.fsb.org/feed/"
+
+    feeds: [
+      "https://www.fsb.org/feed/"
+    ]
   },
 
   {
     name: "ECB",
+    fullName: "European Central Bank",
     jurisdiction: "Eurozone",
     category: "central-banks",
-    feed: "https://www.ecb.europa.eu/rss/press.xml"
+
+    feeds: [
+      "https://www.ecb.europa.eu/rss/press.xml"
+    ]
   },
 
   {
     name: "EBA",
+    fullName: "European Banking Authority",
     jurisdiction: "EU",
     category: "conduct-markets",
-    feed: "https://www.eba.europa.eu/news-press/news/rss.xml"
+
+    feeds: [
+      "https://www.eba.europa.eu/news-press/news/rss.xml"
+    ]
   },
 
   {
     name: "Federal Reserve",
+    fullName: "Board of Governors of the Federal Reserve System",
     jurisdiction: "US",
     category: "central-banks",
-    feed: "https://www.federalreserve.gov/feeds/press_all.xml"
+
+    feeds: [
+      "https://www.federalreserve.gov/feeds/press_all.xml"
+    ]
   },
 
   {
     name: "CFPB",
+    fullName: "Consumer Financial Protection Bureau",
     jurisdiction: "US",
     category: "us-agencies",
-    feed: "https://www.consumerfinance.gov/about-us/newsroom/feed/"
+
+    feeds: [
+      "https://www.consumerfinance.gov/about-us/newsroom/feed/"
+    ]
   },
 
   {
     name: "FINRA",
+    fullName: "Financial Industry Regulatory Authority",
     jurisdiction: "US",
     category: "us-agencies",
-    feed: "http://feeds.finra.org/FINRANews",
-    fallbackFeeds: [
+
+    feeds: [
+      "http://feeds.finra.org/FINRANews",
       "https://feeds.finra.org/FINRANews"
     ]
   },
 
   {
     name: "OCC",
+    fullName: "Office of the Comptroller of the Currency",
     jurisdiction: "US",
     category: "us-agencies",
-    feed: "https://www.occ.gov/rss/occ_news.xml",
-    fallbackPage: "https://www.occ.gov/rss/index-rss.html"
+
+    feeds: [
+      "https://www.occ.gov/rss/occ_news.xml"
+    ],
+
+    fallbackPage:
+      "https://www.occ.gov/rss/index-rss.html"
   },
 
   {
     name: "HKMA",
+    fullName: "Hong Kong Monetary Authority",
     jurisdiction: "Hong Kong",
     category: "central-banks",
-    api: "https://api.hkma.gov.hk/public/press-releases?lang=en&offset=0"
+
+    api:
+      "https://api.hkma.gov.hk/public/press-releases?lang=en&offset=0"
   },
 
   {
     name: "BOJ",
+    fullName: "Bank of Japan",
     jurisdiction: "Japan",
     category: "central-banks",
-    feed: "https://www.boj.or.jp/en/rss/whatsnew.xml"
-  },
 
-  // ==========================================================
-  // SWITZERLAND
-  // ==========================================================
+    feeds: [
+      "https://www.boj.or.jp/en/rss/whatsnew.xml"
+    ]
+  },
 
   {
     name: "FINMA",
+    fullName: "Swiss Financial Market Supervisory Authority",
     jurisdiction: "Switzerland",
     category: "conduct-markets",
-    feed: "https://www.finma.ch/en/news/rss/",
-    fallbackPage: "https://www.finma.ch/en/rss/"
+
+    // BOTH FINMA FEEDS — merged into one FINMA block.
+    feeds: [
+      "https://www.finma.ch/fr/rss/news/",
+      "https://www.finma.ch/fr/rss/sanktionen/"
+    ],
+
+    fallbackPage:
+      "https://www.finma.ch/fr/rss/"
   },
 
   {
     name: "SNB",
+    fullName: "Swiss National Bank",
     jurisdiction: "Switzerland",
     category: "central-banks",
-    feed: "https://www.snb.ch/dir/rss/en/press_releases.xml",
-    fallbackPage: "https://www.snb.ch/en/news-publications/media-releases"
-  },
 
-  // ==========================================================
-  // GERMANY
-  // ==========================================================
+    // Overall "New on the website" stream.
+    feeds: [
+      "https://www.snb.ch/public/rss/en/news"
+    ],
+
+    fallbackPage:
+      "https://www.snb.ch/en/news-publications/news"
+  },
 
   {
     name: "BaFin",
+    fullName: "Federal Financial Supervisory Authority",
     jurisdiction: "Germany",
     category: "conduct-markets",
-    feed: "https://www.bafin.de/SiteGlobals/Functions/RSSFeed/EN/RSSGenerator_news_en.xml",
-    fallbackPage: "https://www.bafin.de/EN/PublikationenDaten/Publikationen/publikationen_node_en.html"
-  },
 
-  // ==========================================================
-  // CANADA
-  // ==========================================================
+    feeds: [
+      "https://www.bafin.de/EN/service/rss/_function/rssnewsfeed.xml?nn=187494"
+    ],
+
+    fallbackPage:
+      "https://www.bafin.de/EN/service/rss/rss_node_en.html"
+  },
 
   {
     name: "Bank of Canada",
+    fullName: "Bank of Canada",
     jurisdiction: "Canada",
     category: "central-banks",
-    feed: "https://www.bankofcanada.ca/feed/",
-    fallbackPage: "https://www.bankofcanada.ca/rss-feeds/"
-  },
 
-  // ==========================================================
-  // AUSTRALIA
-  // ==========================================================
+    feeds: [
+      "https://www.bankofcanada.ca/feed/"
+    ],
+
+    fallbackPage:
+      "https://www.bankofcanada.ca/rss-feeds/"
+  },
 
   {
     name: "RBA",
+    fullName: "Reserve Bank of Australia",
     jurisdiction: "Australia",
     category: "central-banks",
-    feed: "https://www.rba.gov.au/rss/rss-cb-media-releases.xml",
-    fallbackPage: "https://www.rba.gov.au/media-releases/index.html"
-  },
 
-  // ==========================================================
-  // IRELAND
-  // ==========================================================
+    feeds: [
+      "https://www.rba.gov.au/rss/rss-cb-media-releases.xml"
+    ],
+
+    fallbackPage:
+      "https://www.rba.gov.au/media-releases/index.html"
+  },
 
   {
     name: "Central Bank of Ireland",
+    fullName: "Central Bank of Ireland",
     jurisdiction: "Ireland",
     category: "central-banks",
-    feed: "https://www.centralbank.ie/rss-feed",
-    fallbackPage: "https://www.centralbank.ie/news-media"
-  },
 
-  // ==========================================================
-  // NEW ZEALAND
-  // ==========================================================
+    feeds: [
+      "https://www.centralbank.ie/feeds/news-media-feed"
+    ],
+
+    fallbackPage:
+      "https://www.centralbank.ie/news-media"
+  },
 
   {
     name: "RBNZ",
+    fullName: "Reserve Bank of New Zealand — Te Pūtea Matua",
     jurisdiction: "New Zealand",
     category: "central-banks",
-    feed: "https://www.rbnz.govt.nz/-/media/rss/news",
-    fallbackPage: "https://www.rbnz.govt.nz/news-and-events/news"
+
+    // Current official News page used as fallback.
+    // Kept isolated so it cannot affect the other 20.
+    fallbackPage:
+      "https://www.rbnz.govt.nz/news-and-events/news"
   }
 ];
 
@@ -199,39 +278,75 @@ const SOURCES = [
 // ============================================================
 
 const CATEGORIES = [
-  { key: "all", label: "All" },
-  { key: "central-banks", label: "Central Banks" },
-  { key: "standard-setters", label: "Global Standard-Setters" },
-  { key: "conduct-markets", label: "Conduct & Markets" },
-  { key: "us-agencies", label: "US Agencies" }
+  {
+    key: "all",
+    label: "All"
+  },
+  {
+    key: "central-banks",
+    label: "Central Banks"
+  },
+  {
+    key: "standard-setters",
+    label: "Global Standard-Setters"
+  },
+  {
+    key: "conduct-markets",
+    label: "Conduct & Markets"
+  },
+  {
+    key: "us-agencies",
+    label: "US Agencies"
+  }
 ];
 
 
 // ============================================================
-// COLOURS
+// REGULATOR COLOURS
 // ============================================================
 
 const REGULATOR_COLORS = {
+
   "RBI": "#8b5cf6",
+
   "FCA": "#2563eb",
+
   "BoE": "#1d4ed8",
+
   "PRA": "#4338ca",
+
   "BIS/BCBS": "#475569",
+
   "FSB": "#64748b",
+
   "ECB": "#0891b2",
+
   "EBA": "#0e7490",
+
   "Federal Reserve": "#dc2626",
+
   "CFPB": "#b91c1c",
+
   "FINRA": "#be123c",
+
   "OCC": "#9f1239",
+
   "HKMA": "#0f766e",
+
   "BOJ": "#db2777",
+
   "FINMA": "#15803d",
+
   "SNB": "#166534",
+
   "BaFin": "#ca8a04",
+
   "Bank of Canada": "#c2410c",
+
   "RBA": "#ea580c",
+
   "Central Bank of Ireland": "#059669",
+
   "RBNZ": "#0284c7"
 };
 
@@ -241,27 +356,40 @@ const REGULATOR_COLORS = {
 // ============================================================
 
 let activeCategory = "all";
+
 let activeJurisdiction = "all";
+
 let loading = false;
 
+
+// Last successful result for each regulator.
+// Failed refreshes never erase it.
 const lastSuccessfulItems = {};
 
 
 // ============================================================
-// HELPERS
+// BASIC HELPERS
 // ============================================================
 
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+
+  return new Promise(
+    resolve => setTimeout(resolve, ms)
+  );
 }
 
 
 function sourceColor(name) {
-  return REGULATOR_COLORS[name] || "#64748b";
+
+  return (
+    REGULATOR_COLORS[name] ||
+    "#64748b"
+  );
 }
 
 
 function escapeHtml(value) {
+
   return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -272,6 +400,7 @@ function escapeHtml(value) {
 
 
 function rss2jsonUrl(feed) {
+
   return (
     "https://api.rss2json.com/v1/api.json?rss_url=" +
     encodeURIComponent(feed)
@@ -280,6 +409,7 @@ function rss2jsonUrl(feed) {
 
 
 function allOriginsUrl(url) {
+
   return (
     "https://api.allorigins.win/raw?url=" +
     encodeURIComponent(url)
@@ -288,65 +418,90 @@ function allOriginsUrl(url) {
 
 
 // ============================================================
-// DATES
+// DATE PARSING
 // ============================================================
 
 function parseDate(value) {
 
-  if (!value) return null;
-
-  const d = new Date(value);
-
-  if (
-    !isNaN(d.getTime()) &&
-    d.getFullYear() > 1971
-  ) {
-    return d;
+  if (!value) {
+    return null;
   }
 
-  if (typeof value === "string") {
 
-    const m = value.match(
-      /(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/
-    );
+  const date =
+    new Date(value);
 
-    if (m) {
 
-      const x = new Date(
-        Number(m[3]),
-        Number(m[2]) - 1,
-        Number(m[1])
+  if (
+    !isNaN(date.getTime()) &&
+    date.getFullYear() > 1971
+  ) {
+
+    return date;
+  }
+
+
+  if (
+    typeof value === "string"
+  ) {
+
+    const match =
+      value.match(
+        /(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/
       );
 
+
+    if (match) {
+
+      const fallback =
+        new Date(
+          Number(match[3]),
+          Number(match[2]) - 1,
+          Number(match[1])
+        );
+
+
       if (
-        !isNaN(x.getTime()) &&
-        x.getFullYear() > 1971
+        !isNaN(fallback.getTime()) &&
+        fallback.getFullYear() > 1971
       ) {
-        return x;
+
+        return fallback;
       }
     }
   }
+
 
   return null;
 }
 
 
+// ============================================================
+// EXACT DATE DISPLAY
+// ============================================================
+
 function formatDate(date) {
 
-  if (!date) return "Date unavailable";
+  if (!date) {
+    return "Date unavailable";
+  }
+
 
   const d =
     date instanceof Date
       ? date
       : parseDate(date);
 
+
   if (
     !d ||
     isNaN(d.getTime()) ||
     d.getFullYear() <= 1971
   ) {
+
     return "Date unavailable";
   }
+
 
   return d.toLocaleDateString(
     "en-IN",
@@ -360,37 +515,60 @@ function formatDate(date) {
 
 
 // ============================================================
-// FCA
+// FCA DATE
 // ============================================================
 
 function extractFCADate(item) {
 
   const fields = [
+
     item.pubDate,
+
     item.published,
+
     item.isoDate,
+
     item.updated,
+
     item.date,
+
     item["dc:date"],
+
     item.description,
+
     item.content,
+
     item.contentSnippet
   ];
 
-  for (const field of fields) {
 
-    if (!field) continue;
+  for (
+    const field of fields
+  ) {
+
+    if (!field) {
+      continue;
+    }
+
 
     const text =
       String(field)
-        .replace(/<[^>]*>/g, " ")
-        .replace(/\s+/g, " ")
+        .replace(
+          /<[^>]*>/g,
+          " "
+        )
+        .replace(
+          /\s+/g,
+          " "
+        )
         .trim();
+
 
     const first =
       text.match(
         /First\s+published\s*:?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i
       );
+
 
     if (first) {
 
@@ -401,10 +579,12 @@ function extractFCADate(item) {
       );
     }
 
+
     const generic =
       text.match(
         /\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/
       );
+
 
     if (generic) {
 
@@ -416,15 +596,19 @@ function extractFCADate(item) {
     }
   }
 
+
   return null;
 }
 
 
 // ============================================================
-// ITEM NORMALISATION
+// NORMALISE RSS ITEM
 // ============================================================
 
-function normaliseItem(item, source) {
+function normaliseItem(
+  item,
+  source
+) {
 
   let date =
     parseDate(
@@ -436,17 +620,23 @@ function normaliseItem(item, source) {
       item["dc:date"]
     );
 
-  if (source.name === "FCA") {
+
+  if (
+    source.name === "FCA"
+  ) {
 
     const fcaDate =
       extractFCADate(item);
+
 
     if (fcaDate) {
       date = fcaDate;
     }
   }
 
+
   return {
+
     title:
       item.title ||
       item.name ||
@@ -460,18 +650,26 @@ function normaliseItem(item, source) {
 
     date,
 
-    source: source.name,
-    jurisdiction: source.jurisdiction,
-    category: source.category
+    source:
+      source.name,
+
+    jurisdiction:
+      source.jurisdiction,
+
+    category:
+      source.category
   };
 }
 
 
 // ============================================================
-// RSS2JSON
+// RSS2JSON FOR ONE FEED
 // ============================================================
 
-async function tryRss2Json(source, feed) {
+async function tryRss2Json(
+  source,
+  feed
+) {
 
   const response =
     await fetch(
@@ -483,24 +681,30 @@ async function tryRss2Json(source, feed) {
       }
     );
 
+
   if (!response.ok) {
+
     throw new Error(
       `RSS2JSON HTTP ${response.status}`
     );
   }
 
+
   const data =
     await response.json();
+
 
   if (
     !data ||
     !Array.isArray(data.items) ||
     !data.items.length
   ) {
+
     throw new Error(
       "RSS2JSON returned no items"
     );
   }
+
 
   return data.items
     .slice(0, 8)
@@ -518,7 +722,10 @@ async function tryRss2Json(source, feed) {
 // RAW RSS / ATOM
 // ============================================================
 
-async function tryRawXml(source, feed) {
+async function tryRawXml(
+  source,
+  feed
+) {
 
   const response =
     await fetch(
@@ -530,94 +737,122 @@ async function tryRawXml(source, feed) {
       }
     );
 
+
   if (!response.ok) {
+
     throw new Error(
       `Raw feed HTTP ${response.status}`
     );
   }
 
+
   const xml =
     await response.text();
 
-  const doc =
+
+  const document =
     new DOMParser()
       .parseFromString(
         xml,
         "text/xml"
       );
 
+
   const nodes = [
-    ...doc.querySelectorAll("item"),
-    ...doc.querySelectorAll("entry")
+    ...document.querySelectorAll("item"),
+    ...document.querySelectorAll("entry")
   ];
 
+
   if (!nodes.length) {
+
     throw new Error(
       "No RSS/Atom entries"
     );
   }
 
+
   return nodes
     .slice(0, 8)
-    .map(node => {
+    .map(
+      node => {
 
-      const title =
-        node.querySelector("title")
-          ?.textContent
-          ?.trim();
+        const title =
+          node.querySelector(
+            "title"
+          )
+            ?.textContent
+            ?.trim() ||
+          "Untitled update";
 
-      const linkNode =
-        node.querySelector("link");
 
-      const link =
-        linkNode?.getAttribute("href") ||
-        linkNode?.textContent?.trim() ||
-        "#";
+        const linkNode =
+          node.querySelector(
+            "link"
+          );
 
-      const date =
-        node.querySelector("pubDate")
-          ?.textContent ||
-        node.querySelector("published")
-          ?.textContent ||
-        node.querySelector("updated")
-          ?.textContent ||
-        node.querySelector("date")
-          ?.textContent ||
-        "";
 
-      const description =
-        node.querySelector("description")
-          ?.textContent ||
-        node.querySelector("summary")
-          ?.textContent ||
-        "";
+        const link =
+          linkNode?.getAttribute("href") ||
+          linkNode?.textContent?.trim() ||
+          "#";
 
-      return normaliseItem(
-        {
-          title,
-          link,
-          pubDate: date,
-          description
-        },
-        source
-      );
-    });
+
+        const date =
+          node.querySelector("pubDate")
+            ?.textContent ||
+
+          node.querySelector("published")
+            ?.textContent ||
+
+          node.querySelector("updated")
+            ?.textContent ||
+
+          node.querySelector("date")
+            ?.textContent ||
+
+          "";
+
+
+        const description =
+          node.querySelector("description")
+            ?.textContent ||
+
+          node.querySelector("summary")
+            ?.textContent ||
+
+          "";
+
+
+        return normaliseItem(
+          {
+            title,
+            link,
+            pubDate: date,
+            description
+          },
+          source
+        );
+      }
+    );
 }
 
 
 // ============================================================
-// PAGE FALLBACK
-//
-// Used for the six difficult sources if their RSS layer fails.
-// Extracts article links + dates from the regulator's current
-// official page rather than depending exclusively on RSS.
+// FIND RSS LINK ON OFFICIAL PAGE
 // ============================================================
 
-async function fetchPageFallback(source) {
+async function discoverFeedFromPage(
+  source
+) {
 
-  if (!source.fallbackPage) {
+  if (
+    !source.fallbackPage
+  ) {
+
     return [];
   }
+
 
   try {
 
@@ -633,17 +868,182 @@ async function fetchPageFallback(source) {
         }
       );
 
+
     if (!response.ok) {
-      throw new Error(
-        `Page HTTP ${response.status}`
-      );
+      return [];
     }
+
 
     const html =
       await response.text();
 
 
-    const doc =
+    const document =
+      new DOMParser()
+        .parseFromString(
+          html,
+          "text/html"
+        );
+
+
+    const links =
+      [
+        ...document.querySelectorAll(
+          "a[href]"
+        )
+      ];
+
+
+    const candidates =
+      links.filter(
+        link => {
+
+          const text =
+            (
+              link.textContent ||
+              ""
+            )
+              .toLowerCase();
+
+
+          const href =
+            (
+              link.getAttribute("href") ||
+              ""
+            )
+              .toLowerCase();
+
+
+          return (
+            text.includes("rss") ||
+            text.includes("feed") ||
+            href.includes("rss") ||
+            href.includes("feed")
+          );
+        }
+      );
+
+
+    for (
+      const link of candidates
+    ) {
+
+      let href =
+        link.getAttribute(
+          "href"
+        );
+
+
+      if (!href) {
+        continue;
+      }
+
+
+      try {
+
+        href =
+          new URL(
+            href,
+            source.fallbackPage
+          ).href;
+
+      } catch (_) {
+
+        continue;
+      }
+
+
+      if (
+        href ===
+        source.fallbackPage
+      ) {
+
+        continue;
+      }
+
+
+      if (
+        !/rss|feed/i.test(href)
+      ) {
+
+        continue;
+      }
+
+
+      try {
+
+        const items =
+          await tryRawXml(
+            source,
+            href
+          );
+
+
+        if (items.length) {
+          return items;
+        }
+
+      } catch (_) {
+
+        continue;
+      }
+    }
+
+  } catch (err) {
+
+    console.warn(
+      `${source.name}: RSS discovery failed`,
+      err.message
+    );
+  }
+
+
+  return [];
+}
+
+
+// ============================================================
+// PAGE FALLBACK
+// Used only for RBNZ / genuinely difficult sources.
+// ============================================================
+
+async function fetchPageFallback(
+  source
+) {
+
+  if (
+    !source.fallbackPage
+  ) {
+
+    return [];
+  }
+
+
+  try {
+
+    const response =
+      await fetch(
+        allOriginsUrl(
+          source.fallbackPage
+        ) +
+        "&t=" +
+        Date.now(),
+        {
+          cache: "no-store"
+        }
+      );
+
+
+    if (!response.ok) {
+      return [];
+    }
+
+
+    const html =
+      await response.text();
+
+
+    const document =
       new DOMParser()
         .parseFromString(
           html,
@@ -654,224 +1054,185 @@ async function fetchPageFallback(source) {
     const candidates = [];
 
 
-    // --------------------------------------------------------
-    // Generic article/link discovery.
-    // --------------------------------------------------------
+    // Article-like blocks.
+    document
+      .querySelectorAll(
+        "article, li, .card, .item, .news-item, .media-item, .search-result"
+      )
+      .forEach(
+        node => {
 
-    doc.querySelectorAll(
-      "article, li, .card, .item, .news-item, .media-item, .search-result"
-    ).forEach(node => {
-
-      const a =
-        node.querySelector(
-          "a[href]"
-        );
-
-      if (!a) return;
-
-      const title =
-        (
-          a.textContent ||
-          ""
-        ).trim();
-
-      if (
-        title.length < 10
-      ) {
-        return;
-      }
-
-
-      const href =
-        a.getAttribute(
-          "href"
-        );
-
-
-      if (!href) return;
-
-
-      let link;
-
-      try {
-
-        link =
-          new URL(
-            href,
-            source.fallbackPage
-          ).href;
-
-      } catch (_) {
-
-        return;
-      }
-
-
-      const text =
-        (
-          node.textContent ||
-          ""
-        )
-          .replace(/\s+/g, " ")
-          .trim();
-
-
-      // Prefer a date visible in the item.
-      const dateMatch =
-        text.match(
-          /\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})\b/
-        ) ||
-        text.match(
-          /\b(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})\b/i
-        );
-
-
-      let date = null;
-
-
-      if (dateMatch) {
-
-        if (
-          dateMatch[2] &&
-          isNaN(Number(dateMatch[2]))
-        ) {
-
-          const monthMap = {
-            january:0,
-            february:1,
-            march:2,
-            april:3,
-            may:4,
-            june:5,
-            july:6,
-            august:7,
-            september:8,
-            october:9,
-            november:10,
-            december:11
-          };
-
-
-          date =
-            new Date(
-              Number(dateMatch[3]),
-              monthMap[
-                dateMatch[2].toLowerCase()
-              ],
-              Number(dateMatch[1])
+          const linkNode =
+            node.querySelector(
+              "a[href]"
             );
 
-        } else {
 
-          date =
-            new Date(
-              Number(dateMatch[3]),
-              Number(dateMatch[2]) - 1,
-              Number(dateMatch[1])
+          if (!linkNode) {
+            return;
+          }
+
+
+          const title =
+            (
+              linkNode.textContent ||
+              ""
+            )
+              .replace(/\s+/g, " ")
+              .trim();
+
+
+          if (
+            title.length < 12
+          ) {
+
+            return;
+          }
+
+
+          let href =
+            linkNode.getAttribute(
+              "href"
             );
+
+
+          if (!href) {
+            return;
+          }
+
+
+          try {
+
+            href =
+              new URL(
+                href,
+                source.fallbackPage
+              ).href;
+
+          } catch (_) {
+
+            return;
+          }
+
+
+          const text =
+            (
+              node.textContent ||
+              ""
+            )
+              .replace(/\s+/g, " ")
+              .trim();
+
+
+          let date =
+            null;
+
+
+          const numeric =
+            text.match(
+              /\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})\b/
+            );
+
+
+          if (numeric) {
+
+            date =
+              new Date(
+                Number(numeric[3]),
+                Number(numeric[2]) - 1,
+                Number(numeric[1])
+              );
+
+          } else {
+
+            const named =
+              text.match(
+                /\b(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})\b/i
+              );
+
+
+            if (named) {
+
+              const months = {
+                january:0,
+                february:1,
+                march:2,
+                april:3,
+                may:4,
+                june:5,
+                july:6,
+                august:7,
+                september:8,
+                october:9,
+                november:10,
+                december:11
+              };
+
+
+              date =
+                new Date(
+                  Number(named[3]),
+                  months[
+                    named[2].toLowerCase()
+                  ],
+                  Number(named[1])
+                );
+            }
+          }
+
+
+          candidates.push({
+            title,
+            link: href,
+            date
+          });
         }
-      }
+      );
 
 
-      candidates.push({
-        title,
-        link,
-        date
-      });
-    });
+    // Deduplicate.
+    const unique = [];
 
 
-    // --------------------------------------------------------
-    // Also inspect normal links on the current page.
-    // --------------------------------------------------------
-
-    if (
-      candidates.length < 3
+    for (
+      const item of candidates
     ) {
 
-      doc.querySelectorAll(
-        "a[href]"
-      ).forEach(a => {
+      if (
+        !unique.some(
+          x =>
+            x.link ===
+            item.link
+        )
+      ) {
 
-        const title =
-          (
-            a.textContent ||
-            ""
-          ).trim();
-
-        if (
-          title.length < 20
-        ) {
-          return;
-        }
-
-
-        const href =
-          a.getAttribute(
-            "href"
-          );
-
-
-        if (!href) return;
-
-
-        let link;
-
-        try {
-
-          link =
-            new URL(
-              href,
-              source.fallbackPage
-            ).href;
-
-        } catch (_) {
-
-          return;
-        }
-
-
-        // Keep only likely article/news URLs.
-        if (
-          !/news|press|media|release|publication|statement|speech|announcement/i.test(
-            link
-          )
-        ) {
-          return;
-        }
-
-
-        if (
-          candidates.some(
-            x =>
-              x.link === link
-          )
-        ) {
-          return;
-        }
-
-
-        candidates.push({
-          title,
-          link,
-          date:null
-        });
-      });
+        unique.push(item);
+      }
     }
 
 
-    return candidates
+    return unique
       .slice(0, 8)
       .map(
-        item =>
-          ({
-            title: item.title,
-            link: item.link,
-            date: item.date,
-            source: source.name,
-            jurisdiction: source.jurisdiction,
-            category: source.category
-          })
+        item => ({
+          title:
+            item.title,
+
+          link:
+            item.link,
+
+          date:
+            item.date,
+
+          source:
+            source.name,
+
+          jurisdiction:
+            source.jurisdiction,
+
+          category:
+            source.category
+        })
       );
 
   } catch (err) {
@@ -887,10 +1248,12 @@ async function fetchPageFallback(source) {
 
 
 // ============================================================
-// HKMA
+// HKMA OFFICIAL API
 // ============================================================
 
-async function tryHKMA(source) {
+async function tryHKMA(
+  source
+) {
 
   const response =
     await fetch(
@@ -902,12 +1265,14 @@ async function tryHKMA(source) {
       }
     );
 
+
   if (!response.ok) {
 
     throw new Error(
       `HKMA API HTTP ${response.status}`
     );
   }
+
 
   const data =
     await response.json();
@@ -934,6 +1299,7 @@ async function tryHKMA(source) {
     .slice(0, 8)
     .map(
       record => ({
+
         title:
           record.title ||
           "Untitled update",
@@ -949,22 +1315,34 @@ async function tryHKMA(source) {
             record.published
           ),
 
-        source: source.name,
-        jurisdiction: source.jurisdiction,
-        category: source.category
+        source:
+          source.name,
+
+        jurisdiction:
+          source.jurisdiction,
+
+        category:
+          source.category
       })
     );
 }
 
 
 // ============================================================
-// MASTER FETCH
+// SOURCE FETCHER
 // ============================================================
 
-async function fetchSource(source) {
+async function fetchSource(
+  source
+) {
 
-  // API source
-  if (source.api) {
+  // ----------------------------------------------------------
+  // API
+  // ----------------------------------------------------------
+
+  if (
+    source.api
+  ) {
 
     try {
 
@@ -982,40 +1360,127 @@ async function fetchSource(source) {
   }
 
 
-  // Primary RSS
-  try {
+  // ----------------------------------------------------------
+  // MULTIPLE RSS FEEDS
+  //
+  // Important for RBI + FINMA.
+  // Their feed results are merged into one regulator block.
+  // ----------------------------------------------------------
 
-    return await tryRss2Json(
-      source,
-      source.feed
-    );
+  if (
+    Array.isArray(source.feeds) &&
+    source.feeds.length
+  ) {
 
-  } catch (_) {}
-
-
-  // Raw primary RSS
-  try {
-
-    return await tryRawXml(
-      source,
-      source.feed
-    );
-
-  } catch (_) {}
+    const merged = [];
 
 
-  // Fallback RSS URLs
-  for (
-    const feed of (
-      source.fallbackFeeds || []
-    )
+    for (
+      const feed of source.feeds
+    ) {
+
+      // First try RSS2JSON.
+      try {
+
+        const items =
+          await tryRss2Json(
+            source,
+            feed
+          );
+
+
+        merged.push(
+          ...items
+        );
+
+
+        continue;
+
+      } catch (_) {}
+
+
+      // Then direct raw XML.
+      try {
+
+        const items =
+          await tryRawXml(
+            source,
+            feed
+          );
+
+
+        merged.push(
+          ...items
+        );
+
+      } catch (_) {}
+    }
+
+
+    // If anything worked, dedupe and return.
+    if (merged.length) {
+
+      const unique = [];
+
+
+      merged.forEach(
+        item => {
+
+          if (
+            !unique.some(
+              x =>
+                x.link ===
+                item.link
+            )
+          ) {
+
+            unique.push(item);
+          }
+        }
+      );
+
+
+      unique.sort(
+        (a,b) => {
+
+          const at =
+            a.date instanceof Date
+              ? a.date.getTime()
+              : 0;
+
+
+          const bt =
+            b.date instanceof Date
+              ? b.date.getTime()
+              : 0;
+
+
+          return bt - at;
+        }
+      );
+
+
+      return unique.slice(
+        0,
+        8
+      );
+    }
+  }
+
+
+  // ----------------------------------------------------------
+  // OLD / SINGLE FEED STRUCTURE
+  // ----------------------------------------------------------
+
+  if (
+    source.feed
   ) {
 
     try {
 
       return await tryRss2Json(
         source,
-        feed
+        source.feed
       );
 
     } catch (_) {}
@@ -1025,21 +1490,45 @@ async function fetchSource(source) {
 
       return await tryRawXml(
         source,
-        feed
+        source.feed
       );
 
     } catch (_) {}
   }
 
 
-  // Official page fallback
+  // ----------------------------------------------------------
+  // Discover a real RSS link from official page.
+  // ----------------------------------------------------------
+
+  const discovered =
+    await discoverFeedFromPage(
+      source
+    );
+
+
+  if (
+    discovered.length
+  ) {
+
+    return discovered;
+  }
+
+
+  // ----------------------------------------------------------
+  // Page fallback.
+  // ----------------------------------------------------------
+
   const pageItems =
     await fetchPageFallback(
       source
     );
 
 
-  if (pageItems.length) {
+  if (
+    pageItems.length
+  ) {
+
     return pageItems;
   }
 
@@ -1049,10 +1538,120 @@ async function fetchSource(source) {
 
 
 // ============================================================
+// SOURCE TOOLTIP
+// ============================================================
+
+function fullNameTooltip(
+  source
+) {
+
+  const color =
+    sourceColor(
+      source.name
+    );
+
+
+  return `
+    <span
+      class="regulator-name-wrap"
+      style="
+        position:relative;
+        display:inline-flex;
+        align-items:center;
+      "
+    >
+
+      <span
+        class="regulator-name"
+        style="
+          color:${color};
+          font-weight:700;
+          cursor:help;
+        "
+      >
+        ${escapeHtml(source.name)}
+      </span>
+
+      <span
+        class="regulator-tooltip"
+        style="
+          display:none;
+          position:absolute;
+          left:0;
+          top:calc(100% + 8px);
+          z-index:1000;
+          white-space:nowrap;
+          background:rgba(255,255,255,.94);
+          backdrop-filter:blur(10px);
+          -webkit-backdrop-filter:blur(10px);
+          border:1px solid ${color};
+          color:${color};
+          border-radius:999px;
+          padding:6px 11px;
+          font-size:12px;
+          line-height:1.2;
+          font-weight:600;
+          box-shadow:0 8px 22px rgba(0,0,0,.08);
+          pointer-events:none;
+        "
+      >
+        ${escapeHtml(source.fullName)}
+      </span>
+
+    </span>
+  `;
+}
+
+
+// ============================================================
+// TOOLTIP STYLE
+// ============================================================
+
+(function installTooltipCSS() {
+
+  if (
+    document.getElementById(
+      "regulator-tooltip-css"
+    )
+  ) {
+    return;
+  }
+
+
+  const style =
+    document.createElement(
+      "style"
+    );
+
+
+  style.id =
+    "regulator-tooltip-css";
+
+
+  style.textContent = `
+
+    .regulator-name-wrap:hover
+    .regulator-tooltip {
+      display:block !important;
+    }
+
+  `;
+
+
+  document.head.appendChild(
+    style
+  );
+
+})();
+
+
+// ============================================================
 // SOURCE BLOCK
 // ============================================================
 
-function createSourceBlock(source) {
+function createSourceBlock(
+  source
+) {
 
   const color =
     sourceColor(
@@ -1073,10 +1672,8 @@ function createSourceBlock(source) {
   block.dataset.source =
     source.name;
 
-
   block.dataset.category =
     source.category;
-
 
   block.dataset.jurisdiction =
     source.jurisdiction;
@@ -1097,14 +1694,7 @@ function createSourceBlock(source) {
       "
     >
 
-      <span
-        style="
-          color:${color};
-          font-weight:700;
-        "
-      >
-        ${escapeHtml(source.name)}
-      </span>
+      ${fullNameTooltip(source)}
 
       <span style="opacity:.5;">
         ${escapeHtml(source.jurisdiction)}
@@ -1191,7 +1781,7 @@ function buildDashboard() {
 
 
 // ============================================================
-// RENDER SOURCE
+// RENDER ONE SOURCE
 // ============================================================
 
 function renderSource(
@@ -1205,8 +1795,8 @@ function renderSource(
       ".dash-source-block"
     )]
       .find(
-        x =>
-          x.dataset.source ===
+        node =>
+          node.dataset.source ===
           source.name
       );
 
@@ -1235,6 +1825,7 @@ function renderSource(
   if (!items.length) {
 
     if (status) {
+
       status.textContent =
         statusText ||
         "Temporarily unavailable";
@@ -1261,6 +1852,14 @@ function renderSource(
         "dash-row";
 
 
+      const itemSource =
+        SOURCES.find(
+          s =>
+            s.name ===
+            item.source
+        );
+
+
       row.innerHTML = `
 
         <a
@@ -1276,14 +1875,12 @@ function renderSource(
 
           <span class="dash-source">
 
-            <span
-              style="
-                color:${sourceColor(item.source)};
-                font-weight:700;
-              "
-            >
-              ${escapeHtml(item.source)}
-            </span>
+            ${fullNameTooltip(
+              itemSource || {
+                name:item.source,
+                fullName:item.source
+              }
+            )}
 
             <span style="opacity:.5;">
               · ${escapeHtml(item.jurisdiction)}
@@ -1321,36 +1918,36 @@ function renderSource(
 
 
 // ============================================================
-// STATE
+// MASTER STATE
 // ============================================================
 
 function rebuildAllItems() {
 
-  const items = [];
+  const merged = [];
 
 
   SOURCES.forEach(
     source => {
 
-      const sourceItems =
+      const items =
         lastSuccessfulItems[
           source.name
         ];
 
 
       if (
-        Array.isArray(sourceItems)
+        Array.isArray(items)
       ) {
 
-        items.push(
-          ...sourceItems
+        merged.push(
+          ...items
         );
       }
     }
   );
 
 
-  items.sort(
+  merged.sort(
     (a,b) => {
 
       const at =
@@ -1358,22 +1955,24 @@ function rebuildAllItems() {
           ? a.date.getTime()
           : 0;
 
+
       const bt =
         b.date instanceof Date
           ? b.date.getTime()
           : 0;
+
 
       return bt - at;
     }
   );
 
 
-  return items;
+  return merged;
 }
 
 
 // ============================================================
-// HOME PREVIEW
+// HOMEPAGE PREVIEW
 // ============================================================
 
 function renderHomePreview() {
@@ -1394,9 +1993,11 @@ function renderHomePreview() {
   if (!items.length) {
 
     el.innerHTML =
-      `<div class="dash-empty">
+      `
+      <div class="dash-empty">
         Loading live updates…
-      </div>`;
+      </div>
+      `;
 
     return;
   }
@@ -1406,53 +2007,65 @@ function renderHomePreview() {
     items
       .slice(0,5)
       .map(
-        item =>
-          `
-          <div class="dash-row">
+        item => {
 
-            <a
-              class="dash-title"
-              href="${escapeHtml(item.link)}"
-              target="_blank"
-              rel="noopener"
-            >
-              ${escapeHtml(item.title)}
-            </a>
+          const source =
+            SOURCES.find(
+              s =>
+                s.name ===
+                item.source
+            );
 
-            <div class="dash-meta">
 
-              <span class="dash-source">
+          return `
+            <div class="dash-row">
 
-                <span
-                  style="
-                    color:${sourceColor(item.source)};
-                    font-weight:700;
-                  "
-                >
-                  ${escapeHtml(item.source)}
+              <a
+                class="dash-title"
+                href="${escapeHtml(item.link)}"
+                target="_blank"
+                rel="noopener"
+              >
+                ${escapeHtml(item.title)}
+              </a>
+
+              <div class="dash-meta">
+
+                <span class="dash-source">
+
+                  ${
+                    fullNameTooltip(
+                      source || {
+                        name:item.source,
+                        fullName:item.source
+                      }
+                    )
+                  }
+
+                  <span style="opacity:.5;">
+                    · ${escapeHtml(
+                      item.jurisdiction
+                    )}
+                  </span>
+
                 </span>
 
-                <span style="opacity:.5;">
-                  · ${escapeHtml(item.jurisdiction)}
+                <span class="dash-time">
+                  ${formatDate(item.date)}
                 </span>
 
-              </span>
-
-              <span class="dash-time">
-                ${formatDate(item.date)}
-              </span>
+              </div>
 
             </div>
-
-          </div>
-          `
+          `;
+        }
       )
       .join("");
 }
 
 
 // ============================================================
-// FILTERS
+// FILTER BUTTON
 // ============================================================
 
 function makeFilterButton(
@@ -1461,23 +2074,25 @@ function makeFilterButton(
   active
 ) {
 
-  const b =
+  const button =
     document.createElement(
       "button"
     );
 
 
-  b.type = "button";
+  button.type =
+    "button";
 
-  b.className =
+
+  button.className =
     "dash-live-filter";
 
 
-  b.textContent =
+  button.textContent =
     label;
 
 
-  b.style.cssText = `
+  button.style.cssText = `
     border:1px solid ${color};
     color:${active ? "#fff" : color};
     background:${active ? color : "transparent"};
@@ -1488,9 +2103,13 @@ function makeFilterButton(
   `;
 
 
-  return b;
+  return button;
 }
 
+
+// ============================================================
+// FILTER UI
+// ============================================================
 
 function createFilterUI() {
 
@@ -1533,7 +2152,7 @@ function createFilterUI() {
 
 
   // ----------------------------------------------------------
-  // JURISDICTION
+  // Jurisdictions
   // ----------------------------------------------------------
 
   const jRow =
@@ -1567,7 +2186,9 @@ function createFilterUI() {
   `;
 
 
-  jRow.appendChild(jLabel);
+  jRow.appendChild(
+    jLabel
+  );
 
 
   const jurisdictions =
@@ -1581,7 +2202,7 @@ function createFilterUI() {
     ];
 
 
-  const allJ =
+  const allJurisdiction =
     makeFilterButton(
       "All",
       "#64748b",
@@ -1590,44 +2211,50 @@ function createFilterUI() {
     );
 
 
-  allJ.dataset.jurisdiction =
+  allJurisdiction.dataset.jurisdiction =
     "all";
 
 
-  jRow.appendChild(allJ);
+  jRow.appendChild(
+    allJurisdiction
+  );
 
 
   jurisdictions.forEach(
     jurisdiction => {
 
-      const s =
+      const source =
         SOURCES.find(
-          x =>
-            x.jurisdiction ===
+          s =>
+            s.jurisdiction ===
             jurisdiction
         );
 
 
-      const b =
+      const button =
         makeFilterButton(
           jurisdiction,
-          sourceColor(s?.name),
+          sourceColor(
+            source?.name
+          ),
           activeJurisdiction ===
             jurisdiction
         );
 
 
-      b.dataset.jurisdiction =
+      button.dataset.jurisdiction =
         jurisdiction;
 
 
-      jRow.appendChild(b);
+      jRow.appendChild(
+        button
+      );
     }
   );
 
 
   // ----------------------------------------------------------
-  // CATEGORY
+  // Categories
   // ----------------------------------------------------------
 
   const cRow =
@@ -1661,13 +2288,15 @@ function createFilterUI() {
   `;
 
 
-  cRow.appendChild(cLabel);
+  cRow.appendChild(
+    cLabel
+  );
 
 
   CATEGORIES.forEach(
     category => {
 
-      const b =
+      const button =
         makeFilterButton(
           category.label,
           "#64748b",
@@ -1676,11 +2305,13 @@ function createFilterUI() {
         );
 
 
-      b.dataset.category =
+      button.dataset.category =
         category.key;
 
 
-      cRow.appendChild(b);
+      cRow.appendChild(
+        button
+      );
     }
   );
 
@@ -1688,6 +2319,7 @@ function createFilterUI() {
   wrapper.appendChild(
     jRow
   );
+
 
   wrapper.appendChild(
     cRow
@@ -1704,16 +2336,17 @@ function createFilterUI() {
     "click",
     event => {
 
-      const j =
+      const jurisdiction =
         event.target.closest(
           "[data-jurisdiction]"
         );
 
 
-      if (j) {
+      if (jurisdiction) {
 
         activeJurisdiction =
-          j.dataset.jurisdiction;
+          jurisdiction.dataset.jurisdiction;
+
 
         updateFilters();
 
@@ -1721,16 +2354,17 @@ function createFilterUI() {
       }
 
 
-      const c =
+      const category =
         event.target.closest(
           "[data-category]"
         );
 
 
-      if (c) {
+      if (category) {
 
         activeCategory =
-          c.dataset.category;
+          category.dataset.category;
+
 
         updateFilters();
       }
@@ -1739,6 +2373,10 @@ function createFilterUI() {
 }
 
 
+// ============================================================
+// APPLY FILTERS
+// ============================================================
+
 function updateFilters() {
 
   document
@@ -1746,18 +2384,17 @@ function updateFilters() {
       ".dash-live-filter"
     )
     .forEach(
-      b => {
+      button => {
 
         const jurisdiction =
-          b.dataset.jurisdiction;
+          button.dataset.jurisdiction;
 
         const category =
-          b.dataset.category;
+          button.dataset.category;
 
 
-        const isActive =
-          jurisdiction !==
-            undefined
+        const active =
+          jurisdiction !== undefined
             ? jurisdiction ===
               activeJurisdiction
             : category ===
@@ -1765,17 +2402,17 @@ function updateFilters() {
 
 
         const color =
-          b.style.borderColor;
+          button.style.borderColor;
 
 
-        b.style.background =
-          isActive
+        button.style.background =
+          active
             ? color
             : "transparent";
 
 
-        b.style.color =
-          isActive
+        button.style.color =
+          active
             ? "#fff"
             : color;
       }
@@ -1796,19 +2433,23 @@ function updateFilters() {
           block.dataset.jurisdiction;
 
 
-        block.style.display =
+        const show =
           (
-            (
-              activeCategory === "all" ||
-              activeCategory === category
-            ) &&
-            (
-              activeJurisdiction === "all" ||
-              activeJurisdiction === jurisdiction
-            )
-          )
-          ? ""
-          : "none";
+            activeCategory ===
+              "all" ||
+            activeCategory ===
+              category
+          ) &&
+          (
+            activeJurisdiction ===
+              "all" ||
+            activeJurisdiction ===
+              jurisdiction
+          );
+
+
+        block.style.display =
+          show ? "" : "none";
       }
     );
 }
@@ -1827,8 +2468,8 @@ async function retrySource(
       ".dash-source-block"
     )]
       .find(
-        x =>
-          x.dataset.source ===
+        b =>
+          b.dataset.source ===
           source.name
       );
 
@@ -1840,6 +2481,7 @@ async function retrySource(
     block.querySelector(
       ".dash-source-retry"
     );
+
 
   const status =
     block.querySelector(
@@ -1861,6 +2503,7 @@ async function retrySource(
 
 
   if (status) {
+
     status.textContent =
       "Trying feed…";
   }
@@ -1887,20 +2530,20 @@ async function retrySource(
 
   } else {
 
-    const old =
+    const previous =
       lastSuccessfulItems[
         source.name
       ];
 
 
     if (
-      old &&
-      old.length
+      previous &&
+      previous.length
     ) {
 
       renderSource(
         source,
-        old,
+        previous,
         "Retry failed · previous results retained"
       );
 
@@ -1934,6 +2577,10 @@ async function retrySource(
 }
 
 
+// ============================================================
+// RETRY EVENT
+// ============================================================
+
 function setupRetry() {
 
   const list =
@@ -1955,7 +2602,9 @@ function setupRetry() {
         );
 
 
-      if (!button) return;
+      if (!button) {
+        return;
+      }
 
 
       const source =
@@ -1967,7 +2616,10 @@ function setupRetry() {
 
 
       if (source) {
-        retrySource(source);
+
+        retrySource(
+          source
+        );
       }
     }
   );
@@ -1980,7 +2632,10 @@ function setupRetry() {
 
 async function loadAll() {
 
-  if (loading) return;
+  if (loading) {
+    return;
+  }
+
 
   loading = true;
 
@@ -1990,6 +2645,7 @@ async function loadAll() {
       "dash-status-text"
     );
 
+
   const dot =
     document.getElementById(
       "dash-dot"
@@ -1997,7 +2653,10 @@ async function loadAll() {
 
 
   if (dot) {
-    dot.classList.remove("live");
+
+    dot.classList.remove(
+      "live"
+    );
   }
 
 
@@ -2010,6 +2669,10 @@ async function loadAll() {
       `Loading · 0/${SOURCES.length} regulators`;
   }
 
+
+  // ----------------------------------------------------------
+  // ALL SOURCES START INDEPENDENTLY.
+  // ----------------------------------------------------------
 
   SOURCES.forEach(
     async source => {
@@ -2035,20 +2698,20 @@ async function loadAll() {
 
       } else {
 
-        const old =
+        const previous =
           lastSuccessfulItems[
             source.name
           ];
 
 
         if (
-          old &&
-          old.length
+          previous &&
+          previous.length
         ) {
 
           renderSource(
             source,
-            old,
+            previous,
             "Refresh unavailable · previous results retained"
           );
 
@@ -2063,6 +2726,7 @@ async function loadAll() {
       }
 
 
+      // Update homepage without rebuilding source cards.
       renderHomePreview();
 
 
@@ -2081,7 +2745,7 @@ async function loadAll() {
               ) &&
               lastSuccessfulItems[
                 s.name
-              ].length
+              ].length > 0
           ).length;
 
 
@@ -2125,15 +2789,15 @@ function finishLoad(
 
   const working =
     SOURCES.filter(
-      s =>
+      source =>
         Array.isArray(
           lastSuccessfulItems[
-            s.name
+            source.name
           ]
         ) &&
         lastSuccessfulItems[
-          s.name
-        ].length
+          source.name
+        ].length > 0
     ).length;
 
 
@@ -2157,7 +2821,10 @@ function finishLoad(
 
 
   if (dot) {
-    dot.classList.add("live");
+
+    dot.classList.add(
+      "live"
+    );
   }
 
 
@@ -2174,7 +2841,7 @@ function finishLoad(
       working;
 
 
-    if (failed) {
+    if (failed > 0) {
 
       note.style.display =
         "block";
@@ -2182,7 +2849,9 @@ function finishLoad(
 
       note.textContent =
         `${failed} source${
-          failed === 1 ? "" : "s"
+          failed === 1
+            ? ""
+            : "s"
         } unavailable — existing results retained. ` +
         `Use its ↻ Retry button if needed.`;
 
