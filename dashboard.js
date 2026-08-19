@@ -159,7 +159,7 @@ const SOURCES = [
     category: "central-banks",
 
     feeds: [
-      "https://www.hkma.gov.hk/eng/rss/press-releases.xml"
+      "https://www.hkma.gov.hk/eng/other-information/rss/rss_press-release.xml"
     ]
   },
 
