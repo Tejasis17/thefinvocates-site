@@ -22,6 +22,51 @@
     font-size: 3.2rem !important;
     line-height: 1;
   }
+
+  /* =========================================================
+     WHAT WE DO — align with the manifesto section: left-aligned,
+     same paragraph measure, same padding rhythm as ".manifesto",
+     instead of the centered narrow column it had before.
+     Scoped to this section only, this page only.
+     ========================================================= */
+
+  .confluence-section {
+    padding: 72px 0 64px;
+  }
+
+  .confluence-section p,
+  .confluence-section .signoff {
+    max-width: var(--measure);
+  }
+
+  /* =========================================================
+     SMOOTHER MOTION — refined easing on interactions already
+     present on this page. No new elements, no other files touched.
+     ========================================================= */
+
+  .reveal {
+    transition: opacity .7s cubic-bezier(.22,.61,.36,1), transform .7s cubic-bezier(.22,.61,.36,1);
+  }
+
+  .manifesto-words span {
+    transition: opacity .7s cubic-bezier(.22,.61,.36,1), transform .7s cubic-bezier(.22,.61,.36,1);
+  }
+
+  .card, .dash-row, .btn {
+    transition-timing-function: cubic-bezier(.22,.61,.36,1);
+  }
+
+  .card:hover {
+    transition-duration: .3s;
+  }
+
+  .dash-row:hover {
+    transition-duration: .25s;
+  }
+
+  .nav-item > a.nav-trigger::after {
+    transition-timing-function: cubic-bezier(.22,.61,.36,1);
+  }
 </style>
 
 </head>
@@ -176,18 +221,18 @@
     <div class="stat-grid">
 
       <div class="stat reveal">
-        <span class="num accent-num">4+</span>
+        <span class="num accent-num">8+</span>
         <span class="label">Public consultations filed</span>
         <span class="sub">
-          Supreme Court, RBI, FCA &amp; Bank of England, FSB
+          Supreme Court, RBI, FCA &amp; Bank of England, FSB, MAS
         </span>
       </div>
 
       <div class="stat reveal">
-        <span class="num accent-num">5</span>
+        <span class="num accent-num">6</span>
         <span class="label">Regulatory authorities engaged</span>
         <span class="sub">
-          Across India, the UK and the FSB
+          Across India, the UK, Singapore and the FSB
         </span>
       </div>
 
@@ -195,7 +240,7 @@
         <span class="num accent-num">1.1K+</span>
         <span class="label">LinkedIn community</span>
         <span class="sub">
-          Indexed #1 for the keyword "The Finvocates"
+          , indexed #1 for the keyword "The Finvocates"
         </span>
       </div>
 
@@ -204,7 +249,7 @@
 </section>
 
 
-<section class="section narrow">
+<section class="section confluence-section">
   <div class="wrap">
 
     <p class="eyebrow section-kicker reveal">
@@ -275,7 +320,7 @@
     </p>
 
     <h2 class="section-title reveal">
-      Worldwide Regulatory Dashboard
+      Worldwide regulatory dashboard
     </h2>
 
     <p class="reveal" style="margin-top:-4px;">
