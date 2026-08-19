@@ -520,3 +520,20 @@ a:focus-visible, button:focus-visible{
   outline: 2px solid var(--ink);
   outline-offset: 3px;
 }
+/* Clean consultation dropdown footer */
+.mega-all {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  white-space: nowrap;
+  border-bottom: none !important;
+}
+
+.mega-all::before,
+.mega-all::after {
+  display: none !important;
+}
+
+.mega {
+  border-bottom: 1px solid var(--line) !important;
+}
