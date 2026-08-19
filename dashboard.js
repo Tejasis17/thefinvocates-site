@@ -18,7 +18,6 @@ const SOURCES = [
     jurisdiction: "India",
     category: "central-banks",
 
-    // BOTH RBI FEEDS — intentionally preserved.
     feeds: [
       "https://www.rbi.org.in/pressreleases_rss.xml",
       "https://rbi.org.in/notifications_rss.xml"
@@ -151,14 +150,17 @@ const SOURCES = [
       "https://www.occ.gov/rss/index-rss.html"
   },
 
+  // HKMA deliberately returned to the RSS feed that
+  // was working before the API change.
   {
     name: "HKMA",
     fullName: "Hong Kong Monetary Authority",
     jurisdiction: "Hong Kong",
     category: "central-banks",
 
-    api:
-      "https://api.hkma.gov.hk/public/press-releases?lang=en&offset=0"
+    feeds: [
+      "https://www.hkma.gov.hk/eng/rss/press-releases.xml"
+    ]
   },
 
   {
@@ -178,7 +180,6 @@ const SOURCES = [
     jurisdiction: "Switzerland",
     category: "conduct-markets",
 
-    // BOTH FINMA FEEDS — merged into one FINMA block.
     feeds: [
       "https://www.finma.ch/fr/rss/news/",
       "https://www.finma.ch/fr/rss/sanktionen/"
@@ -194,7 +195,6 @@ const SOURCES = [
     jurisdiction: "Switzerland",
     category: "central-banks",
 
-    // Overall "New on the website" stream.
     feeds: [
       "https://www.snb.ch/public/rss/en/news"
     ],
@@ -257,18 +257,6 @@ const SOURCES = [
 
     fallbackPage:
       "https://www.centralbank.ie/news-media"
-  },
-
-  {
-    name: "RBNZ",
-    fullName: "Reserve Bank of New Zealand — Te Pūtea Matua",
-    jurisdiction: "New Zealand",
-    category: "central-banks",
-
-    // Current official News page used as fallback.
-    // Kept isolated so it cannot affect the other 20.
-    fallbackPage:
-      "https://www.rbnz.govt.nz/news-and-events/news"
   }
 ];
 
@@ -278,26 +266,11 @@ const SOURCES = [
 // ============================================================
 
 const CATEGORIES = [
-  {
-    key: "all",
-    label: "All"
-  },
-  {
-    key: "central-banks",
-    label: "Central Banks"
-  },
-  {
-    key: "standard-setters",
-    label: "Global Standard-Setters"
-  },
-  {
-    key: "conduct-markets",
-    label: "Conduct & Markets"
-  },
-  {
-    key: "us-agencies",
-    label: "US Agencies"
-  }
+  { key: "all", label: "All" },
+  { key: "central-banks", label: "Central Banks" },
+  { key: "standard-setters", label: "Global Standard-Setters" },
+  { key: "conduct-markets", label: "Conduct & Markets" },
+  { key: "us-agencies", label: "US Agencies" }
 ];
 
 
@@ -306,48 +279,26 @@ const CATEGORIES = [
 // ============================================================
 
 const REGULATOR_COLORS = {
-
   "RBI": "#8b5cf6",
-
   "FCA": "#2563eb",
-
   "BoE": "#1d4ed8",
-
   "PRA": "#4338ca",
-
   "BIS/BCBS": "#475569",
-
   "FSB": "#64748b",
-
   "ECB": "#0891b2",
-
   "EBA": "#0e7490",
-
   "Federal Reserve": "#dc2626",
-
   "CFPB": "#b91c1c",
-
   "FINRA": "#be123c",
-
   "OCC": "#9f1239",
-
   "HKMA": "#0f766e",
-
   "BOJ": "#db2777",
-
   "FINMA": "#15803d",
-
   "SNB": "#166534",
-
   "BaFin": "#ca8a04",
-
   "Bank of Canada": "#c2410c",
-
   "RBA": "#ea580c",
-
-  "Central Bank of Ireland": "#059669",
-
-  "RBNZ": "#0284c7"
+  "Central Bank of Ireland": "#059669"
 };
 
 
@@ -356,40 +307,27 @@ const REGULATOR_COLORS = {
 // ============================================================
 
 let activeCategory = "all";
-
 let activeJurisdiction = "all";
-
 let loading = false;
 
-
-// Last successful result for each regulator.
-// Failed refreshes never erase it.
 const lastSuccessfulItems = {};
 
 
 // ============================================================
-// BASIC HELPERS
+// HELPERS
 // ============================================================
 
 function sleep(ms) {
-
-  return new Promise(
-    resolve => setTimeout(resolve, ms)
-  );
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 
 function sourceColor(name) {
-
-  return (
-    REGULATOR_COLORS[name] ||
-    "#64748b"
-  );
+  return REGULATOR_COLORS[name] || "#64748b";
 }
 
 
 function escapeHtml(value) {
-
   return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -400,7 +338,6 @@ function escapeHtml(value) {
 
 
 function rss2jsonUrl(feed) {
-
   return (
     "https://api.rss2json.com/v1/api.json?rss_url=" +
     encodeURIComponent(feed)
@@ -409,7 +346,6 @@ function rss2jsonUrl(feed) {
 
 
 function allOriginsUrl(url) {
-
   return (
     "https://api.allorigins.win/raw?url=" +
     encodeURIComponent(url)
@@ -418,90 +354,65 @@ function allOriginsUrl(url) {
 
 
 // ============================================================
-// DATE PARSING
+// DATES
 // ============================================================
 
 function parseDate(value) {
 
-  if (!value) {
-    return null;
-  }
+  if (!value) return null;
 
-
-  const date =
-    new Date(value);
-
+  const d = new Date(value);
 
   if (
-    !isNaN(date.getTime()) &&
-    date.getFullYear() > 1971
+    !isNaN(d.getTime()) &&
+    d.getFullYear() > 1971
   ) {
-
-    return date;
+    return d;
   }
 
+  if (typeof value === "string") {
 
-  if (
-    typeof value === "string"
-  ) {
+    const m = value.match(
+      /(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/
+    );
 
-    const match =
-      value.match(
-        /(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/
+    if (m) {
+
+      const x = new Date(
+        Number(m[3]),
+        Number(m[2]) - 1,
+        Number(m[1])
       );
 
-
-    if (match) {
-
-      const fallback =
-        new Date(
-          Number(match[3]),
-          Number(match[2]) - 1,
-          Number(match[1])
-        );
-
-
       if (
-        !isNaN(fallback.getTime()) &&
-        fallback.getFullYear() > 1971
+        !isNaN(x.getTime()) &&
+        x.getFullYear() > 1971
       ) {
-
-        return fallback;
+        return x;
       }
     }
   }
-
 
   return null;
 }
 
 
-// ============================================================
-// EXACT DATE DISPLAY
-// ============================================================
-
 function formatDate(date) {
 
-  if (!date) {
-    return "Date unavailable";
-  }
-
+  if (!date) return "Date unavailable";
 
   const d =
     date instanceof Date
       ? date
       : parseDate(date);
 
-
   if (
     !d ||
     isNaN(d.getTime()) ||
     d.getFullYear() <= 1971
   ) {
-
     return "Date unavailable";
   }
-
 
   return d.toLocaleDateString(
     "en-IN",
@@ -521,54 +432,31 @@ function formatDate(date) {
 function extractFCADate(item) {
 
   const fields = [
-
     item.pubDate,
-
     item.published,
-
     item.isoDate,
-
     item.updated,
-
     item.date,
-
     item["dc:date"],
-
     item.description,
-
     item.content,
-
     item.contentSnippet
   ];
 
+  for (const field of fields) {
 
-  for (
-    const field of fields
-  ) {
-
-    if (!field) {
-      continue;
-    }
-
+    if (!field) continue;
 
     const text =
       String(field)
-        .replace(
-          /<[^>]*>/g,
-          " "
-        )
-        .replace(
-          /\s+/g,
-          " "
-        )
+        .replace(/<[^>]*>/g, " ")
+        .replace(/\s+/g, " ")
         .trim();
-
 
     const first =
       text.match(
         /First\s+published\s*:?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i
       );
-
 
     if (first) {
 
@@ -579,12 +467,10 @@ function extractFCADate(item) {
       );
     }
 
-
     const generic =
       text.match(
         /\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/
       );
-
 
     if (generic) {
 
@@ -596,19 +482,15 @@ function extractFCADate(item) {
     }
   }
 
-
   return null;
 }
 
 
 // ============================================================
-// NORMALISE RSS ITEM
+// NORMALISE ITEM
 // ============================================================
 
-function normaliseItem(
-  item,
-  source
-) {
+function normaliseItem(item, source) {
 
   let date =
     parseDate(
@@ -620,23 +502,17 @@ function normaliseItem(
       item["dc:date"]
     );
 
-
-  if (
-    source.name === "FCA"
-  ) {
+  if (source.name === "FCA") {
 
     const fcaDate =
       extractFCADate(item);
-
 
     if (fcaDate) {
       date = fcaDate;
     }
   }
 
-
   return {
-
     title:
       item.title ||
       item.name ||
@@ -650,26 +526,18 @@ function normaliseItem(
 
     date,
 
-    source:
-      source.name,
-
-    jurisdiction:
-      source.jurisdiction,
-
-    category:
-      source.category
+    source: source.name,
+    jurisdiction: source.jurisdiction,
+    category: source.category
   };
 }
 
 
 // ============================================================
-// RSS2JSON FOR ONE FEED
+// RSS2JSON
 // ============================================================
 
-async function tryRss2Json(
-  source,
-  feed
-) {
+async function tryRss2Json(source, feed) {
 
   const response =
     await fetch(
@@ -681,7 +549,6 @@ async function tryRss2Json(
       }
     );
 
-
   if (!response.ok) {
 
     throw new Error(
@@ -689,10 +556,8 @@ async function tryRss2Json(
     );
   }
 
-
   const data =
     await response.json();
-
 
   if (
     !data ||
@@ -704,7 +569,6 @@ async function tryRss2Json(
       "RSS2JSON returned no items"
     );
   }
-
 
   return data.items
     .slice(0, 8)
@@ -722,10 +586,7 @@ async function tryRss2Json(
 // RAW RSS / ATOM
 // ============================================================
 
-async function tryRawXml(
-  source,
-  feed
-) {
+async function tryRawXml(source, feed) {
 
   const response =
     await fetch(
@@ -737,7 +598,6 @@ async function tryRawXml(
       }
     );
 
-
   if (!response.ok) {
 
     throw new Error(
@@ -745,10 +605,8 @@ async function tryRawXml(
     );
   }
 
-
   const xml =
     await response.text();
-
 
   const document =
     new DOMParser()
@@ -757,12 +615,10 @@ async function tryRawXml(
         "text/xml"
       );
 
-
   const nodes = [
     ...document.querySelectorAll("item"),
     ...document.querySelectorAll("entry")
   ];
-
 
   if (!nodes.length) {
 
@@ -771,88 +627,56 @@ async function tryRawXml(
     );
   }
 
-
   return nodes
     .slice(0, 8)
-    .map(
-      node => {
+    .map(node => {
 
-        const title =
-          node.querySelector(
-            "title"
-          )
-            ?.textContent
-            ?.trim() ||
-          "Untitled update";
+      const title =
+        node.querySelector("title")
+          ?.textContent
+          ?.trim() ||
+        "Untitled update";
 
+      const linkNode =
+        node.querySelector("link");
 
-        const linkNode =
-          node.querySelector(
-            "link"
-          );
+      const link =
+        linkNode?.getAttribute("href") ||
+        linkNode?.textContent?.trim() ||
+        "#";
 
+      const date =
+        node.querySelector("pubDate")
+          ?.textContent ||
+        node.querySelector("published")
+          ?.textContent ||
+        node.querySelector("updated")
+          ?.textContent ||
+        node.querySelector("date")
+          ?.textContent ||
+        "";
 
-        const link =
-          linkNode?.getAttribute("href") ||
-          linkNode?.textContent?.trim() ||
-          "#";
-
-
-        const date =
-          node.querySelector("pubDate")
-            ?.textContent ||
-
-          node.querySelector("published")
-            ?.textContent ||
-
-          node.querySelector("updated")
-            ?.textContent ||
-
-          node.querySelector("date")
-            ?.textContent ||
-
-          "";
-
-
-        const description =
-          node.querySelector("description")
-            ?.textContent ||
-
-          node.querySelector("summary")
-            ?.textContent ||
-
-          "";
-
-
-        return normaliseItem(
-          {
-            title,
-            link,
-            pubDate: date,
-            description
-          },
-          source
-        );
-      }
-    );
+      return normaliseItem(
+        {
+          title,
+          link,
+          pubDate: date
+        },
+        source
+      );
+    });
 }
 
 
 // ============================================================
-// FIND RSS LINK ON OFFICIAL PAGE
+// RSS DISCOVERY
 // ============================================================
 
-async function discoverFeedFromPage(
-  source
-) {
+async function discoverFeedFromPage(source) {
 
-  if (
-    !source.fallbackPage
-  ) {
-
+  if (!source.fallbackPage) {
     return [];
   }
-
 
   try {
 
@@ -868,15 +692,12 @@ async function discoverFeedFromPage(
         }
       );
 
-
     if (!response.ok) {
       return [];
     }
 
-
     const html =
       await response.text();
-
 
     const document =
       new DOMParser()
@@ -885,14 +706,12 @@ async function discoverFeedFromPage(
           "text/html"
         );
 
-
     const links =
       [
         ...document.querySelectorAll(
           "a[href]"
         )
       ];
-
 
     const candidates =
       links.filter(
@@ -902,17 +721,13 @@ async function discoverFeedFromPage(
             (
               link.textContent ||
               ""
-            )
-              .toLowerCase();
-
+            ).toLowerCase();
 
           const href =
             (
               link.getAttribute("href") ||
               ""
-            )
-              .toLowerCase();
-
+            ).toLowerCase();
 
           return (
             text.includes("rss") ||
@@ -933,10 +748,7 @@ async function discoverFeedFromPage(
           "href"
         );
 
-
-      if (!href) {
-        continue;
-      }
+      if (!href) continue;
 
 
       try {
@@ -962,14 +774,6 @@ async function discoverFeedFromPage(
       }
 
 
-      if (
-        !/rss|feed/i.test(href)
-      ) {
-
-        continue;
-      }
-
-
       try {
 
         const items =
@@ -978,15 +782,11 @@ async function discoverFeedFromPage(
             href
           );
 
-
         if (items.length) {
           return items;
         }
 
-      } catch (_) {
-
-        continue;
-      }
+      } catch (_) {}
     }
 
   } catch (err) {
@@ -997,374 +797,29 @@ async function discoverFeedFromPage(
     );
   }
 
-
   return [];
 }
 
 
 // ============================================================
-// PAGE FALLBACK
-// Used only for RBNZ / genuinely difficult sources.
+// HKMA
+// ============================================================
+//
+// RESTORED TO THE VERSION THAT WAS WORKING.
 // ============================================================
 
-async function fetchPageFallback(
-  source
-) {
-
-  if (
-    !source.fallbackPage
-  ) {
-
-    return [];
-  }
-
-
-  try {
-
-    const response =
-      await fetch(
-        allOriginsUrl(
-          source.fallbackPage
-        ) +
-        "&t=" +
-        Date.now(),
-        {
-          cache: "no-store"
-        }
-      );
-
-
-    if (!response.ok) {
-      return [];
-    }
-
-
-    const html =
-      await response.text();
-
-
-    const document =
-      new DOMParser()
-        .parseFromString(
-          html,
-          "text/html"
-        );
-
-
-    const candidates = [];
-
-
-    // Article-like blocks.
-    document
-      .querySelectorAll(
-        "article, li, .card, .item, .news-item, .media-item, .search-result"
-      )
-      .forEach(
-        node => {
-
-          const linkNode =
-            node.querySelector(
-              "a[href]"
-            );
-
-
-          if (!linkNode) {
-            return;
-          }
-
-
-          const title =
-            (
-              linkNode.textContent ||
-              ""
-            )
-              .replace(/\s+/g, " ")
-              .trim();
-
-
-          if (
-            title.length < 12
-          ) {
-
-            return;
-          }
-
-
-          let href =
-            linkNode.getAttribute(
-              "href"
-            );
-
-
-          if (!href) {
-            return;
-          }
-
-
-          try {
-
-            href =
-              new URL(
-                href,
-                source.fallbackPage
-              ).href;
-
-          } catch (_) {
-
-            return;
-          }
-
-
-          const text =
-            (
-              node.textContent ||
-              ""
-            )
-              .replace(/\s+/g, " ")
-              .trim();
-
-
-          let date =
-            null;
-
-
-          const numeric =
-            text.match(
-              /\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})\b/
-            );
-
-
-          if (numeric) {
-
-            date =
-              new Date(
-                Number(numeric[3]),
-                Number(numeric[2]) - 1,
-                Number(numeric[1])
-              );
-
-          } else {
-
-            const named =
-              text.match(
-                /\b(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})\b/i
-              );
-
-
-            if (named) {
-
-              const months = {
-                january:0,
-                february:1,
-                march:2,
-                april:3,
-                may:4,
-                june:5,
-                july:6,
-                august:7,
-                september:8,
-                october:9,
-                november:10,
-                december:11
-              };
-
-
-              date =
-                new Date(
-                  Number(named[3]),
-                  months[
-                    named[2].toLowerCase()
-                  ],
-                  Number(named[1])
-                );
-            }
-          }
-
-
-          candidates.push({
-            title,
-            link: href,
-            date
-          });
-        }
-      );
-
-
-    // Deduplicate.
-    const unique = [];
-
-
-    for (
-      const item of candidates
-    ) {
-
-      if (
-        !unique.some(
-          x =>
-            x.link ===
-            item.link
-        )
-      ) {
-
-        unique.push(item);
-      }
-    }
-
-
-    return unique
-      .slice(0, 8)
-      .map(
-        item => ({
-          title:
-            item.title,
-
-          link:
-            item.link,
-
-          date:
-            item.date,
-
-          source:
-            source.name,
-
-          jurisdiction:
-            source.jurisdiction,
-
-          category:
-            source.category
-        })
-      );
-
-  } catch (err) {
-
-    console.warn(
-      `${source.name}: page fallback failed`,
-      err.message
-    );
-
-    return [];
-  }
-}
-
-
-// ============================================================
-// HKMA OFFICIAL API
-// ============================================================
-
-async function tryHKMA(
-  source
-) {
-
-  const response =
-    await fetch(
-      source.api +
-      "&t=" +
-      Date.now(),
-      {
-        cache: "no-store"
-      }
-    );
-
-
-  if (!response.ok) {
-
-    throw new Error(
-      `HKMA API HTTP ${response.status}`
-    );
-  }
-
-
-  const data =
-    await response.json();
-
-
-  const records =
-    data?.result?.records ||
-    data?.result?.data ||
-    [];
-
-
-  if (
-    !Array.isArray(records) ||
-    !records.length
-  ) {
-
-    throw new Error(
-      "HKMA returned no records"
-    );
-  }
-
-
-  return records
-    .slice(0, 8)
-    .map(
-      record => ({
-
-        title:
-          record.title ||
-          "Untitled update",
-
-        link:
-          record.link ||
-          "#",
-
-        date:
-          parseDate(
-            record.date ||
-            record.pubDate ||
-            record.published
-          ),
-
-        source:
-          source.name,
-
-        jurisdiction:
-          source.jurisdiction,
-
-        category:
-          source.category
-      })
-    );
-}
+// No special HKMA API adapter here.
+// HKMA uses its normal RSS path above.
 
 
 // ============================================================
 // SOURCE FETCHER
 // ============================================================
 
-async function fetchSource(
-  source
-) {
+async function fetchSource(source) {
 
   // ----------------------------------------------------------
-  // API
-  // ----------------------------------------------------------
-
-  if (
-    source.api
-  ) {
-
-    try {
-
-      return await tryHKMA(
-        source
-      );
-
-    } catch (err) {
-
-      console.warn(
-        `${source.name}: API failed`,
-        err.message
-      );
-    }
-  }
-
-
-  // ----------------------------------------------------------
-  // MULTIPLE RSS FEEDS
-  //
-  // Important for RBI + FINMA.
-  // Their feed results are merged into one regulator block.
+  // Multiple feeds — RBI / FINMA / etc.
   // ----------------------------------------------------------
 
   if (
@@ -1379,7 +834,6 @@ async function fetchSource(
       const feed of source.feeds
     ) {
 
-      // First try RSS2JSON.
       try {
 
         const items =
@@ -1388,18 +842,15 @@ async function fetchSource(
             feed
           );
 
-
         merged.push(
           ...items
         );
-
 
         continue;
 
       } catch (_) {}
 
 
-      // Then direct raw XML.
       try {
 
         const items =
@@ -1407,7 +858,6 @@ async function fetchSource(
             source,
             feed
           );
-
 
         merged.push(
           ...items
@@ -1417,7 +867,6 @@ async function fetchSource(
     }
 
 
-    // If anything worked, dedupe and return.
     if (merged.length) {
 
       const unique = [];
@@ -1441,40 +890,33 @@ async function fetchSource(
 
 
       unique.sort(
-        (a,b) => {
+        (a, b) => {
 
           const at =
             a.date instanceof Date
               ? a.date.getTime()
               : 0;
 
-
           const bt =
             b.date instanceof Date
               ? b.date.getTime()
               : 0;
-
 
           return bt - at;
         }
       );
 
 
-      return unique.slice(
-        0,
-        8
-      );
+      return unique.slice(0, 8);
     }
   }
 
 
   // ----------------------------------------------------------
-  // OLD / SINGLE FEED STRUCTURE
+  // Single feed.
   // ----------------------------------------------------------
 
-  if (
-    source.feed
-  ) {
+  if (source.feed) {
 
     try {
 
@@ -1498,7 +940,7 @@ async function fetchSource(
 
 
   // ----------------------------------------------------------
-  // Discover a real RSS link from official page.
+  // Official-page RSS discovery.
   // ----------------------------------------------------------
 
   const discovered =
@@ -1515,35 +957,15 @@ async function fetchSource(
   }
 
 
-  // ----------------------------------------------------------
-  // Page fallback.
-  // ----------------------------------------------------------
-
-  const pageItems =
-    await fetchPageFallback(
-      source
-    );
-
-
-  if (
-    pageItems.length
-  ) {
-
-    return pageItems;
-  }
-
-
   return [];
 }
 
 
 // ============================================================
-// SOURCE TOOLTIP
+// FULL NAME TOOLTIP
 // ============================================================
 
-function fullNameTooltip(
-  source
-) {
+function fullNameTooltip(source) {
 
   const color =
     sourceColor(
@@ -1604,7 +1026,7 @@ function fullNameTooltip(
 
 
 // ============================================================
-// TOOLTIP STYLE
+// TOOLTIP CSS
 // ============================================================
 
 (function installTooltipCSS() {
@@ -1649,9 +1071,7 @@ function fullNameTooltip(
 // SOURCE BLOCK
 // ============================================================
 
-function createSourceBlock(
-  source
-) {
+function createSourceBlock(source) {
 
   const color =
     sourceColor(
@@ -1741,7 +1161,7 @@ function createSourceBlock(
 
 
 // ============================================================
-// BUILD
+// BUILD DASHBOARD
 // ============================================================
 
 function buildDashboard() {
@@ -1781,7 +1201,7 @@ function buildDashboard() {
 
 
 // ============================================================
-// RENDER ONE SOURCE
+// RENDER SOURCE
 // ============================================================
 
 function renderSource(
@@ -1791,9 +1211,11 @@ function renderSource(
 ) {
 
   const block =
-    [...document.querySelectorAll(
-      ".dash-source-block"
-    )]
+    [
+      ...document.querySelectorAll(
+        ".dash-source-block"
+      )
+    ]
       .find(
         node =>
           node.dataset.source ===
@@ -1883,7 +1305,9 @@ function renderSource(
             )}
 
             <span style="opacity:.5;">
-              · ${escapeHtml(item.jurisdiction)}
+              · ${escapeHtml(
+                item.jurisdiction
+              )}
             </span>
 
           </span>
@@ -1948,19 +1372,17 @@ function rebuildAllItems() {
 
 
   merged.sort(
-    (a,b) => {
+    (a, b) => {
 
       const at =
         a.date instanceof Date
           ? a.date.getTime()
           : 0;
 
-
       const bt =
         b.date instanceof Date
           ? b.date.getTime()
           : 0;
-
 
       return bt - at;
     }
@@ -2005,7 +1427,7 @@ function renderHomePreview() {
 
   el.innerHTML =
     items
-      .slice(0,5)
+      .slice(0, 5)
       .map(
         item => {
 
@@ -2151,10 +1573,7 @@ function createFilterUI() {
   `;
 
 
-  // ----------------------------------------------------------
   // Jurisdictions
-  // ----------------------------------------------------------
-
   const jRow =
     document.createElement(
       "div"
@@ -2202,7 +1621,7 @@ function createFilterUI() {
     ];
 
 
-  const allJurisdiction =
+  const allJ =
     makeFilterButton(
       "All",
       "#64748b",
@@ -2211,12 +1630,12 @@ function createFilterUI() {
     );
 
 
-  allJurisdiction.dataset.jurisdiction =
+  allJ.dataset.jurisdiction =
     "all";
 
 
   jRow.appendChild(
-    allJurisdiction
+    allJ
   );
 
 
@@ -2231,7 +1650,7 @@ function createFilterUI() {
         );
 
 
-      const button =
+      const b =
         makeFilterButton(
           jurisdiction,
           sourceColor(
@@ -2242,21 +1661,18 @@ function createFilterUI() {
         );
 
 
-      button.dataset.jurisdiction =
+      b.dataset.jurisdiction =
         jurisdiction;
 
 
       jRow.appendChild(
-        button
+        b
       );
     }
   );
 
 
-  // ----------------------------------------------------------
   // Categories
-  // ----------------------------------------------------------
-
   const cRow =
     document.createElement(
       "div"
@@ -2296,7 +1712,7 @@ function createFilterUI() {
   CATEGORIES.forEach(
     category => {
 
-      const button =
+      const b =
         makeFilterButton(
           category.label,
           "#64748b",
@@ -2305,12 +1721,12 @@ function createFilterUI() {
         );
 
 
-      button.dataset.category =
+      b.dataset.category =
         category.key;
 
 
       cRow.appendChild(
-        button
+        b
       );
     }
   );
@@ -2336,17 +1752,16 @@ function createFilterUI() {
     "click",
     event => {
 
-      const jurisdiction =
+      const j =
         event.target.closest(
           "[data-jurisdiction]"
         );
 
 
-      if (jurisdiction) {
+      if (j) {
 
         activeJurisdiction =
-          jurisdiction.dataset.jurisdiction;
-
+          j.dataset.jurisdiction;
 
         updateFilters();
 
@@ -2354,17 +1769,16 @@ function createFilterUI() {
       }
 
 
-      const category =
+      const c =
         event.target.closest(
           "[data-category]"
         );
 
 
-      if (category) {
+      if (c) {
 
         activeCategory =
-          category.dataset.category;
-
+          c.dataset.category;
 
         updateFilters();
       }
@@ -2374,7 +1788,7 @@ function createFilterUI() {
 
 
 // ============================================================
-// APPLY FILTERS
+// FILTER APPLICATION
 // ============================================================
 
 function updateFilters() {
@@ -2433,7 +1847,7 @@ function updateFilters() {
           block.dataset.jurisdiction;
 
 
-        const show =
+        const visible =
           (
             activeCategory ===
               "all" ||
@@ -2449,7 +1863,7 @@ function updateFilters() {
 
 
         block.style.display =
-          show ? "" : "none";
+          visible ? "" : "none";
       }
     );
 }
@@ -2464,9 +1878,11 @@ async function retrySource(
 ) {
 
   const block =
-    [...document.querySelectorAll(
-      ".dash-source-block"
-    )]
+    [
+      ...document.querySelectorAll(
+        ".dash-source-block"
+      )
+    ]
       .find(
         b =>
           b.dataset.source ===
@@ -2632,10 +2048,7 @@ function setupRetry() {
 
 async function loadAll() {
 
-  if (loading) {
-    return;
-  }
-
+  if (loading) return;
 
   loading = true;
 
@@ -2669,10 +2082,6 @@ async function loadAll() {
       `Loading · 0/${SOURCES.length} regulators`;
   }
 
-
-  // ----------------------------------------------------------
-  // ALL SOURCES START INDEPENDENTLY.
-  // ----------------------------------------------------------
 
   SOURCES.forEach(
     async source => {
@@ -2726,7 +2135,6 @@ async function loadAll() {
       }
 
 
-      // Update homepage without rebuilding source cards.
       renderHomePreview();
 
 
@@ -2805,8 +2213,8 @@ function finishLoad(
     new Date().toLocaleTimeString(
       "en-IN",
       {
-        hour:"2-digit",
-        minute:"2-digit"
+        hour: "2-digit",
+        minute: "2-digit"
       }
     );
 
@@ -2821,10 +2229,7 @@ function finishLoad(
 
 
   if (dot) {
-
-    dot.classList.add(
-      "live"
-    );
+    dot.classList.add("live");
   }
 
 
