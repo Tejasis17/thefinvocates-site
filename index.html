@@ -9,81 +9,13 @@
 
 <style>
   /* =========================================================
-     EDITORIAL ALIGNMENT
-     Keep manifesto prose aligned with the narrow section below.
-     Keep the three-word statement on one line.
-     ========================================================= */
-
-  .manifesto .wrap {
-    max-width: 760px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .manifesto-words {
-    white-space: nowrap;
-    width: max-content;
-    max-width: none;
-    margin-left: 0;
-    margin-right: 0;
-  }
-
-  .manifesto p {
-    max-width: none;
-    margin-left: 0;
-    margin-right: 0;
-  }
-
-  /* =========================================================
-     IMPACT
-     Larger figures + a stronger section heading.
-     ========================================================= */
-
-  .impact h2 {
-    font-size: 2.4rem;
-    line-height: 1.1;
-  }
-
-  .impact .num {
-    font-size: 3.4rem !important;
-    line-height: 0.95;
-  }
-</style>
-<style>
-  /* =========================================================
-     MANIFESTO — match the "What we do" editorial column
-     ========================================================= */
-
-  .manifesto .wrap {
-    max-width: 760px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .manifesto-words {
-    width: 100%;
-    max-width: none;
-    white-space: nowrap;
-    text-align: left;
-    display: block;
-  }
-
-  .manifesto p {
-    width: 100%;
-    max-width: none;
-    margin-left: 0;
-    margin-right: 0;
-  }
-
-
-  /* =========================================================
-     IMPACT — stronger section hierarchy
+     IMPACT — typography only
+     Everything else remains controlled by the original CSS.
      ========================================================= */
 
   .impact h2 {
     font-size: 2.15rem;
     line-height: 1.1;
-    margin-bottom: 28px;
   }
 
   .impact .num {
@@ -91,6 +23,7 @@
     line-height: 1;
   }
 </style>
+
 </head>
 <body>
 
@@ -110,14 +43,17 @@
             <span class="mi-title">Supreme Court — AI in Courts Regulation, 2026</span>
             <span class="mi-meta">40 clause-specific comments</span>
           </a>
+
           <a class="mega-item" href="consultations.html">
             <span class="mi-title">RBI — Governance (Second Amendment) Directions</span>
             <span class="mi-meta">Commercial Banks &amp; SFBs</span>
           </a>
+
           <a class="mega-item" href="consultations.html">
             <span class="mi-title">FSB — Responsible Adoption of AI</span>
             <span class="mi-meta">All 7 questions answered</span>
           </a>
+
           <a class="mega-all" href="consultations.html">
             <span>View all consultations</span>
             <span class="arrow">→</span>
@@ -128,7 +64,9 @@
       <div class="nav-item">
         <a href="articles.html" class="nav-trigger">Articles</a>
         <div class="mega" id="articles-mega">
-          <div class="mega-item"><span class="mi-title">Loading…</span></div>
+          <div class="mega-item">
+            <span class="mi-title">Loading…</span>
+          </div>
         </div>
       </div>
 
@@ -140,6 +78,7 @@
         <a href="about.html" class="nav-trigger">About</a>
         <div class="mega">
           <p class="about-blurb">Chakradhar Kale runs The Finvocates independently while working as a Compliance Trainee at a small finance bank and studying law at GLC Mumbai.</p>
+
           <a class="mega-all" href="about.html">
             <span>Read the full story</span>
             <span class="arrow">→</span>
@@ -155,11 +94,23 @@
 <section class="hero">
   <div class="wrap">
     <p class="eyebrow reveal in">Welcome to</p>
+
     <h1 class="reveal in">The Finvocates</h1>
-    <p class="lede reveal in">A <span class="accent-word">regulatory intelligence</span> platform, tracking where RBI, FCA and FSB thinking is headed, and building the tools that help compliance teams keep up with it.</p>
+
+    <p class="lede reveal in">
+      A <span class="accent-word">regulatory intelligence</span> platform,
+      tracking where RBI, FCA and FSB thinking is headed,
+      and building the tools that help compliance teams keep up with it.
+    </p>
+
     <div class="cta-row reveal in">
-      <a href="consultations.html" class="btn primary">Read our consultations</a>
-      <a href="about.html" class="btn ghost">About the project</a>
+      <a href="consultations.html" class="btn primary">
+        Read our consultations
+      </a>
+
+      <a href="about.html" class="btn ghost">
+        About the project
+      </a>
     </div>
   </div>
 </section>
@@ -167,25 +118,59 @@
 
 <section class="manifesto">
   <div class="wrap">
+
     <div class="manifesto-words reveal">
-      <span>Categorical.</span><span>Consistent.</span><span>Calibrated.</span>
+      <span>Categorical.</span>
+      <span>Consistent.</span>
+      <span>Calibrated.</span>
     </div>
 
-    <p class="reveal">Every sun rising with new possibilities our country wakes up to everyday, illuminates the ever-evolving economic order of the largest social lineage of the world — India, that is Bharat. Value is created and traded, birthing new money which is a product of our efforts. Our work-product, that is, rupee, is our societal asset we must help safeguard and regulate as active citizens.</p>
+    <p class="reveal">
+      Every sun rising with new possibilities our country wakes up to everyday,
+      illuminates the ever-evolving economic order of the largest social lineage
+      of the world — India, that is Bharat. Value is created and traded, birthing
+      new money which is a product of our efforts. Our work-product, that is,
+      rupee, is our societal asset we must help safeguard and regulate as active citizens.
+    </p>
 
-    <p class="reveal">At The Finvocates, regulatory updates and public consultations from financial regulatory authorities of India and the world are tracked, and public consultations responded to, inasmuch as resources allow. Afraid whether the work does justice to what we aim it on, given constraints, the commitment is to max out on possible effort, banking on the belief that when resources, no matter how scarce, are coupled with best effort and structurally consistent categorical planning, they compound into a larger shape and size.</p>
+    <p class="reveal">
+      At The Finvocates, regulatory updates and public consultations from
+      financial regulatory authorities of India and the world are tracked,
+      and public consultations responded to, inasmuch as resources allow.
+      Afraid whether the work does justice to what we aim it on, given constraints,
+      the commitment is to max out on possible effort, banking on the belief that
+      when resources, no matter how scarce, are coupled with best effort and
+      structurally consistent categorical planning, they compound into a larger shape and size.
+    </p>
 
-    <p class="reveal">The fact that a democratic world gives direct opportunities to respond to financial regulatory authorities, and every law-making authority that runs public consultations, is both motivation and reward for the work here. There is no money involved in this project apart from the website domain expense, and that is by design. The aim is to create a lightweight platform that is useful specifically for everyone associated in any way with the financial regulatory space and its impact, of which every citizen of every republic is a part.</p>
+    <p class="reveal">
+      The fact that a democratic world gives direct opportunities to respond to
+      financial regulatory authorities, and every law-making authority that runs
+      public consultations, is both motivation and reward for the work here.
+      There is no money involved in this project apart from the website domain expense,
+      and that is by design. The aim is to create a lightweight platform that is
+      useful specifically for everyone associated in any way with the financial
+      regulatory space and its impact, of which every citizen of every republic is a part.
+    </p>
 
-    <p class="reveal">The philosophy is to remain categorical and veracious without exception, and calibrated in approach, respecting the economy of time users invest.</p>
+    <p class="reveal">
+      The philosophy is to remain categorical and veracious without exception,
+      and calibrated in approach, respecting the economy of time users invest.
+    </p>
 
-    <p class="reveal">This project has no association with any regulatory body. This is purely an academic endeavour for facilitating research, regulatory participation via public consultations, and study.</p>
+    <p class="reveal">
+      This project has no association with any regulatory body. This is purely
+      an academic endeavour for facilitating research, regulatory participation
+      via public consultations, and study.
+    </p>
+
   </div>
 </section>
 
 
 <section class="impact">
   <div class="wrap">
+
     <h2 class="reveal">Our impact</h2>
 
     <div class="stat-grid">
@@ -193,19 +178,25 @@
       <div class="stat reveal">
         <span class="num accent-num">4+</span>
         <span class="label">Public consultations filed</span>
-        <span class="sub">Supreme Court, RBI, FCA &amp; Bank of England, FSB</span>
+        <span class="sub">
+          Supreme Court, RBI, FCA &amp; Bank of England, FSB
+        </span>
       </div>
 
       <div class="stat reveal">
         <span class="num accent-num">5</span>
         <span class="label">Regulatory authorities engaged</span>
-        <span class="sub">Across India, the UK and the FSB</span>
+        <span class="sub">
+          Across India, the UK and the FSB
+        </span>
       </div>
 
       <div class="stat reveal">
         <span class="num accent-num">1.1K+</span>
         <span class="label">LinkedIn community</span>
-        <span class="sub">Indexed #1 for the keyword "The Finvocates"</span>
+        <span class="sub">
+          Indexed #1 for the keyword "The Finvocates"
+        </span>
       </div>
 
     </div>
@@ -215,69 +206,192 @@
 
 <section class="section narrow">
   <div class="wrap">
-    <p class="eyebrow section-kicker reveal">What we do</p>
-    <h2 class="section-title reveal">The confluence of regulation and compliance</h2>
-    <p class="reveal">The Finvocates explores the confluence where <span class="accent-word">regulatory expectations</span> and compliance efforts meet. ComplAI is one such project under development, where we explore building solutions that directly address the problems faced in compliance operations.</p>
-    <p class="reveal">Follow along on LinkedIn and RBI regulatory updates from ComplAI land in your feed.</p>
-    <p class="reveal">Our philosophy is to maintain the highest standards of <span class="accent-word">transparency and trust</span>. We never post anything without real support, evidence or logic. If you don't find a link in one of our posts, DM us, and we'll take it down.</p>
-    <p class="reveal">Right now, The Finvocates, including ComplAI, is run independently by Chakradhar Kale, who is also the founder of this project. He is a student at Government Law College, Mumbai (Batch of 2028).</p>
-    <p class="reveal">If this space is interesting to you, our DMs are always open. Watch this space for more AI-enabled compliance projects.</p>
+
+    <p class="eyebrow section-kicker reveal">
+      What we do
+    </p>
+
+    <h2 class="section-title reveal">
+      The confluence of regulation and compliance
+    </h2>
+
+    <p class="reveal">
+      The Finvocates explores the confluence where
+      <span class="accent-word">regulatory expectations</span>
+      and compliance efforts meet. ComplAI is one such project
+      under development, where we explore building solutions that
+      directly address the problems faced in compliance operations.
+    </p>
+
+    <p class="reveal">
+      Follow along on LinkedIn and RBI regulatory updates from ComplAI
+      land in your feed.
+    </p>
+
+    <p class="reveal">
+      Our philosophy is to maintain the highest standards of
+      <span class="accent-word">transparency and trust</span>.
+      We never post anything without real support, evidence or logic.
+      If you don't find a link in one of our posts, DM us, and we'll take it down.
+    </p>
+
+    <p class="reveal">
+      Right now, The Finvocates, including ComplAI, is run independently
+      by Chakradhar Kale, who is also the founder of this project.
+      He is a student at Government Law College, Mumbai (Batch of 2028).
+    </p>
+
+    <p class="reveal">
+      If this space is interesting to you, our DMs are always open.
+      Watch this space for more AI-enabled compliance projects.
+    </p>
+
 
     <div class="signoff reveal">
-      To connect, email at <a href="mailto:chakradhar@thefinvocates.com">chakradhar@thefinvocates.com</a>.
+
+      To connect, email at
+      <a href="mailto:chakradhar@thefinvocates.com">
+        chakradhar@thefinvocates.com
+      </a>.
+
       <br><br>
+
       Regards,<br>
+
       <span class="name">Chakradhar Kale</span><br>
       The Finvocates
+
     </div>
+
   </div>
 </section>
 
 
 <section class="section" style="padding-bottom:56px;">
   <div class="wrap">
-    <p class="eyebrow section-kicker reveal">Live</p>
-    <h2 class="section-title reveal">Worldwide Regulatory Dashboard</h2>
-    <p class="reveal" style="margin-top:-4px;">Latest headlines across 20 central banks, standard-setters, and market regulators. <a href="dashboard.html" style="color:var(--ink); text-decoration:underline; text-decoration-color:var(--line-strong);">Open the full dashboard →</a></p>
 
-    <div id="home-dashboard-preview" style="margin-top:20px;">
-      <div class="dash-empty">Loading live updates…</div>
+    <p class="eyebrow section-kicker reveal">
+      Live
+    </p>
+
+    <h2 class="section-title reveal">
+      Worldwide Regulatory Dashboard
+    </h2>
+
+    <p class="reveal" style="margin-top:-4px;">
+      Latest headlines across 20 central banks, standard-setters,
+      and market regulators.
+      <a
+        href="dashboard.html"
+        style="color:var(--ink); text-decoration:underline; text-decoration-color:var(--line-strong);"
+      >
+        Open the full dashboard →
+      </a>
+    </p>
+
+    <div
+      id="home-dashboard-preview"
+      style="margin-top:20px;"
+    >
+      <div class="dash-empty">
+        Loading live updates…
+      </div>
     </div>
+
   </div>
 </section>
 
 
-<section class="section" style="background:var(--fog); border-top:1px solid var(--line); border-bottom:1px solid var(--line);">
+<section
+  class="section"
+  style="background:var(--fog); border-top:1px solid var(--line); border-bottom:1px solid var(--line);"
+>
   <div class="wrap">
-    <p class="eyebrow section-kicker reveal">From the feed</p>
-    <h2 class="section-title reveal">Latest articles &amp; filings</h2>
 
-    <div class="card-grid" id="home-articles-grid" style="margin-top:28px;">
-      <div class="empty-state">Loading latest posts…</div>
+    <p class="eyebrow section-kicker reveal">
+      From the feed
+    </p>
+
+    <h2 class="section-title reveal">
+      Latest articles &amp; filings
+    </h2>
+
+    <div
+      class="card-grid"
+      id="home-articles-grid"
+      style="margin-top:28px;"
+    >
+      <div class="empty-state">
+        Loading latest posts…
+      </div>
     </div>
+
   </div>
 </section>
 
 
-<section class="section narrow" style="padding-top:0;">
+<section
+  class="section narrow"
+  style="padding-top:0;"
+>
   <div class="wrap">
-    <hr class="rule" style="margin-bottom:32px;">
 
-    <p class="eyebrow reveal" style="margin-bottom:10px;">Disclaimer</p>
+    <hr
+      class="rule"
+      style="margin-bottom:32px;"
+    >
 
-    <p class="reveal" style="font-size:0.82rem; color:var(--ash); line-height:1.7;">The views expressed on this website are personal and independent, and do not represent the views of any organisation or institution Chakradhar Kale is or has been affiliated with. Content here, including commentary on regulatory developments and public consultation filings, is for general informational purposes only and does not constitute legal, compliance, or professional advice. Public consultation submissions referenced on this site were filed in an independent, individual capacity.</p>
+    <p
+      class="eyebrow reveal"
+      style="margin-bottom:10px;"
+    >
+      Disclaimer
+    </p>
+
+    <p
+      class="reveal"
+      style="font-size:0.82rem; color:var(--ash); line-height:1.7;"
+    >
+      The views expressed on this website are personal and independent,
+      and do not represent the views of any organisation or institution
+      Chakradhar Kale is or has been affiliated with. Content here,
+      including commentary on regulatory developments and public consultation
+      filings, is for general informational purposes only and does not constitute
+      legal, compliance, or professional advice. Public consultation submissions
+      referenced on this site were filed in an independent, individual capacity.
+    </p>
+
   </div>
 </section>
 
 
 <footer class="site-footer">
   <div class="wrap foot-row">
-    <span class="fine">© 2026 The Finvocates. Independently run by Chakradhar Kale.</span>
 
-    <div style="display:flex; gap:20px; align-items:center;">
-      <a class="mail" href="https://www.linkedin.com/company/thefinvocates/" target="_blank" rel="noopener">LinkedIn</a>
-      <a class="mail" href="mailto:chakradhar@thefinvocates.com">chakradhar@thefinvocates.com</a>
+    <span class="fine">
+      © 2026 The Finvocates. Independently run by Chakradhar Kale.
+    </span>
+
+    <div
+      style="display:flex; gap:20px; align-items:center;"
+    >
+      <a
+        class="mail"
+        href="https://www.linkedin.com/company/thefinvocates/"
+        target="_blank"
+        rel="noopener"
+      >
+        LinkedIn
+      </a>
+
+      <a
+        class="mail"
+        href="mailto:chakradhar@thefinvocates.com"
+      >
+        chakradhar@thefinvocates.com
+      </a>
     </div>
+
   </div>
 </footer>
 
