@@ -2300,3 +2300,168 @@ document.addEventListener(
     );
   }
 );
+// ============================================================
+// LIVE STATUS SYNC
+// Keeps the top counter + bottom warning synchronized with
+// the actual regulator blocks currently rendered.
+// ============================================================
+
+(function installLiveStatusSync() {
+
+  function syncStatus() {
+
+    const feed =
+      document.getElementById(
+        "dash-feed-list"
+      );
+
+    if (!feed) return;
+
+
+    const blocks =
+      [
+        ...feed.querySelectorAll(
+          ".dash-source-block"
+        )
+      ];
+
+
+    if (!blocks.length) return;
+
+
+    // A source is considered available only when it has
+    // actually rendered one or more items.
+    const available =
+      blocks.filter(
+        block =>
+          block.querySelector(
+            ".dash-source-items"
+          )?.children.length > 0
+      ).length;
+
+
+    const total =
+      blocks.length;
+
+
+    // --------------------------------------------------------
+    // TOP STATUS
+    // --------------------------------------------------------
+
+    const status =
+      document.getElementById(
+        "dash-status-text"
+      );
+
+
+    if (status) {
+
+      if (available < total) {
+
+        status.textContent =
+          `Loading · ${available}/${total} regulators · ${available} available`;
+
+      } else {
+
+        const now =
+          new Date().toLocaleTimeString(
+            "en-IN",
+            {
+              hour: "2-digit",
+              minute: "2-digit"
+            }
+          );
+
+
+        const updates =
+          feed.querySelectorAll(
+            ".dash-row"
+          ).length;
+
+
+        status.textContent =
+          `Last updated ${now} · ` +
+          `${updates} updates from ` +
+          `${available}/${total} sources`;
+      }
+    }
+
+
+    // --------------------------------------------------------
+    // BOTTOM WARNING
+    // --------------------------------------------------------
+
+    const note =
+      document.getElementById(
+        "dash-error-note"
+      );
+
+
+    if (!note) return;
+
+
+    const missing =
+      total - available;
+
+
+    if (missing === 0) {
+
+      note.style.display =
+        "none";
+
+      return;
+    }
+
+
+    note.style.display =
+      "block";
+
+
+    note.textContent =
+      `${missing} source` +
+      (
+        missing === 1
+          ? ""
+          : "s"
+      ) +
+      ` unavailable — existing results retained. ` +
+      `Use its ↻ Retry button if needed.`;
+  }
+
+
+  // Run once immediately.
+  syncStatus();
+
+
+  // Watch the actual dashboard DOM.
+  const feed =
+    document.getElementById(
+      "dash-feed-list"
+    );
+
+
+  if (!feed) return;
+
+
+  const observer =
+    new MutationObserver(
+      () => syncStatus()
+    );
+
+
+  observer.observe(
+    feed,
+    {
+      childList: true,
+      subtree: true
+    }
+  );
+
+
+  // Small periodic safety check.
+  setInterval(
+    syncStatus,
+    1000
+  );
+
+})();
