@@ -6,26 +6,50 @@
 <title>The Finvocates — Regulatory Intelligence</title>
 <meta name="description" content="The Finvocates is a regulatory intelligence platform tracking RBI, FCA, FSB and Supreme Court developments, and building ComplAI, a project for compliance operations.">
 <link rel="stylesheet" href="style.css">
-  <style>
-  /* Centre the manifesto content */
-  .manifesto .wrap {
-    max-width: 960px;
-    margin-left: auto;
-    margin-right: auto;
-  }
 
-  .manifesto p {
+<style>
+  /* =========================================================
+     EDITORIAL ALIGNMENT
+     Keep manifesto prose aligned with the narrow section below.
+     Keep the three-word statement on one line.
+     ========================================================= */
+
+  .manifesto .wrap {
     max-width: 760px;
     margin-left: auto;
     margin-right: auto;
   }
 
-  /* Make the impact figures more prominent */
+  .manifesto-words {
+    white-space: nowrap;
+    width: max-content;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .manifesto p {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* =========================================================
+     IMPACT
+     Larger figures + a stronger section heading.
+     ========================================================= */
+
+  .impact h2 {
+    font-size: 2.4rem;
+    line-height: 1.1;
+  }
+
   .impact .num {
-    font-size: 3.4rem;
+    font-size: 3.4rem !important;
     line-height: 0.95;
   }
 </style>
+
 </head>
 <body>
 
@@ -35,6 +59,7 @@
       <span class="the">The</span>
       <span class="finvocates">Finvocates</span>
     </a>
+
     <nav class="main-nav">
 
       <div class="nav-item">
@@ -85,6 +110,7 @@
   </div>
 </header>
 
+
 <section class="hero">
   <div class="wrap">
     <p class="eyebrow reveal in">Welcome to</p>
@@ -97,41 +123,54 @@
   </div>
 </section>
 
+
 <section class="manifesto">
   <div class="wrap">
     <div class="manifesto-words reveal">
       <span>Categorical.</span><span>Consistent.</span><span>Calibrated.</span>
     </div>
+
     <p class="reveal">Every sun rising with new possibilities our country wakes up to everyday, illuminates the ever-evolving economic order of the largest social lineage of the world — India, that is Bharat. Value is created and traded, birthing new money which is a product of our efforts. Our work-product, that is, rupee, is our societal asset we must help safeguard and regulate as active citizens.</p>
+
     <p class="reveal">At The Finvocates, regulatory updates and public consultations from financial regulatory authorities of India and the world are tracked, and public consultations responded to, inasmuch as resources allow. Afraid whether the work does justice to what we aim it on, given constraints, the commitment is to max out on possible effort, banking on the belief that when resources, no matter how scarce, are coupled with best effort and structurally consistent categorical planning, they compound into a larger shape and size.</p>
+
     <p class="reveal">The fact that a democratic world gives direct opportunities to respond to financial regulatory authorities, and every law-making authority that runs public consultations, is both motivation and reward for the work here. There is no money involved in this project apart from the website domain expense, and that is by design. The aim is to create a lightweight platform that is useful specifically for everyone associated in any way with the financial regulatory space and its impact, of which every citizen of every republic is a part.</p>
+
     <p class="reveal">The philosophy is to remain categorical and veracious without exception, and calibrated in approach, respecting the economy of time users invest.</p>
+
     <p class="reveal">This project has no association with any regulatory body. This is purely an academic endeavour for facilitating research, regulatory participation via public consultations, and study.</p>
   </div>
 </section>
 
+
 <section class="impact">
   <div class="wrap">
     <h2 class="reveal">Our impact</h2>
+
     <div class="stat-grid">
+
       <div class="stat reveal">
         <span class="num accent-num">4+</span>
         <span class="label">Public consultations filed</span>
         <span class="sub">Supreme Court, RBI, FCA &amp; Bank of England, FSB</span>
       </div>
+
       <div class="stat reveal">
         <span class="num accent-num">5</span>
         <span class="label">Regulatory authorities engaged</span>
         <span class="sub">Across India, the UK and the FSB</span>
       </div>
+
       <div class="stat reveal">
         <span class="num accent-num">1.1K+</span>
         <span class="label">LinkedIn community</span>
         <span class="sub">Indexed #1 for the keyword "The Finvocates"</span>
       </div>
+
     </div>
   </div>
 </section>
+
 
 <section class="section narrow">
   <div class="wrap">
@@ -153,38 +192,47 @@
   </div>
 </section>
 
+
 <section class="section" style="padding-bottom:56px;">
   <div class="wrap">
     <p class="eyebrow section-kicker reveal">Live</p>
     <h2 class="section-title reveal">Worldwide Regulatory Dashboard</h2>
     <p class="reveal" style="margin-top:-4px;">Latest headlines across 20 central banks, standard-setters, and market regulators. <a href="dashboard.html" style="color:var(--ink); text-decoration:underline; text-decoration-color:var(--line-strong);">Open the full dashboard →</a></p>
+
     <div id="home-dashboard-preview" style="margin-top:20px;">
       <div class="dash-empty">Loading live updates…</div>
     </div>
   </div>
 </section>
 
+
 <section class="section" style="background:var(--fog); border-top:1px solid var(--line); border-bottom:1px solid var(--line);">
   <div class="wrap">
     <p class="eyebrow section-kicker reveal">From the feed</p>
     <h2 class="section-title reveal">Latest articles &amp; filings</h2>
+
     <div class="card-grid" id="home-articles-grid" style="margin-top:28px;">
       <div class="empty-state">Loading latest posts…</div>
     </div>
   </div>
 </section>
 
+
 <section class="section narrow" style="padding-top:0;">
   <div class="wrap">
     <hr class="rule" style="margin-bottom:32px;">
+
     <p class="eyebrow reveal" style="margin-bottom:10px;">Disclaimer</p>
+
     <p class="reveal" style="font-size:0.82rem; color:var(--ash); line-height:1.7;">The views expressed on this website are personal and independent, and do not represent the views of any organisation or institution Chakradhar Kale is or has been affiliated with. Content here, including commentary on regulatory developments and public consultation filings, is for general informational purposes only and does not constitute legal, compliance, or professional advice. Public consultation submissions referenced on this site were filed in an independent, individual capacity.</p>
   </div>
 </section>
 
+
 <footer class="site-footer">
   <div class="wrap foot-row">
     <span class="fine">© 2026 The Finvocates. Independently run by Chakradhar Kale.</span>
+
     <div style="display:flex; gap:20px; align-items:center;">
       <a class="mail" href="https://www.linkedin.com/company/thefinvocates/" target="_blank" rel="noopener">LinkedIn</a>
       <a class="mail" href="mailto:chakradhar@thefinvocates.com">chakradhar@thefinvocates.com</a>
@@ -192,8 +240,10 @@
   </div>
 </footer>
 
+
 <script src="script.js"></script>
 <script src="dashboard.js"></script>
+
 <script>
   renderFolderFeed({
     folder: ARTICLES_FOLDER,
@@ -203,5 +253,6 @@
     emptyLabel: "articles"
   });
 </script>
+
 </body>
 </html>
