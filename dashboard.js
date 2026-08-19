@@ -113,16 +113,19 @@ const SOURCES = [
     ]
   },
 
-  {
-    name: "CFPB",
-    fullName: "Consumer Financial Protection Bureau",
-    jurisdiction: "US",
-    category: "us-agencies",
+{
+  name: "CFPB",
+  fullName: "Consumer Financial Protection Bureau",
+  jurisdiction: "US",
+  category: "us-agencies",
 
-    feeds: [
-      "https://www.consumerfinance.gov/about-us/newsroom/feed/"
-    ]
-  },
+  feeds: [
+    "https://www.consumerfinance.gov/about-us/newsroom/feed/"
+  ],
+
+  fallbackPage:
+    "https://www.consumerfinance.gov/about-us/newsroom/"
+},
 
   {
     name: "FINRA",
