@@ -537,3 +537,8 @@ a:focus-visible, button:focus-visible{
 .mega {
   border-bottom: 1px solid var(--line) !important;
 }
+.logo img {
+  height: 42px;
+  width: auto;
+  display: block;
+}
